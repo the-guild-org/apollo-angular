@@ -1,7 +1,7 @@
 import { print } from 'graphql';
 import { afterEach, beforeEach, describe, expect, test } from 'vitest';
 import { TestBed } from '@angular/core/testing';
-import { gql } from '@apollo/client/core';
+import { gql } from '@apollo/client';
 import { addTypenameToDocument } from '@apollo/client/utilities';
 import { Apollo } from '../../src';
 import { ApolloTestingController, ApolloTestingModule } from '../src';
@@ -39,6 +39,7 @@ describe('Integration', () => {
         heroes: [
           {
             name: 'Superman',
+            __typename: 'Character',
           },
         ],
       };
@@ -73,6 +74,7 @@ describe('Integration', () => {
         heroes: [
           {
             name: 'Superman',
+            __typename: 'Character',
           },
         ],
       };
@@ -107,6 +109,7 @@ describe('Integration', () => {
         heroes: [
           {
             name: 'Superman',
+            __typename: 'Character',
           },
         ],
       };
@@ -145,6 +148,7 @@ describe('Integration', () => {
         heroes: [
           {
             name: 'Superman',
+            __typename: 'Character',
           },
         ],
       };

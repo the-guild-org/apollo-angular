@@ -1,19 +1,5 @@
-import { DocumentNode } from 'graphql';
 import { Observable } from 'rxjs';
-import { ApolloClient, execute, InMemoryCache, OperationVariables } from '@apollo/client';
-import { ApolloLink } from '@apollo/client/link';
-import { addTypenameToDocument } from '@apollo/client/utilities';
-
-export function buildOperationForLink(
-  document: DocumentNode,
-  variables: OperationVariables | undefined,
-): ApolloLink.Request {
-  return {
-    query: addTypenameToDocument(document),
-    variables,
-    context: {},
-  };
-}
+import { ApolloClient, ApolloLink, execute, InMemoryCache } from '@apollo/client';
 
 export function createDefaultExecuteContext(): ApolloLink.ExecuteContext {
   return {

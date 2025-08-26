@@ -1,14 +1,10 @@
 import type {
-  ApolloClientOptions,
-  MutationOptions as CoreMutationOptions,
-  QueryOptions as CoreQueryOptions,
-  SubscriptionOptions as CoreSubscriptionOptions,
-  WatchFragmentOptions as CoreWatchFragmentOptions,
-  WatchQueryOptions as CoreWatchQueryOptions,
-  FetchResult,
+  ApolloCache,
+  ApolloClient,
+  ApolloLink,
   OperationVariables,
   TypedDocumentNode,
-} from '@apollo/client/core';
+} from '@apollo/client';
 
 export type EmptyObject = {
   [key: string]: any;
@@ -23,31 +19,41 @@ export interface ExtraSubscriptionOptions {
   useZone?: boolean;
 }
 
-export type MutationResult<TData = any> = FetchResult<TData> & {
+export type MutationResult<TData = any> = ApolloLink.Result<TData> & {
   loading?: boolean;
 };
 
 export type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
 
-export interface WatchQueryOptionsAlone<
+export type WatchQueryOptionsAlone<
   TVariables extends OperationVariables = EmptyObject,
   TData = any,
-> extends Omit<WatchQueryOptions<TVariables, TData>, 'query' | 'variables'> {}
+> = Omit<WatchQueryOptions<TVariables, TData>, 'query' | 'variables'>;
 
-export interface QueryOptionsAlone<TVariables = EmptyObject, TData = any>
-  extends Omit<CoreQueryOptions<TVariables, TData>, 'query' | 'variables'> {}
+export type QueryOptionsAlone<
+  TVariables extends OperationVariables = EmptyObject,
+  TData = any,
+> = Omit<ApolloClient.QueryOptions<TData, TVariables>, 'query' | 'variables'>;
 
-export interface MutationOptionsAlone<TData = EmptyObject, TVariables = any>
-  extends Omit<MutationOptions<TData, TVariables>, 'mutation' | 'variables'> {}
+export type MutationOptionsAlone<
+  TData = EmptyObject,
+  TVariables extends OperationVariables = any,
+> = Omit<MutationOptions<TData, TVariables>, 'mutation' | 'variables'>;
 
-export interface SubscriptionOptionsAlone<TVariables = EmptyObject, TData = any>
-  extends Omit<CoreSubscriptionOptions<TVariables, TData>, 'query' | 'variables'> {}
+export type SubscriptionOptionsAlone<
+  TVariables extends OperationVariables = EmptyObject,
+  TData = any,
+> = Omit<ApolloClient.SubscribeOptions<TData, TVariables>, 'query' | 'variables'>;
 
-export interface WatchQueryOptions<TVariables extends OperationVariables = EmptyObject, TData = any>
-  extends CoreWatchQueryOptions<TVariables, TData> {}
+export type WatchQueryOptions<
+  TVariables extends OperationVariables = EmptyObject,
+  TData = any,
+> = ApolloClient.WatchQueryOptions<TData, TVariables>;
 
-export interface MutationOptions<TData = any, TVariables = EmptyObject>
-  extends CoreMutationOptions<TData, TVariables> {
+export type MutationOptions<
+  TData = any,
+  TVariables extends OperationVariables = EmptyObject,
+> = ApolloClient.MutateOptions<TData, TVariables> & {
   /**
    * Observable starts with `{ loading: true }`.
    * There's a big chance the next major version will enable that by default.
@@ -55,12 +61,14 @@ export interface MutationOptions<TData = any, TVariables = EmptyObject>
    * Disabled by default
    */
   useMutationLoading?: boolean;
-}
+};
 
-export interface WatchFragmentOptions<TData = any, TVariables = EmptyObject>
-  extends CoreWatchFragmentOptions<TData, TVariables> {}
+export interface WatchFragmentOptions<
+  TData = any,
+  TVariables extends OperationVariables = EmptyObject,
+> extends ApolloCache.WatchFragmentOptions<TData, TVariables> {}
 
-export type NamedOptions = Record<string, ApolloClientOptions<any>>;
+export type NamedOptions = Record<string, ApolloClient.Options>;
 
 export type Flags = {
   /**

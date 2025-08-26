@@ -1,6 +1,6 @@
 import { Apollo, gql } from 'apollo-angular';
 import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { filter, map } from 'rxjs/operators';
 import { AsyncPipe } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -74,6 +74,9 @@ export class MoviePageComponent implements OnInit {
           id: this.route.snapshot.paramMap.get('id')!,
         },
       })
-      .valueChanges.pipe(map(result => result.data!.film));
+      .valueChanges.pipe(
+        map(result => (result.dataState === 'complete' ? result.data.film : null)),
+        filter(Boolean),
+      );
   }
 }

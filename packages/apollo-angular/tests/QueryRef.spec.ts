@@ -2,8 +2,8 @@ import { Subject } from 'rxjs';
 import { map, takeUntil } from 'rxjs/operators';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { NgZone } from '@angular/core';
-import { ApolloClient, ApolloLink, InMemoryCache, ObservableQuery } from '@apollo/client/core';
-import { mockSingleLink } from '@apollo/client/testing';
+import { ApolloClient, ApolloLink, InMemoryCache, ObservableQuery } from '@apollo/client';
+import { MockLink } from '@apollo/client/testing';
 import { gql } from '../src/gql';
 import { QueryRef } from '../src/query-ref';
 
@@ -23,7 +23,6 @@ const heroesOperation = {
     }
   `,
   variables: {},
-  operationName: 'allHeroes',
 };
 
 // tslint:disable:variable-name
@@ -40,13 +39,13 @@ const Batman = {
 
 describe('QueryRef', () => {
   let ngZone: NgZone;
-  let client: ApolloClient<any>;
+  let client: ApolloClient;
   let obsQuery: ObservableQuery<any>;
   let queryRef: QueryRef<any>;
 
   beforeEach(() => {
     ngZone = { run: vi.fn(cb => cb()) } as any;
-    const mockedLink = mockSingleLink(
+    const mockedLink = new MockLink([
       {
         request: heroesOperation,
         result: { data: { heroes: [Superman] } },
@@ -55,7 +54,7 @@ describe('QueryRef', () => {
         request: heroesOperation,
         result: { data: { heroes: [Superman, Batman] } },
       },
-    );
+    ]);
 
     client = createClient(mockedLink);
     obsQuery = client.watchQuery(heroesOperation);
@@ -66,8 +65,10 @@ describe('QueryRef', () => {
     new Promise<void>(done => {
       queryRef.valueChanges.subscribe({
         next: result => {
-          expect(result.data).toBeDefined();
-          done();
+          if (result.dataState === 'complete') {
+            expect(result.data).toBeDefined();
+            done();
+          }
         },
         error: e => {
           throw e;
@@ -92,9 +93,11 @@ describe('QueryRef', () => {
         next: result => {
           calls++;
 
-          expect(result.data).toBeDefined();
+          if (result.dataState === 'complete') {
+            expect(result.data).toBeDefined();
+          }
 
-          if (calls === 2) {
+          if (calls === 4) {
             done();
           }
         },
@@ -120,9 +123,10 @@ describe('QueryRef', () => {
         next: result => {
           calls++;
 
-          if (calls === 1) {
+          // loading -> data; refetch() -> loading -> data
+          if (calls === 2) {
             expect(result.heroes.length).toBe(1);
-          } else if (calls === 2) {
+          } else if (calls === 4) {
             expect(result.heroes.length).toBe(2);
 
             done();
@@ -152,16 +156,6 @@ describe('QueryRef', () => {
     expect(mockCallback.mock.calls[0][0]).toBe(mapFn);
   });
 
-  test('should be able to call result()', () => {
-    const mockCallback = vi.fn();
-    obsQuery.result = mockCallback.mockReturnValue('expected');
-
-    const result = queryRef.result();
-
-    expect(result).toBe('expected');
-    expect(mockCallback.mock.calls.length).toBe(1);
-  });
-
   test('should be able to call getCurrentResult() and get updated results', () =>
     new Promise<void>(done => {
       let calls = 0;
@@ -170,10 +164,14 @@ describe('QueryRef', () => {
       obs.pipe(map(result => result.data)).subscribe({
         next: result => {
           calls++;
-          const currentResult = queryRef.getCurrentResult();
-          expect(currentResult.data.heroes.length).toBe(result.heroes.length);
 
-          if (calls === 2) {
+          const currentResult = queryRef.getCurrentResult();
+
+          if (currentResult.dataState === 'complete') {
+            expect(currentResult.data.heroes.length).toBe(result.heroes.length);
+          }
+
+          if (calls === 4) {
             done();
           }
         },
@@ -189,36 +187,6 @@ describe('QueryRef', () => {
         queryRef.refetch();
       }, 200);
     }));
-
-  test('should be able to call getLastResult()', () => {
-    const mockCallback = vi.fn();
-    obsQuery.getLastResult = mockCallback.mockReturnValue('expected');
-
-    const result = queryRef.getLastResult();
-
-    expect(result).toBe('expected');
-    expect(mockCallback.mock.calls.length).toBe(1);
-  });
-
-  test('should be able to call getLastError()', () => {
-    const mockCallback = vi.fn();
-    obsQuery.getLastError = mockCallback.mockReturnValue('expected');
-
-    const result = queryRef.getLastError();
-
-    expect(result).toBe('expected');
-    expect(mockCallback.mock.calls.length).toBe(1);
-  });
-
-  test('should be able to call resetLastResults()', () => {
-    const mockCallback = vi.fn();
-    obsQuery.resetLastResults = mockCallback.mockReturnValue('expected');
-
-    const result = queryRef.resetLastResults();
-
-    expect(result).toBe('expected');
-    expect(mockCallback.mock.calls.length).toBe(1);
-  });
 
   test('should be able to call fetchMore()', () => {
     const mockCallback = vi.fn();
@@ -262,18 +230,6 @@ describe('QueryRef', () => {
     expect(mockCallback.mock.calls[0][0]).toBe(3000);
   });
 
-  test('should be able to call setOptions()', () => {
-    const mockCallback = vi.fn();
-    const opts = {};
-    obsQuery.setOptions = mockCallback.mockReturnValue('expected');
-
-    const result = queryRef.setOptions(opts);
-
-    expect(result).toBe('expected');
-    expect(mockCallback.mock.calls.length).toBe(1);
-    expect(mockCallback.mock.calls[0][0]).toBe(opts);
-  });
-
   test('should be able to call setVariables()', () => {
     const mockCallback = vi.fn();
     const variables = {};
@@ -300,7 +256,8 @@ describe('QueryRef', () => {
         next: result => {
           calls.first++;
 
-          expect(result.data).toBeDefined();
+          // Initial loading state
+          expect(result.data).not.toBeDefined();
         },
         error: e => {
           throw e;
@@ -314,7 +271,8 @@ describe('QueryRef', () => {
         next: result => {
           calls.second++;
 
-          expect(result.data).toBeDefined();
+          // Initial loading state
+          expect(result.data).not.toBeDefined();
 
           setTimeout(() => {
             subSecond.unsubscribe();
@@ -346,17 +304,16 @@ describe('QueryRef', () => {
   test('should unsubscribe', () =>
     new Promise<void>(done => {
       const obs = queryRef.valueChanges;
-      const id = queryRef.queryId;
 
       const sub = obs.subscribe(() => {
         //
       });
 
-      expect(client['queryManager'].queries.get(id)).toBeDefined();
+      expect(client.getObservableQueries().size).toBe(1);
 
       setTimeout(() => {
         sub.unsubscribe();
-        expect(client['queryManager'].queries.get(id)).toBeUndefined();
+        expect(client.getObservableQueries().size).toBe(0);
         done();
       });
     }));
@@ -365,17 +322,16 @@ describe('QueryRef', () => {
     new Promise<void>(done => {
       const gate = new Subject<void>();
       const obs = queryRef.valueChanges.pipe(takeUntil(gate));
-      const id = queryRef.queryId;
 
       obs.subscribe(() => {
         //
       });
 
-      expect(client['queryManager'].queries.get(id)).toBeDefined();
+      expect(client.getObservableQueries().size).toBe(1);
 
       gate.next();
 
-      expect(client['queryManager'].queries.get(id)).toBeUndefined();
+      expect(client.getObservableQueries().size).toBe(0);
       done();
     }));
 });
