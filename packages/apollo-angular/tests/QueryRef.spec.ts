@@ -248,7 +248,8 @@ describe('QueryRef', () => {
         next: result => {
           calls.first++;
 
-          expect(result.data).toBeDefined();
+          // Initial loading state
+          expect(result.data).not.toBeDefined();
         },
         error: e => {
           throw e;
@@ -262,7 +263,8 @@ describe('QueryRef', () => {
         next: result => {
           calls.second++;
 
-          expect(result.data).toBeDefined();
+          // Initial loading state
+          expect(result.data).not.toBeDefined();
 
           setTimeout(() => {
             subSecond.unsubscribe();
