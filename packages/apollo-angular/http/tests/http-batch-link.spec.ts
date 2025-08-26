@@ -520,7 +520,7 @@ describe('HttpBatchLink', () => {
 
       execute(link, {
         query: gql`
-          query heroes($first: Int!) {
+          query op1($first: Int!) {
             heroes(first: $first) {
               name
             }
@@ -532,7 +532,7 @@ describe('HttpBatchLink', () => {
       }).subscribe(noop);
       execute(link, {
         query: gql`
-          query heroes {
+          query op2 {
             heroes {
               name
             }
