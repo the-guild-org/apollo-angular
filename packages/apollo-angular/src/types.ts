@@ -1,10 +1,10 @@
 import type {
+  ApolloClient,
+  ApolloLink,
   WatchFragmentOptions as CoreWatchFragmentOptions,
   OperationVariables,
   TypedDocumentNode,
-  ApolloClient,
-  ApolloLink,
-} from "@apollo/client";
+} from '@apollo/client';
 
 export type EmptyObject = {
   [key: string]: any;
@@ -56,7 +56,7 @@ export interface MutationOptions<TData = any, TVariables = EmptyObject>
 export interface WatchFragmentOptions<TData = any, TVariables = EmptyObject>
   extends CoreWatchFragmentOptions<TData, TVariables> {}
 
-export type NamedOptions = Record<string, ApolloClient.Options<any>>;
+export type NamedOptions = Record<string, ApolloClient.Options>;
 
 export type Flags = {
   /**
