@@ -37,9 +37,9 @@
   },
   "peerDependencies": {
     "@angular/core": "^17.0.0 || ^18.0.0 || ^19.0.0",
-    "@apollo/client": "^3.13.1",
-    "graphql": "^15.0.0 || ^16.0.0",
-    "rxjs": "^6.0.0 || ^7.0.0"
+    "@apollo/client": "^4.0.0",
+    "graphql": "^16.0.0",
+    "rxjs": "^7.3.0"
   },
   "dependencies": {
     "tslib": "^2.6.2"
