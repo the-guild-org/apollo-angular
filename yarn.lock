@@ -264,9 +264,10 @@
   dependencies:
     tslib "^2.3.0"
 
-"@apollo/client@https://pkg.pr.new/@apollo/client@12221":
-  version "4.0.0-alpha.0"
-  resolved "https://pkg.pr.new/@apollo/client@12221#d8a470f1993539909177eba396eb583572382185"
+"@apollo/client@4.0.1":
+  version "4.0.1"
+  resolved "https://registry.yarnpkg.com/@apollo/client/-/client-4.0.1.tgz#00fe65c518de241126b3664307ccb26bc5314abc"
+  integrity sha512-qBW2d6++wmNeVkYuCfcw9vQi2kG007wdwdohLc+NXs2Ojz3XPiTb4r9gPTAjwAF9JXN9i7WSQ45fdcN9JAom8Q==
   dependencies:
     "@graphql-typed-document-node/core" "^3.1.1"
     "@wry/caches" "^1.0.0"
@@ -274,21 +275,6 @@
     "@wry/trie" "^0.5.0"
     graphql-tag "^2.12.6"
     optimism "^0.18.0"
-    rehackt "^0.1.0"
-    tslib "^2.3.0"
-
-"@apollo/client@https://pkg.pr.new/@apollo/client@12384":
-  version "3.13.0"
-  resolved "https://pkg.pr.new/@apollo/client@12384#8fb6746f15541854a956115c6a8610e3da7858d8"
-  dependencies:
-    "@graphql-typed-document-node/core" "^3.1.1"
-    "@wry/caches" "^1.0.0"
-    "@wry/equality" "^0.5.6"
-    "@wry/trie" "^0.5.0"
-    graphql-tag "^2.12.6"
-    optimism "^0.18.0"
-    rehackt "^0.1.0"
-    ts-invariant "^0.10.3"
     tslib "^2.3.0"
 
 "@asamuzakjp/css-color@^2.8.2":
@@ -9929,11 +9915,6 @@ regjsparser@^0.9.1:
   dependencies:
     jsesc "~0.5.0"
 
-rehackt@^0.1.0:
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/rehackt/-/rehackt-0.1.0.tgz#a7c5e289c87345f70da8728a7eb878e5d03c696b"
-  integrity sha512-7kRDOuLHB87D/JESKxQoRwv4DzbIdwkAGQ7p6QKGdVlY1IZheUnVhlk/4UZlNUVxdAXpyxikE3URsG067ybVzw==
-
 rehype-katex@^7.0.0:
   version "7.0.0"
   resolved "https://registry.yarnpkg.com/rehype-katex/-/rehype-katex-7.0.0.tgz#f5e9e2825981175a7b0a4d58ed9816c33576dfed"
@@ -11238,13 +11219,6 @@ ts-interface-checker@^0.1.9:
   version "0.1.13"
   resolved "https://registry.yarnpkg.com/ts-interface-checker/-/ts-interface-checker-0.1.13.tgz#784fd3d679722bc103b1b4b8030bcddb5db2a699"
   integrity sha512-Y/arvbn+rrz3JCKl9C4kVNfTfSm2/mEp5FSz5EsZSANGPSlQrpRI5M4PKF+mJnE52jOO90PnPSc3Ur3bTQw0gA==
-
-ts-invariant@^0.10.3:
-  version "0.10.3"
-  resolved "https://registry.yarnpkg.com/ts-invariant/-/ts-invariant-0.10.3.tgz#3e048ff96e91459ffca01304dbc7f61c1f642f6c"
-  integrity sha512-uivwYcQaxAucv1CzRp2n/QdYPo4ILf9VXgH19zEIjFx2EJufV16P0JtJVpYHy89DItG6Kwj2oIUjrcK5au+4tQ==
-  dependencies:
-    tslib "^2.1.0"
 
 ts-morph@^21.0.0:
   version "21.0.1"
