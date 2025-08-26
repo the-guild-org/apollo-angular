@@ -292,18 +292,13 @@ test('expect to call clientA', () => {
 
 ## Using a custom cache
 
-By default, every ApolloCache is created with these options:
-
-```json
-{
-  "addTypename": false
-}
-```
-
-If you would like to change it in the default client, do the following:
+A `InMemoryCache` is provided by default. If you would like to change it in the default client, you
+can provide the `APOLLO_TESTING_CACHE` token:
 
 ```ts
-import { APOLLO_TESTING_CACHE } from 'apollo-angular/testing';
+import { APOLLO_TESTING_CACHE, ApolloTestingModule } from 'apollo-angular/testing';
+import { TestBed } from '@angular/core/testing';
+import { InMemoryCache } from '@apollo/client/core';
 
 beforeEach(() => {
   TestBed.configureTestingModule({
@@ -311,9 +306,9 @@ beforeEach(() => {
     providers: [
       {
         provide: APOLLO_TESTING_CACHE,
-        useValue: {
-          addTypename: true,
-        },
+        useValue: new InMemoryCache({
+          // Custom options here...
+        }),
       },
     ],
   });
@@ -322,10 +317,12 @@ beforeEach(() => {
 });
 ```
 
-For named clients:
+And for named clients:
 
 ```ts
-import { APOLLO_TESTING_NAMED_CACHE } from 'apollo-angular/testing';
+import { APOLLO_TESTING_NAMED_CACHE, ApolloTestingModule } from 'apollo-angular/testing';
+import { TestBed } from '@angular/core/testing';
+import { InMemoryCache } from '@apollo/client/core';
 
 beforeEach(() => {
   TestBed.configureTestingModule({
@@ -334,12 +331,12 @@ beforeEach(() => {
       {
         provide: APOLLO_TESTING_NAMED_CACHE,
         useValue: {
-          clientA: {
-            addTypename: true,
-          },
-          clientB: {
-            addTypename: true,
-          },
+          clientA: new InMemoryCache({
+            // Custom options for client A here...
+          }),
+          clientB: new InMemoryCache({
+            // Custom options for client B here...
+          }),
         },
       },
     ],

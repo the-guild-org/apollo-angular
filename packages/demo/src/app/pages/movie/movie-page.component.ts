@@ -74,6 +74,6 @@ export class MoviePageComponent implements OnInit {
           id: this.route.snapshot.paramMap.get('id')!,
         },
       })
-      .valueChanges.pipe(map(result => result.data.film));
+      .valueChanges.pipe(map(result => result.data!.film));
   }
 }

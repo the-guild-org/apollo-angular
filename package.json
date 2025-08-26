@@ -37,7 +37,7 @@
     "@angular/platform-browser-dynamic": "^18.0.0",
     "@angular/platform-server": "^18.0.0",
     "@angular/router": "^18.0.0",
-    "@apollo/client": "^3.13.1",
+    "@apollo/client": "https://pkg.pr.new/@apollo/client@12221",
     "@babel/core": "^7.24.6",
     "@babel/preset-env": "^7.24.6",
     "@changesets/changelog-github": "^0.5.0",

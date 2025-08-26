@@ -44,15 +44,7 @@ export interface SubscriptionOptionsAlone<TVariables = EmptyObject, TData = any>
   extends Omit<CoreSubscriptionOptions<TVariables, TData>, 'query' | 'variables'> {}
 
 export interface WatchQueryOptions<TVariables extends OperationVariables = EmptyObject, TData = any>
-  extends CoreWatchQueryOptions<TVariables, TData> {
-  /**
-   * Observable starts with `{ loading: true }`.
-   * There's a big chance the next major version will enable that by default.
-   *
-   * Disabled by default
-   */
-  useInitialLoading?: boolean;
-}
+  extends CoreWatchQueryOptions<TVariables, TData> {}
 
 export interface MutationOptions<TData = any, TVariables = EmptyObject>
   extends CoreMutationOptions<TData, TVariables> {
@@ -71,13 +63,6 @@ export interface WatchFragmentOptions<TData = any, TVariables = EmptyObject>
 export type NamedOptions = Record<string, ApolloClientOptions<any>>;
 
 export type Flags = {
-  /**
-   * Observable starts with `{ loading: true }`.
-   * There's a big chance the next major version will enable that by default.
-   *
-   * Disabled by default
-   */
-  useInitialLoading?: boolean;
   /**
    * Observable starts with `{ loading: true }`.
    *

@@ -1,4 +1,4 @@
-import { from, Observable } from 'rxjs';
+import { Observable } from 'rxjs';
 import { NgZone } from '@angular/core';
 import type {
   ApolloQueryResult,
@@ -10,38 +10,8 @@ import type {
   TypedDocumentNode,
   Unmasked,
 } from '@apollo/client/core';
-import { NetworkStatus } from '@apollo/client/core';
-import { EmptyObject, WatchQueryOptions } from './types';
-import { fixObservable, wrapWithZone } from './utils';
-
-function useInitialLoading<T, V extends OperationVariables>(obsQuery: ObservableQuery<T, V>) {
-  return function useInitialLoadingOperator<T>(source: Observable<T>): Observable<T> {
-    return new Observable(function useInitialLoadingSubscription(subscriber) {
-      const currentResult = obsQuery.getCurrentResult();
-      const { loading, errors, error, partial, data } = currentResult;
-      const { partialRefetch, fetchPolicy } = obsQuery.options;
-
-      const hasError = errors || error;
-
-      if (
-        partialRefetch &&
-        partial &&
-        (!data || Object.keys(data).length === 0) &&
-        fetchPolicy !== 'cache-only' &&
-        !loading &&
-        !hasError
-      ) {
-        subscriber.next({
-          ...currentResult,
-          loading: true,
-          networkStatus: NetworkStatus.loading,
-        } as any);
-      }
-
-      return source.subscribe(subscriber);
-    });
-  };
-}
+import { EmptyObject } from './types';
+import { fromObservableQuery, wrapWithZone } from './utils';
 
 export type QueryRefFromDocument<T extends TypedDocumentNode> =
   T extends TypedDocumentNode<infer R, infer V> ? QueryRef<R, V & OperationVariables> : never;
@@ -53,13 +23,8 @@ export class QueryRef<TData, TVariables extends OperationVariables = EmptyObject
   constructor(
     private readonly obsQuery: ObservableQuery<TData, TVariables>,
     ngZone: NgZone,
-    options: WatchQueryOptions<TVariables, TData>,
   ) {
-    const wrapped = wrapWithZone(from(fixObservable(this.obsQuery)), ngZone);
-
-    this.valueChanges = options.useInitialLoading
-      ? wrapped.pipe(useInitialLoading(this.obsQuery))
-      : wrapped;
+    this.valueChanges = wrapWithZone(fromObservableQuery(this.obsQuery), ngZone);
     this.queryId = this.obsQuery.queryId;
   }
 

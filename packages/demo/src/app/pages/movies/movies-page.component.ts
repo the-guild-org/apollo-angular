@@ -56,6 +56,6 @@ export class MoviesPageComponent implements OnInit {
           }
         `,
       })
-      .valueChanges.pipe(map(result => result.data.allFilms.films)) as any;
+      .valueChanges.pipe(map(result => result.data!.allFilms.films)) as any;
   }
 }

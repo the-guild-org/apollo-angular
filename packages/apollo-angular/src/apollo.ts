@@ -1,4 +1,4 @@
-import { from, Observable } from 'rxjs';
+import { Observable } from 'rxjs';
 import { Inject, Injectable, NgZone, Optional } from '@angular/core';
 import type {
   ApolloClientOptions,
@@ -23,10 +23,9 @@ import type {
   WatchFragmentOptions,
   WatchQueryOptions,
 } from './types';
-import { fixObservable, fromPromise, useMutationLoading, wrapWithZone } from './utils';
+import { fromLazyPromise, useMutationLoading, wrapWithZone } from './utils';
 
 export class ApolloBase<TCacheShape = any> {
-  private useInitialLoading: boolean;
   private useMutationLoading: boolean;
 
   constructor(
@@ -34,7 +33,6 @@ export class ApolloBase<TCacheShape = any> {
     protected readonly flags?: Flags,
     protected _client?: ApolloClient<TCacheShape>,
   ) {
-    this.useInitialLoading = flags?.useInitialLoading ?? false;
     this.useMutationLoading = flags?.useMutationLoading ?? false;
   }
 
@@ -46,24 +44,22 @@ export class ApolloBase<TCacheShape = any> {
         ...options,
       }) as ObservableQuery<TData, TVariables>,
       this.ngZone,
-      {
-        useInitialLoading: this.useInitialLoading,
-        ...options,
-      },
     );
   }
 
   public query<T, V extends OperationVariables = EmptyObject>(
     options: QueryOptions<V, T>,
   ): Observable<ApolloQueryResult<T>> {
-    return fromPromise<ApolloQueryResult<T>>(() => this.ensureClient().query<T, V>({ ...options }));
+    return fromLazyPromise<ApolloQueryResult<T>>(() =>
+      this.ensureClient().query<T, V>({ ...options }),
+    );
   }
 
   public mutate<T, V extends OperationVariables = EmptyObject>(
     options: MutationOptions<T, V>,
   ): Observable<MutationResult<T>> {
     return useMutationLoading(
-      fromPromise(() => this.ensureClient().mutate<T, V>({ ...options })),
+      fromLazyPromise(() => this.ensureClient().mutate<T, V>({ ...options })),
       options.useMutationLoading ?? this.useMutationLoading,
     );
   }
@@ -75,9 +71,7 @@ export class ApolloBase<TCacheShape = any> {
     options: WatchFragmentOptions<TFragmentData, TVariables>,
     extra?: ExtraSubscriptionOptions,
   ): Observable<WatchFragmentResult<TFragmentData>> {
-    const obs = from(
-      fixObservable(this.ensureClient().watchFragment<TFragmentData, TVariables>({ ...options })),
-    );
+    const obs = this.ensureClient().watchFragment<TFragmentData, TVariables>({ ...options });
 
     return extra && extra.useZone !== true ? obs : wrapWithZone(obs, this.ngZone);
   }
@@ -86,7 +80,7 @@ export class ApolloBase<TCacheShape = any> {
     options: SubscriptionOptions<V, T>,
     extra?: ExtraSubscriptionOptions,
   ): Observable<FetchResult<T>> {
-    const obs = from(fixObservable(this.ensureClient().subscribe<T, V>({ ...options })));
+    const obs = this.ensureClient().subscribe<T, V>({ ...options });
 
     return extra && extra.useZone !== true ? obs : wrapWithZone(obs, this.ngZone);
   }

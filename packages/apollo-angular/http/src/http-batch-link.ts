@@ -1,12 +1,8 @@
 import { print } from 'graphql';
+import { Observable } from 'rxjs';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import {
-  ApolloLink,
-  FetchResult,
-  Observable as LinkObservable,
-  Operation,
-} from '@apollo/client/core';
+import { ApolloLink, FetchResult, Operation } from '@apollo/client/core';
 import { BatchHandler, BatchLink } from '@apollo/client/link/batch';
 import { BatchOptions, Body, Context, OperationPrinter, Options, Request } from './types';
 import { createHeadersWithClientAwareness, fetch, mergeHeaders, prioritize } from './utils';
@@ -53,7 +49,7 @@ export class HttpBatchLinkHandler extends ApolloLink {
     }
 
     const batchHandler: BatchHandler = (operations: Operation[]) => {
-      return new LinkObservable((observer: any) => {
+      return new Observable((observer: any) => {
         const body = this.createBody(operations);
         const headers = this.createHeaders(operations);
         const { method, uri, withCredentials } = this.createOptions(operations);
@@ -175,7 +171,7 @@ export class HttpBatchLinkHandler extends ApolloLink {
     return prioritize(context.uri, this.options.uri, '') + opts;
   }
 
-  public request(op: Operation): LinkObservable<FetchResult> | null {
+  public request(op: Operation): Observable<FetchResult> | null {
     return this.batcher.request(op);
   }
 }

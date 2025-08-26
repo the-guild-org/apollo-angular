@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import { TestBed } from '@angular/core/testing';
-import { ApolloReducerConfig, gql, InMemoryCache } from '@apollo/client/core';
+import { gql, InMemoryCache } from '@apollo/client/core';
 import { Apollo } from '../../src';
 import { APOLLO_TESTING_CACHE, ApolloTestingController, ApolloTestingModule } from '../src';
 
@@ -12,14 +12,12 @@ describe('ApolloTestingModule', () => {
 
     const apollo = TestBed.inject(Apollo);
     const cache = apollo.client.cache as InMemoryCache;
-    const config: ApolloReducerConfig = (cache as any).config;
 
     expect(cache).toBeInstanceOf(InMemoryCache);
-    expect(config.addTypename).toBe(false);
   });
 
   test('should allow to use custom ApolloCache', () => {
-    const cache = new InMemoryCache({ addTypename: true });
+    const cache = new InMemoryCache();
 
     TestBed.configureTestingModule({
       imports: [ApolloTestingModule],

@@ -1,6 +1,7 @@
+import { of } from 'rxjs';
 import { describe, expect, test } from 'vitest';
 import { HttpHeaders } from '@angular/common/http';
-import { ApolloLink, execute, gql, Observable as LinkObservable } from '@apollo/client/core';
+import { ApolloLink, execute, gql } from '@apollo/client/core';
 import { httpHeaders } from '../src';
 
 const query = gql`
@@ -24,7 +25,7 @@ describe('httpHeaders', () => {
         expect(headers instanceof HttpHeaders).toBe(true);
         expect(headers.get('Authorization')).toBe('Bearer Foo');
 
-        return LinkObservable.of({ data });
+        return of({ data });
       });
 
       const link = headersLink.concat(mockLink);
@@ -51,7 +52,7 @@ describe('httpHeaders', () => {
 
         expect(headers).toBeUndefined();
 
-        return LinkObservable.of({ data });
+        return of({ data });
       });
 
       const link = headersLink.concat(mockLink);

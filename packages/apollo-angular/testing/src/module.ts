@@ -55,11 +55,7 @@ export class ApolloTestingModuleCore {
       return {
         connectToDevTools: false,
         link: new ApolloLink(operation => backend.handle(addClient(name, operation))),
-        cache:
-          c ||
-          new InMemoryCache({
-            addTypename: false,
-          }),
+        cache: c || new InMemoryCache(),
       };
     }
 
