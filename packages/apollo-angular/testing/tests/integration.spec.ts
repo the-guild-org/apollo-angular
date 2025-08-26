@@ -39,6 +39,7 @@ describe('Integration', () => {
         heroes: [
           {
             name: 'Superman',
+            __typename: 'Character',
           },
         ],
       };
@@ -73,6 +74,7 @@ describe('Integration', () => {
         heroes: [
           {
             name: 'Superman',
+            __typename: 'Character',
           },
         ],
       };
@@ -107,6 +109,7 @@ describe('Integration', () => {
         heroes: [
           {
             name: 'Superman',
+            __typename: 'Character',
           },
         ],
       };
@@ -145,6 +148,7 @@ describe('Integration', () => {
         heroes: [
           {
             name: 'Superman',
+            __typename: 'Character',
           },
         ],
       };
