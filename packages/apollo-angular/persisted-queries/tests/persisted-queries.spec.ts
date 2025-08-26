@@ -1,6 +1,12 @@
 import { Observable } from 'rxjs';
 import { describe, expect, test, vi } from 'vitest';
-import { ApolloLink, execute, gql } from "@apollo/client";
+import {
+  ApolloClient,
+  ApolloLink,
+  execute as executeLink,
+  gql,
+  InMemoryCache,
+} from '@apollo/client';
 import { createPersistedQueryLink } from '../src';
 
 const query = gql`
@@ -12,6 +18,12 @@ const query = gql`
   }
 `;
 const data = { heroes: [{ name: 'Foo', __typename: 'Hero' }] };
+
+function execute(link: ApolloLink, request: ApolloLink.Request) {
+  return executeLink(link, request, {
+    client: new ApolloClient({ cache: new InMemoryCache(), link: ApolloLink.empty() }),
+  });
+}
 
 class MockLink extends ApolloLink {
   public showNotFound: boolean = true;

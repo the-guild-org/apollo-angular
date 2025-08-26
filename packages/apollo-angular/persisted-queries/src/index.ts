@@ -1,10 +1,10 @@
-import { setContext } from '@apollo/client/link/context';
-import { ApolloLink } from '@apollo/client/link/core';
-import { createPersistedQueryLink as _createPersistedQueryLink } from '@apollo/client/link/persisted-queries';
+import { ApolloLink } from '@apollo/client/link';
+import { SetContextLink } from '@apollo/client/link/context';
+import { PersistedQueryLink } from '@apollo/client/link/persisted-queries';
 
-export type Options = Parameters<typeof _createPersistedQueryLink>[0];
+export type Options = PersistedQueryLink.Options;
 
-const transformLink = setContext((_, context) => {
+const transformLink = new SetContextLink(context => {
   const ctx: any = {};
 
   if (context.http) {
@@ -19,5 +19,5 @@ const transformLink = setContext((_, context) => {
   return ctx;
 });
 
-export const createPersistedQueryLink = (options: Options) =>
-  ApolloLink.from([_createPersistedQueryLink(options), transformLink as any]);
+export const createPersistedQueryLink = (options: PersistedQueryLink.Options) =>
+  ApolloLink.from([new PersistedQueryLink(options), transformLink]);
