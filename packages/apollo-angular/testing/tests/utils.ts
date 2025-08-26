@@ -1,15 +1,14 @@
 import { DocumentNode } from 'graphql';
-import type { GraphQLRequest } from '@apollo/client/link/core/types';
-import { getOperationName } from "@apollo/client/utilities/internal";
+import { OperationVariables } from '@apollo/client';
+import type { ApolloLink } from '@apollo/client/link';
 
-export function buildOperationForLink<TVariables = Record<string, any>>(
+export function buildOperationForLink(
   document: DocumentNode,
-  variables: TVariables,
-): GraphQLRequest<TVariables> {
+  variables: OperationVariables | undefined,
+): ApolloLink.Request {
   return {
     query: document,
     variables,
-    operationName: getOperationName(document) || undefined,
     context: {},
   };
 }
