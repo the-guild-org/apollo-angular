@@ -10,8 +10,9 @@ import {
   renderModule,
   ServerModule,
 } from '@angular/platform-server';
-import { execute, gql } from "@apollo/client";
+import { gql } from '@apollo/client';
 import { HttpLink } from '../src/http-link';
+import { executeWithDefaultContext as execute } from './utils';
 
 describe.skip('integration', () => {
   let doc: string;

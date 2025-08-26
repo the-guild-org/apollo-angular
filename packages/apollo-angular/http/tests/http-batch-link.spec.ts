@@ -2,24 +2,13 @@ import { afterEach, beforeEach, describe, expect, test } from 'vitest';
 import { HttpHeaders, provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import {
-  ApolloClient,
-  ApolloLink,
-  execute as executeLink,
-  gql,
-  InMemoryCache,
-} from '@apollo/client';
+import { ApolloLink, gql } from '@apollo/client';
 import { HttpBatchLink } from '../src/http-batch-link';
+import { executeWithDefaultContext as execute } from './utils';
 
 const noop = () => {
   //
 };
-
-function execute(link: ApolloLink, request: ApolloLink.Request) {
-  return executeLink(link, request, {
-    client: new ApolloClient({ cache: new InMemoryCache(), link: ApolloLink.empty() }),
-  });
-}
 
 describe('HttpBatchLink', () => {
   let httpLink: HttpBatchLink;
