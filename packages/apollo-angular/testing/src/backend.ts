@@ -2,6 +2,7 @@ import { DocumentNode, print } from 'graphql';
 import { Observable, Observer } from 'rxjs';
 import { Injectable } from '@angular/core';
 import { ApolloLink } from '@apollo/client';
+import { addTypenameToDocument } from '@apollo/client/utilities';
 import { ApolloTestingController, MatchOperation } from './controller';
 import { Operation, TestOperation } from './operation';
 
@@ -40,7 +41,9 @@ export class ApolloTestingBackend implements ApolloTestingController {
       return this.open.filter(testOp => match(testOp.operation));
     } else {
       if (this.isDocumentNode(match)) {
-        return this.open.filter(testOp => print(testOp.operation.query) === print(match));
+        return this.open.filter(
+          testOp => print(testOp.operation.query) === print(addTypenameToDocument(match)),
+        );
       }
 
       return this.open.filter(testOp => this.matchOp(match, testOp));
@@ -54,7 +57,7 @@ export class ApolloTestingBackend implements ApolloTestingController {
     const sameName = this.compare(match.operationName, testOp.operation.operationName);
     const sameVariables = this.compare(variables, testOp.operation.variables);
 
-    const sameQuery = print(testOp.operation.query) === print(match.query);
+    const sameQuery = print(testOp.operation.query) === print(addTypenameToDocument(match.query));
 
     const sameExtensions = this.compare(extensions, testOp.operation.extensions);
 
