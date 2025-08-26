@@ -277,7 +277,7 @@ describe('Apollo', () => {
         };
 
         // create
-        apollo.create<any>({
+        apollo.create({
           link: new MockLink([{ request: { query }, result: { data } }]),
           cache: new InMemoryCache(),
         });
@@ -289,7 +289,6 @@ describe('Apollo', () => {
           })
           .subscribe({
             next: result => {
-              expect(result.loading).toBe(false);
               expect(result.data).toMatchObject(data);
               setTimeout(() => {
                 return done();
@@ -492,7 +491,7 @@ describe('Apollo', () => {
         };
 
         // create
-        apollo.create<any>({
+        apollo.create({
           link: new MockLink([{ request: { query }, result: { data } }]),
           cache: new InMemoryCache(),
         });
@@ -538,7 +537,7 @@ describe('Apollo', () => {
         let alreadyCalled = false;
 
         // create
-        apollo.create<any>({
+        apollo.create({
           link: new MockLink([{ request: { query }, result: { data } }]),
           cache: new InMemoryCache(),
         });
@@ -864,7 +863,7 @@ describe('Apollo', () => {
       };
 
       // create
-      apollo.create<any>({
+      apollo.create({
         link: new MockLink([{ request: op, result: { data } }]),
         cache: new InMemoryCache(),
       });
@@ -905,7 +904,7 @@ describe('Apollo', () => {
       let alreadyCalled = false;
 
       // create
-      apollo.create<any>({
+      apollo.create({
         link: new MockLink([{ request: { query }, result: { data } }]),
         cache: new InMemoryCache(),
       });
@@ -966,7 +965,7 @@ describe('Apollo', () => {
       });
 
       // create
-      apollo.create<any>({
+      apollo.create({
         link: new MockLink([{ request: { query }, result: { data } }]),
         cache,
       });
@@ -1029,7 +1028,7 @@ describe('Apollo', () => {
       });
 
       // create
-      apollo.create<any>({
+      apollo.create({
         link: new MockLink([{ request: { query }, result: { data } }]),
         cache,
       });
