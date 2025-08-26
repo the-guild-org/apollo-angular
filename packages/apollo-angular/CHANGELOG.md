@@ -1,5 +1,31 @@
 # Change log
 
+## 11.0.1
+
+### Patch Changes
+
+- [#2373](https://github.com/the-guild-org/apollo-angular/pull/2373)
+  [`e65bcce`](https://github.com/the-guild-org/apollo-angular/commit/e65bcce125ac9cfca25ea707f904610afac90906)
+  Thanks [@PowerKiKi](https://github.com/PowerKiKi)! - Drop support for node 18
+
+- [#2366](https://github.com/the-guild-org/apollo-angular/pull/2366)
+  [`bdff9d9`](https://github.com/the-guild-org/apollo-angular/commit/bdff9d9c7f8b4c9758126326bed8e1459fb5a533)
+  Thanks [@PowerKiKi](https://github.com/PowerKiKi)! - Drop ESM2022 in favor of FESM2022
+
+- [#2368](https://github.com/the-guild-org/apollo-angular/pull/2368)
+  [`0f10355`](https://github.com/the-guild-org/apollo-angular/commit/0f103552a78c9031efb4ec732454f6ce17f02f04)
+  Thanks [@PowerKiKi](https://github.com/PowerKiKi)! - New repository owners
+
+  [@kamilkisiela](https://github.com/kamilkisiela), the creator of this library, has found new
+  interests and is not able to contribute like in the past. He gracefully transferred ownership of
+  the repository to me. I have been maintaining this library since 2022, and will continue doing so
+  in the foreseeable future.
+
+  For the package consumers, pretty much nothing will change. The package name, the code, the
+  relation with [The Guild](https://github.com/the-guild-org), and the maintenance style will all
+  remain the same. The only difference is the new repository URL:
+  https://github.com/the-guild-org/apollo-angular.
+
 ## 11.0.0
 
 ### Major Changes
@@ -364,7 +390,8 @@
   [`9a8ea5f`](https://github.com/the-guild-org/apollo-angular/commit/9a8ea5f229cf7937d74332092cb3eba40828b7b1)
 - Add `useMutationLoading` flag
   [`bc223fe`](https://github.com/the-guild-org/apollo-angular/commit/bc223fe6487edd35c56ad908e4739580ce69f056)
-- Fix type inference for Mutations [#1659](https://github.com/the-guild-org/apollo-angular/pull/1659)
+- Fix type inference for Mutations
+  [#1659](https://github.com/the-guild-org/apollo-angular/pull/1659)
 - Declare support for Angular 13
 - Remove `extract-files` library from dependencies (you need to pass `extractFiles` function to
   HttpLink's options)
@@ -540,7 +567,8 @@ Changes:
   ([PR #607](https://github.com/the-guild-org/apollo-angular/pull/607))
 - Adds `sideEffects: false` (webpack)
   ([PR #580](https://github.com/the-guild-org/apollo-angular/pull/580))
-- Supports Angular 6 and RxJS 6 ([PR #580](https://github.com/the-guild-org/apollo-angular/pull/580))
+- Supports Angular 6 and RxJS 6
+  ([PR #580](https://github.com/the-guild-org/apollo-angular/pull/580))
 
 ## v1.0.1
 
@@ -638,7 +666,8 @@ Behaves the same as the `ObservableQuery` of `apollo-client`.
 
 ## v0.9.0
 
-- Support `apollo-client@0.8.0` ([PR #206](https://github.com/the-guild-org/apollo-angular/pull/206))
+- Support `apollo-client@0.8.0`
+  ([PR #206](https://github.com/the-guild-org/apollo-angular/pull/206))
 - Support `es6` modules and `tree-shaking`
   ([PR #151](https://github.com/the-guild-org/apollo-angular/pull/151),
   [PR #206](https://github.com/the-guild-org/apollo-angular/pull/206))
@@ -669,7 +698,8 @@ Behaves the same as the `ObservableQuery` of `apollo-client`.
 ## v0.6.0
 
 - Added support for ApolloClient `v0.5.X` ([PR #])
-- Added `subscribeToMore` function ([PR](https://github.com/the-guild-org/apollo-client-rxjs/pull/5))
+- Added `subscribeToMore` function
+  ([PR](https://github.com/the-guild-org/apollo-client-rxjs/pull/5))
 - **BREAKING CHANGE** No no longer support ApolloClient `v0.4.X`
 - **BREAKING CHANGE** Removed `Apollo` decorator (use `Angular2Apollo` service)
 - **BREAKING CHANGE** Removed `ApolloQueryPipe` (use `SelectPipe` instead)
