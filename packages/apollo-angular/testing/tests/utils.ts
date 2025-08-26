@@ -1,6 +1,7 @@
 import { DocumentNode } from 'graphql';
-import { OperationVariables } from '@apollo/client';
-import type { ApolloLink } from '@apollo/client/link';
+import { Observable } from 'rxjs';
+import { ApolloClient, execute, InMemoryCache, OperationVariables } from '@apollo/client';
+import { ApolloLink } from '@apollo/client/link';
 
 export function buildOperationForLink(
   document: DocumentNode,
@@ -11,4 +12,21 @@ export function buildOperationForLink(
     variables,
     context: {},
   };
+}
+
+export function createDefaultExecuteContext(): ApolloLink.ExecuteContext {
+  return {
+    client: new ApolloClient({
+      cache: new InMemoryCache(),
+      link: ApolloLink.empty(),
+    }),
+  };
+}
+
+export function executeWithDefaultContext(
+  link: ApolloLink,
+  request: ApolloLink.Request,
+  context: ApolloLink.ExecuteContext = createDefaultExecuteContext(),
+): Observable<ApolloLink.Result> {
+  return execute(link, request, context);
 }
