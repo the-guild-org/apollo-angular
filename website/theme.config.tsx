@@ -2,7 +2,7 @@
 import { defineConfig, PRODUCTS } from '@theguild/components';
 
 export default defineConfig({
-  docsRepositoryBase: 'https://github.com/Ecodev/apollo-angular/tree/master/website',
+  docsRepositoryBase: 'https://github.com/the-guild-org/apollo-angular/tree/master/website',
   main({ children }) {
     return <>{children}</>;
   },

@@ -1,8 +1,8 @@
 blank_issues_enabled: false
 contact_links:
   - name: Feature Request
-    url: https://github.com/Ecodev/apollo-angular/discussions/new
+    url: https://github.com/the-guild-org/apollo-angular/discussions/new
     about: Request and discuss a feature
   - name: Ask a Question
-    url: https://github.com/Ecodev/apollo-angular/discussions/new
+    url: https://github.com/the-guild-org/apollo-angular/discussions/new
     about: Ask questions and discuss with other community members

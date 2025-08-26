@@ -5,7 +5,7 @@
   "description": "Use your GraphQL data in your Angular app, with the Apollo Client",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Ecodev/apollo-angular",
+    "url": "https://github.com/the-guild-org/apollo-angular",
     "directory": "packages/apollo-angular"
   },
   "homepage": "https://www.apollo-angular.com/",
