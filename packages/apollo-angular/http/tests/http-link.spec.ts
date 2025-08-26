@@ -4,13 +4,25 @@ import { afterEach, beforeEach, describe, expect, test } from 'vitest';
 import { HttpHeaders, provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { ApolloLink, execute, gql, InMemoryCache } from "@apollo/client";
+import {
+  ApolloClient,
+  ApolloLink,
+  execute as executeLink,
+  gql,
+  InMemoryCache,
+} from '@apollo/client';
 import { Apollo } from '../../src';
 import { HttpLink } from '../src/http-link';
 
 const noop = () => {
   //
 };
+
+function execute(link: ApolloLink, request: ApolloLink.Request) {
+  return executeLink(link, request, {
+    client: new ApolloClient({ cache: new InMemoryCache(), link: ApolloLink.empty() }),
+  });
+}
 
 describe('HttpLink', () => {
   let httpLink: HttpLink;

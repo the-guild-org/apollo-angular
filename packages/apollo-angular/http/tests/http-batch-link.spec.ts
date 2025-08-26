@@ -2,12 +2,24 @@ import { afterEach, beforeEach, describe, expect, test } from 'vitest';
 import { HttpHeaders, provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { ApolloLink, execute, gql } from "@apollo/client";
+import {
+  ApolloClient,
+  ApolloLink,
+  execute as executeLink,
+  gql,
+  InMemoryCache,
+} from '@apollo/client';
 import { HttpBatchLink } from '../src/http-batch-link';
 
 const noop = () => {
   //
 };
+
+function execute(link: ApolloLink, request: ApolloLink.Request) {
+  return executeLink(link, request, {
+    client: new ApolloClient({ cache: new InMemoryCache(), link: ApolloLink.empty() }),
+  });
+}
 
 describe('HttpBatchLink', () => {
   let httpLink: HttpBatchLink;
@@ -534,7 +546,6 @@ describe('HttpBatchLink', () => {
         variables: {
           first: 5,
         },
-        operationName: 'op1',
       }).subscribe(noop);
       execute(link, {
         query: gql`
@@ -544,7 +555,6 @@ describe('HttpBatchLink', () => {
             }
           }
         `,
-        operationName: 'op2',
       }).subscribe(noop);
 
       setTimeout(() => {
@@ -571,7 +581,8 @@ describe('HttpBatchLink', () => {
     new Promise<void>(done => {
       const link = httpLink.create({
         uri: 'graphql',
-        batchKey: (operation: ApolloLink.Operation) => operation.getContext().uri || 'graphql',
+        batchKey: (operation: ApolloLink.Operation) =>
+          (operation.getContext().uri as string) || 'graphql',
       });
 
       execute(link, {
@@ -582,7 +593,6 @@ describe('HttpBatchLink', () => {
             }
           }
         `,
-        operationName: 'op1',
       }).subscribe(noop);
 
       execute(link, {
@@ -593,7 +603,6 @@ describe('HttpBatchLink', () => {
             }
           }
         `,
-        operationName: 'op2',
         context: {
           uri: 'gql',
         },
@@ -639,7 +648,6 @@ describe('HttpBatchLink', () => {
             }
           }
         `,
-        operationName: 'op1',
       }).subscribe(noop);
 
       execute(link, {
@@ -650,7 +658,6 @@ describe('HttpBatchLink', () => {
             }
           }
         `,
-        operationName: 'op2',
         context: {
           uri: 'gql',
         },
@@ -698,7 +705,6 @@ describe('HttpBatchLink', () => {
             }
           }
         `,
-        operationName: 'op1',
       }).subscribe(noop);
 
       execute(link, {
@@ -709,7 +715,6 @@ describe('HttpBatchLink', () => {
             }
           }
         `,
-        operationName: 'op2',
         context: {
           skipBatching: true,
         },
