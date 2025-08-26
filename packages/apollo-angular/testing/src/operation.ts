@@ -20,7 +20,7 @@ export class TestOperation<T = { [key: string]: any }> {
       const fetchResult = result ? { ...result } : result;
       this.observer.next(fetchResult);
 
-      if (this.operation.operationType === OperationTypeNode.SUBSCRIPTION) {
+      if (this.operation.operationType !== OperationTypeNode.SUBSCRIPTION) {
         this.complete();
       }
     }
