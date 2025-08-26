@@ -1,18 +1,19 @@
 import { FormattedExecutionResult, GraphQLError, Kind, OperationTypeNode } from 'graphql';
 import { Observer } from 'rxjs';
-import { ApolloError, FetchResult, Operation as LinkOperation } from '@apollo/client/core';
+import { ApolloLink } from "@apollo/client";
+import { ApolloError } from "@apollo/client/v4-migration";
 import { getMainDefinition } from '@apollo/client/utilities';
 
 const isApolloError = (err: any): err is ApolloError => err && err.hasOwnProperty('graphQLErrors');
 
-export type Operation = LinkOperation & {
+export type Operation = ApolloLink.Operation & {
   clientName: string;
 };
 
 export class TestOperation<T = { [key: string]: any }> {
   constructor(
     public readonly operation: Operation,
-    private readonly observer: Observer<FetchResult<T>>,
+    private readonly observer: Observer<ApolloLink.Result<T>>,
   ) {}
 
   public flush(result: FormattedExecutionResult<T> | ApolloError): void {

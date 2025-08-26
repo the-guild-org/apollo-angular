@@ -1,11 +1,6 @@
 import { Apollo } from 'apollo-angular';
 import { Inject, InjectionToken, NgModule, Optional } from '@angular/core';
-import {
-  ApolloCache,
-  ApolloLink,
-  InMemoryCache,
-  Operation as LinkOperation,
-} from '@apollo/client/core';
+import { ApolloCache, ApolloLink, InMemoryCache } from "@apollo/client";
 import { ApolloTestingBackend } from './backend';
 import { ApolloTestingController } from './controller';
 import { Operation } from './operation';
@@ -24,7 +19,7 @@ export const APOLLO_TESTING_CLIENTS = new InjectionToken<string[]>(
   'apollo-angular/testing named clients',
 );
 
-function addClient(name: string, op: LinkOperation): Operation {
+function addClient(name: string, op: ApolloLink.Operation): Operation {
   (op as Operation).clientName = name;
 
   return op as Operation;

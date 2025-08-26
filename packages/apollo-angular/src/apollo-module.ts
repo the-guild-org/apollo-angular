@@ -1,11 +1,11 @@
 import { Provider } from '@angular/core';
-import { ApolloClientOptions } from '@apollo/client/core';
+import { ApolloClient } from "@apollo/client";
 import { Apollo } from './apollo';
 import { APOLLO_FLAGS, APOLLO_NAMED_OPTIONS, APOLLO_OPTIONS } from './tokens';
 import { Flags, NamedOptions } from './types';
 
 export function provideApollo<TCacheShape = any>(
-  optionsFactory: () => ApolloClientOptions<TCacheShape>,
+  optionsFactory: () => ApolloClient.Options<TCacheShape>,
   flags: Flags = {},
 ): Provider {
   return [

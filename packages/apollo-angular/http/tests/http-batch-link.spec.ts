@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, test } from 'vitest';
 import { HttpHeaders, provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { ApolloLink, execute, gql, Operation } from '@apollo/client/core';
+import { ApolloLink, execute, gql } from "@apollo/client";
 import { HttpBatchLink } from '../src/http-batch-link';
 
 const noop = () => {
@@ -571,7 +571,7 @@ describe('HttpBatchLink', () => {
     new Promise<void>(done => {
       const link = httpLink.create({
         uri: 'graphql',
-        batchKey: (operation: Operation) => operation.getContext().uri || 'graphql',
+        batchKey: (operation: ApolloLink.Operation) => operation.getContext().uri || 'graphql',
       });
 
       execute(link, {

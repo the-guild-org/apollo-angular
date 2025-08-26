@@ -2,14 +2,14 @@ import { print } from 'graphql';
 import { Observable } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { ApolloLink, FetchResult, Operation } from '@apollo/client/core';
+import { ApolloLink } from "@apollo/client";
 import { pick } from './http-batch-link';
 import { Body, Context, OperationPrinter, Options, Request } from './types';
 import { createHeadersWithClientAwareness, fetch, mergeHeaders } from './utils';
 
 // XXX find a better name for it
 export class HttpLinkHandler extends ApolloLink {
-  public requester: (operation: Operation) => Observable<FetchResult> | null;
+  public requester: (operation: ApolloLink.Operation) => Observable<ApolloLink.Result> | null;
   private print: OperationPrinter = print;
 
   constructor(
@@ -22,7 +22,7 @@ export class HttpLinkHandler extends ApolloLink {
       this.print = this.options.operationPrinter;
     }
 
-    this.requester = (operation: Operation) =>
+    this.requester = (operation: ApolloLink.Operation) =>
       new Observable((observer: any) => {
         const context: Context = operation.getContext();
 
@@ -85,7 +85,7 @@ export class HttpLinkHandler extends ApolloLink {
       });
   }
 
-  public request(op: Operation): Observable<FetchResult> | null {
+  public request(op: ApolloLink.Operation): Observable<ApolloLink.Result> | null {
     return this.requester(op);
   }
 }

@@ -1,6 +1,6 @@
 import { Observable } from 'rxjs';
 import { describe, expect, test, vi } from 'vitest';
-import { ApolloLink, execute, FetchResult, gql, Operation } from '@apollo/client/core';
+import { ApolloLink, execute, gql } from "@apollo/client";
 import { createPersistedQueryLink } from '../src';
 
 const query = gql`
@@ -24,8 +24,8 @@ class MockLink extends ApolloLink {
       : data;
   }
 
-  public request(operation: Operation) {
-    return new Observable<FetchResult>(observer => {
+  public request(operation: ApolloLink.Operation) {
+    return new Observable<ApolloLink.Result>(observer => {
       const request: any = {};
 
       if (operation.getContext().includeQuery) {
@@ -55,7 +55,7 @@ describe('createPersistedQueryLink', () => {
         query,
       }).subscribe(() => {
         const firstReq = spyRequester.calls[0][0] as any;
-        const secondOp = spyRequest.calls[1][0] as Operation;
+        const secondOp = spyRequest.calls[1][0] as ApolloLink.Operation;
         const secondReq = spyRequester.calls[1][0] as any;
         const secondContext = secondOp.getContext();
 
@@ -87,7 +87,7 @@ describe('createPersistedQueryLink', () => {
       execute(link, {
         query,
       }).subscribe(() => {
-        const op = spyRequest.calls[1][0] as Operation;
+        const op = spyRequest.calls[1][0] as ApolloLink.Operation;
         const ctx = op.getContext();
 
         // should be compatible with apollo-angular-link-http

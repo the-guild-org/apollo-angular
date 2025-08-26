@@ -1,8 +1,8 @@
 import { HttpHeaders } from '@angular/common/http';
-import { ApolloLink, NextLink, Operation } from '@apollo/client/core';
+import { ApolloLink } from "@apollo/client";
 
 export const httpHeaders = () => {
-  return new ApolloLink((operation: Operation, forward: NextLink) => {
+  return new ApolloLink((operation: ApolloLink.Operation, forward: ApolloLink.ForwardFunction) => {
     const { getContext, setContext } = operation;
     const context = getContext();
 

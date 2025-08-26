@@ -1,7 +1,7 @@
 import { DocumentNode, print } from 'graphql';
 import { Observable, Observer } from 'rxjs';
 import { Injectable } from '@angular/core';
-import { FetchResult } from '@apollo/client/core';
+import { ApolloLink } from "@apollo/client";
 import { ApolloTestingController, MatchOperation } from './controller';
 import { Operation, TestOperation } from './operation';
 
@@ -23,7 +23,7 @@ export class ApolloTestingBackend implements ApolloTestingController {
   /**
    * Handle an incoming operation by queueing it in the list of open operations.
    */
-  public handle(op: Operation): Observable<FetchResult> {
+  public handle(op: Operation): Observable<ApolloLink.Result> {
     return new Observable((observer: Observer<any>) => {
       const testOp = new TestOperation(op, observer);
       this.open.push(testOp);

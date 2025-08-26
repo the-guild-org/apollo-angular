@@ -2,8 +2,8 @@ import { print } from 'graphql';
 import { Observable } from 'rxjs';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { ApolloLink, FetchResult, Operation } from '@apollo/client/core';
-import { BatchHandler, BatchLink } from '@apollo/client/link/batch';
+import { ApolloLink } from "@apollo/client";
+import { BatchLink } from '@apollo/client/link/batch';
 import { BatchOptions, Body, Context, OperationPrinter, Options, Request } from './types';
 import { createHeadersWithClientAwareness, fetch, mergeHeaders, prioritize } from './utils';
 
@@ -48,7 +48,7 @@ export class HttpBatchLinkHandler extends ApolloLink {
       this.print = this.options.operationPrinter;
     }
 
-    const batchHandler: BatchHandler = (operations: Operation[]) => {
+    const batchHandler: BatchLink.BatchHandler = (operations: ApolloLink.Operation[]) => {
       return new Observable((observer: any) => {
         const body = this.createBody(operations);
         const headers = this.createHeaders(operations);
@@ -86,7 +86,7 @@ export class HttpBatchLinkHandler extends ApolloLink {
 
     const batchKey =
       options.batchKey ||
-      ((operation: Operation) => {
+      ((operation: ApolloLink.Operation) => {
         return this.createBatchKey(operation);
       });
 
@@ -99,7 +99,7 @@ export class HttpBatchLinkHandler extends ApolloLink {
   }
 
   private createOptions(
-    operations: Operation[],
+    operations: ApolloLink.Operation[],
   ): Required<Pick<Options, 'method' | 'uri' | 'withCredentials'>> {
     const context: Context = operations[0].getContext();
 
@@ -110,7 +110,7 @@ export class HttpBatchLinkHandler extends ApolloLink {
     };
   }
 
-  private createBody(operations: Operation[]): Body[] {
+  private createBody(operations: ApolloLink.Operation[]): Body[] {
     return operations.map(operation => {
       const includeExtensions = prioritize(
         operation.getContext().includeExtensions,
@@ -140,9 +140,9 @@ export class HttpBatchLinkHandler extends ApolloLink {
     });
   }
 
-  private createHeaders(operations: Operation[]): HttpHeaders {
+  private createHeaders(operations: ApolloLink.Operation[]): HttpHeaders {
     return operations.reduce(
-      (headers: HttpHeaders, operation: Operation) => {
+      (headers: HttpHeaders, operation: ApolloLink.Operation) => {
         return mergeHeaders(headers, operation.getContext().headers);
       },
       createHeadersWithClientAwareness({
@@ -152,7 +152,7 @@ export class HttpBatchLinkHandler extends ApolloLink {
     );
   }
 
-  private createBatchKey(operation: Operation): string {
+  private createBatchKey(operation: ApolloLink.Operation): string {
     const context: Context & { skipBatching?: boolean } = operation.getContext();
 
     if (context.skipBatching) {
@@ -171,7 +171,7 @@ export class HttpBatchLinkHandler extends ApolloLink {
     return prioritize(context.uri, this.options.uri, '') + opts;
   }
 
-  public request(op: Operation): Observable<FetchResult> | null {
+  public request(op: ApolloLink.Operation): Observable<ApolloLink.Result> | null {
     return this.batcher.request(op);
   }
 }
