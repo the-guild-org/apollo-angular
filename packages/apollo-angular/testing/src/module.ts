@@ -1,15 +1,13 @@
 import { Apollo } from 'apollo-angular';
 import { Inject, InjectionToken, NgModule, Optional } from '@angular/core';
-import { ApolloCache, ApolloLink, InMemoryCache } from "@apollo/client";
+import { ApolloCache, ApolloLink, InMemoryCache } from '@apollo/client';
 import { ApolloTestingBackend } from './backend';
 import { ApolloTestingController } from './controller';
 import { Operation } from './operation';
 
-export type NamedCaches = Record<string, ApolloCache<any> | undefined | null>;
+export type NamedCaches = Record<string, ApolloCache | undefined | null>;
 
-export const APOLLO_TESTING_CACHE = new InjectionToken<ApolloCache<any>>(
-  'apollo-angular/testing cache',
-);
+export const APOLLO_TESTING_CACHE = new InjectionToken<ApolloCache>('apollo-angular/testing cache');
 
 export const APOLLO_TESTING_NAMED_CACHE = new InjectionToken<NamedCaches>(
   'apollo-angular/testing named cache',
@@ -41,12 +39,12 @@ export class ApolloTestingModuleCore {
     namedClients?: string[],
     @Optional()
     @Inject(APOLLO_TESTING_CACHE)
-    cache?: ApolloCache<any>,
+    cache?: ApolloCache,
     @Optional()
     @Inject(APOLLO_TESTING_NAMED_CACHE)
     namedCaches?: NamedCaches,
   ) {
-    function createOptions(name: string, c?: ApolloCache<any> | null) {
+    function createOptions(name: string, c?: ApolloCache | null) {
       return {
         connectToDevTools: false,
         link: new ApolloLink(operation => backend.handle(addClient(name, operation))),
