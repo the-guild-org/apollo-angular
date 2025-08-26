@@ -84,4 +84,10 @@ export class QueryRef<TData, TVariables extends OperationVariables = EmptyObject
   ): ReturnType<ObservableQuery<TData, TVariables>['setVariables']> {
     return this.obsQuery.setVariables(variables);
   }
+
+  public reobserve(
+    options: ObservableQuery.Options<TData, TVariables>,
+  ): ReturnType<ObservableQuery<TData, TVariables>['reobserve']> {
+    return this.obsQuery.reobserve(options);
+  }
 }
