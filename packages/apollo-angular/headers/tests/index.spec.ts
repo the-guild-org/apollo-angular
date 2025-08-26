@@ -1,7 +1,7 @@
 import { of } from 'rxjs';
 import { describe, expect, test } from 'vitest';
 import { HttpHeaders } from '@angular/common/http';
-import { ApolloLink, execute, gql } from "@apollo/client";
+import { ApolloClient, ApolloLink, execute, gql, InMemoryCache } from '@apollo/client';
 import { httpHeaders } from '../src';
 
 const query = gql`
@@ -13,6 +13,8 @@ const query = gql`
   }
 `;
 const data = { heroes: [{ name: 'Foo', __typename: 'Hero' }] };
+
+const dummyClient = new ApolloClient({ cache: new InMemoryCache(), link: ApolloLink.empty() });
 
 describe('httpHeaders', () => {
   test('should turn object into HttpHeaders', () =>
@@ -30,14 +32,18 @@ describe('httpHeaders', () => {
 
       const link = headersLink.concat(mockLink);
 
-      execute(link, {
-        query,
-        context: {
-          headers: {
-            Authorization: 'Bearer Foo',
+      execute(
+        link,
+        {
+          query,
+          context: {
+            headers: {
+              Authorization: 'Bearer Foo',
+            },
           },
         },
-      }).subscribe(result => {
+        { client: dummyClient },
+      ).subscribe(result => {
         expect(result.data).toEqual(data);
         done();
       });
@@ -57,9 +63,7 @@ describe('httpHeaders', () => {
 
       const link = headersLink.concat(mockLink);
 
-      execute(link, {
-        query,
-      }).subscribe(result => {
+      execute(link, { query }, { client: dummyClient }).subscribe(result => {
         expect(result.data).toEqual(data);
         done();
       });
