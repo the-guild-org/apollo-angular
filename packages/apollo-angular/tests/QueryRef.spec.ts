@@ -23,7 +23,6 @@ const heroesOperation = {
     }
   `,
   variables: {},
-  operationName: 'allHeroes',
 };
 
 // tslint:disable:variable-name
@@ -66,8 +65,10 @@ describe('QueryRef', () => {
     new Promise<void>(done => {
       queryRef.valueChanges.subscribe({
         next: result => {
-          expect(result.data).toBeDefined();
-          done();
+          if (result.dataState === 'complete') {
+            expect(result.data).toBeDefined();
+            done();
+          }
         },
         error: e => {
           throw e;
@@ -92,9 +93,11 @@ describe('QueryRef', () => {
         next: result => {
           calls++;
 
-          expect(result.data).toBeDefined();
+          if (result.dataState === 'complete') {
+            expect(result.data).toBeDefined();
+          }
 
-          if (calls === 2) {
+          if (calls === 4) {
             done();
           }
         },
@@ -120,9 +123,10 @@ describe('QueryRef', () => {
         next: result => {
           calls++;
 
-          if (calls === 1) {
+          // loading -> data; refetch() -> loading -> data
+          if (calls === 2) {
             expect(result.heroes.length).toBe(1);
-          } else if (calls === 2) {
+          } else if (calls === 4) {
             expect(result.heroes.length).toBe(2);
 
             done();
@@ -160,10 +164,14 @@ describe('QueryRef', () => {
       obs.pipe(map(result => result.data)).subscribe({
         next: result => {
           calls++;
-          const currentResult = queryRef.getCurrentResult();
-          expect(currentResult.data.heroes.length).toBe(result.heroes.length);
 
-          if (calls === 2) {
+          const currentResult = queryRef.getCurrentResult();
+
+          if (currentResult.dataState === 'complete') {
+            expect(currentResult.data.heroes.length).toBe(result.heroes.length);
+          }
+
+          if (calls === 4) {
             done();
           }
         },
