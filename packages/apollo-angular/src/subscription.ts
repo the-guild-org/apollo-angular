@@ -1,7 +1,7 @@
 import type { DocumentNode } from 'graphql';
 import type { Observable } from 'rxjs';
 import { Injectable } from '@angular/core';
-import type { OperationVariables, TypedDocumentNode, ApolloLink } from "@apollo/client";
+import type { ApolloLink, OperationVariables, TypedDocumentNode } from '@apollo/client';
 import { Apollo } from './apollo';
 import { EmptyObject, ExtraSubscriptionOptions, SubscriptionOptionsAlone } from './types';
 
@@ -20,7 +20,7 @@ export abstract class Subscription<T = any, V extends OperationVariables = Empty
     return this.apollo.use(this.client).subscribe<T, V>(
       {
         ...options,
-        variables,
+        variables: variables as V,
         query: this.document,
       },
       extra,

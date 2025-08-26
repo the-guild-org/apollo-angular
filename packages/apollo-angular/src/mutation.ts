@@ -1,7 +1,7 @@
 import type { DocumentNode } from 'graphql';
 import type { Observable } from 'rxjs';
 import { Injectable } from '@angular/core';
-import type { OperationVariables, TypedDocumentNode } from "@apollo/client";
+import type { OperationVariables, TypedDocumentNode } from '@apollo/client';
 import { Apollo } from './apollo';
 import type { EmptyObject, MutationOptionsAlone, MutationResult } from './types';
 
@@ -18,7 +18,7 @@ export abstract class Mutation<T = {}, V extends OperationVariables = EmptyObjec
   ): Observable<MutationResult<T>> {
     return this.apollo.use(this.client).mutate<T, V>({
       ...options,
-      variables,
+      variables: variables as V,
       mutation: this.document,
     });
   }
