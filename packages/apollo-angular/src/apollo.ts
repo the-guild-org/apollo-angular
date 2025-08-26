@@ -31,9 +31,7 @@ export class ApolloBase {
     options: WatchQueryOptions<TVariables, TData>,
   ): QueryRef<TData, TVariables> {
     return new QueryRef<TData, TVariables>(
-      this.ensureClient().watchQuery<TData, TVariables>({
-        ...options,
-      }),
+      this.ensureClient().watchQuery<TData, TVariables>({ ...options }),
       this.ngZone,
     );
   }
