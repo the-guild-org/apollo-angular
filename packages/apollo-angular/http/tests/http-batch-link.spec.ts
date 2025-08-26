@@ -3,6 +3,7 @@ import { HttpHeaders, provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { ApolloLink, gql } from '@apollo/client';
+import { getOperationName } from '@apollo/client/utilities/internal';
 import { HttpBatchLink } from '../src/http-batch-link';
 import { executeWithDefaultContext as execute } from './utils';
 
@@ -37,7 +38,6 @@ describe('HttpBatchLink', () => {
             }
           }
         `,
-        operationName: 'heroes',
         variables: {},
       };
       const data = {
@@ -72,7 +72,6 @@ describe('HttpBatchLink', () => {
             }
           }
         `,
-        operationName: 'heroes',
         variables: {},
       };
 
@@ -97,7 +96,6 @@ describe('HttpBatchLink', () => {
             }
           }
         `,
-        operationName: 'heroes-1',
         variables: {},
       };
       const op2 = {
@@ -108,7 +106,6 @@ describe('HttpBatchLink', () => {
             }
           }
         `,
-        operationName: 'heroes-2',
         variables: {},
       };
 
@@ -117,8 +114,8 @@ describe('HttpBatchLink', () => {
 
       setTimeout(() => {
         httpBackend.match(req => {
-          expect(req.body[0].operationName).toEqual(op1.operationName);
-          expect(req.body[1].operationName).toEqual(op2.operationName);
+          expect(req.body[0].operationName).toEqual(getOperationName(op1.query));
+          expect(req.body[1].operationName).toEqual(getOperationName(op2.query));
           done();
           return true;
         });
@@ -136,7 +133,6 @@ describe('HttpBatchLink', () => {
             }
           }
         `,
-        operationName: 'heroes',
         variables: {},
       };
 
@@ -144,7 +140,7 @@ describe('HttpBatchLink', () => {
 
       setTimeout(() => {
         httpBackend.match(req => {
-          expect(req.body[0].operationName).toEqual(op.operationName);
+          expect(req.body[0].operationName).toEqual(getOperationName(op.query));
           expect(req.reportProgress).toEqual(false);
           expect(req.responseType).toEqual('json');
           expect(req.detectContentTypeHeader()).toEqual('application/json');
@@ -165,7 +161,6 @@ describe('HttpBatchLink', () => {
             }
           }
         `,
-        operationName: 'heroes',
         variables: {},
       };
 
@@ -174,7 +169,7 @@ describe('HttpBatchLink', () => {
       setTimeout(() => {
         httpBackend.match(req => {
           expect(req.method).toEqual('POST');
-          expect(req.body[0].operationName).toEqual(op.operationName);
+          expect(req.body[0].operationName).toEqual(getOperationName(op.query));
           expect(req.detectContentTypeHeader()).toEqual('application/json');
           done();
           return true;
@@ -197,7 +192,6 @@ describe('HttpBatchLink', () => {
             }
           }
         `,
-        operationName: 'heroes',
         variables: { up: 'dog' },
         extensions: { what: 'what' },
       };
@@ -746,7 +740,6 @@ describe('HttpBatchLink', () => {
             }
           }
         `,
-        operationName: 'heroes',
         variables: {},
       };
 
