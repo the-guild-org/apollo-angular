@@ -3,8 +3,8 @@ import { mergeMap } from 'rxjs/operators';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { NgZone } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { ApolloLink, InMemoryCache, NetworkStatus } from "@apollo/client";
-import { mockSingleLink } from "@apollo/client/v4-migration";
+import { ApolloLink, InMemoryCache, NetworkStatus } from '@apollo/client';
+import { MockLink } from '@apollo/client/testing';
 import { Apollo, ApolloBase } from '../src/apollo';
 import { gql } from '../src/gql';
 import { ZoneScheduler } from '../src/utils';
@@ -40,7 +40,7 @@ describe('Apollo', () => {
       const apollo = new Apollo(ngZone);
 
       apollo.create({
-        link: mockSingleLink(),
+        link: new MockLink([]),
         cache: new InMemoryCache(),
       });
 
@@ -55,7 +55,7 @@ describe('Apollo', () => {
 
       apollo.create(
         {
-          link: mockSingleLink(),
+          link: new MockLink([]),
           cache: new InMemoryCache(),
         },
         'extra',
@@ -71,7 +71,7 @@ describe('Apollo', () => {
       const apollo = new Apollo(ngZone);
 
       apollo.create({
-        link: mockSingleLink(),
+        link: new MockLink([]),
         cache: new InMemoryCache(),
       });
 
@@ -108,7 +108,7 @@ describe('Apollo', () => {
         const data2 = { heroes: [{ name: 'Bar', __typename: 'Hero' }] };
         const variables2 = { first: 1 };
 
-        const link = mockSingleLink(
+        const link = new MockLink([
           {
             request: { query, variables: variables1 },
             result: { data: data1 },
@@ -117,7 +117,7 @@ describe('Apollo', () => {
             request: { query, variables: variables2 },
             result: { data: data2 },
           },
-        );
+        ]);
 
         const apollo = mockApollo(link, ngZone);
         const options = { query, variables: variables1 };
@@ -166,7 +166,7 @@ describe('Apollo', () => {
         const apollo = new Apollo(ngZone);
 
         apollo.create({
-          link: mockSingleLink(),
+          link: new MockLink([]),
           cache: new InMemoryCache(),
         });
 
@@ -195,7 +195,7 @@ describe('Apollo', () => {
         const apollo = new Apollo(ngZone);
 
         apollo.create({
-          link: mockSingleLink(),
+          link: new MockLink([]),
           cache: new InMemoryCache(),
         });
 
@@ -235,7 +235,7 @@ describe('Apollo', () => {
         const apollo = new Apollo(ngZone);
 
         apollo.create({
-          link: mockSingleLink(),
+          link: new MockLink([]),
           cache: new InMemoryCache(),
         });
 
@@ -278,7 +278,7 @@ describe('Apollo', () => {
 
         // create
         apollo.create<any>({
-          link: mockSingleLink({ request: { query }, result: { data } }),
+          link: new MockLink([{ request: { query }, result: { data } }]),
           cache: new InMemoryCache(),
         });
 
@@ -309,7 +309,7 @@ describe('Apollo', () => {
         const apollo = new Apollo(ngZone);
 
         apollo.create({
-          link: mockSingleLink(),
+          link: new MockLink([]),
           cache: new InMemoryCache(),
         });
 
@@ -353,7 +353,7 @@ describe('Apollo', () => {
         const apollo = new Apollo(ngZone);
 
         apollo.create({
-          link: mockSingleLink(),
+          link: new MockLink([]),
           cache: new InMemoryCache(),
         });
 
@@ -393,7 +393,7 @@ describe('Apollo', () => {
         const apollo = new Apollo(ngZone);
 
         apollo.create({
-          link: mockSingleLink(),
+          link: new MockLink([]),
           cache: new InMemoryCache(),
         });
 
@@ -440,7 +440,7 @@ describe('Apollo', () => {
         };
 
         apollo.create({
-          link: mockSingleLink(
+          link: new MockLink([
             {
               request: op1,
               result: { data: data1 },
@@ -449,7 +449,7 @@ describe('Apollo', () => {
               request: op2,
               result: { data: data2 },
             },
-          ),
+          ]),
           cache: new InMemoryCache(),
         });
 
@@ -493,7 +493,7 @@ describe('Apollo', () => {
 
         // create
         apollo.create<any>({
-          link: mockSingleLink({ request: { query }, result: { data } }),
+          link: new MockLink([{ request: { query }, result: { data } }]),
           cache: new InMemoryCache(),
         });
 
@@ -539,7 +539,7 @@ describe('Apollo', () => {
 
         // create
         apollo.create<any>({
-          link: mockSingleLink({ request: { query }, result: { data } }),
+          link: new MockLink([{ request: { query }, result: { data } }]),
           cache: new InMemoryCache(),
         });
 
@@ -576,7 +576,7 @@ describe('Apollo', () => {
         const apollo = new Apollo(ngZone);
 
         apollo.create({
-          link: mockSingleLink(),
+          link: new MockLink([]),
           cache: new InMemoryCache(),
         });
 
@@ -609,7 +609,7 @@ describe('Apollo', () => {
       const apollo = new Apollo(ngZone);
 
       apollo.create({
-        link: mockSingleLink(),
+        link: new MockLink([]),
         cache: new InMemoryCache(),
       });
 
@@ -628,7 +628,7 @@ describe('Apollo', () => {
       const apollo = new Apollo(ngZone);
 
       apollo.create({
-        link: mockSingleLink(),
+        link: new MockLink([]),
         cache: new InMemoryCache(),
       });
 
@@ -649,7 +649,7 @@ describe('Apollo', () => {
       const apollo = new Apollo(ngZone);
 
       apollo.create({
-        link: mockSingleLink(),
+        link: new MockLink([]),
         cache: new InMemoryCache(),
       });
 
@@ -707,7 +707,7 @@ describe('Apollo', () => {
         const dataMutation = { addHero: BarHero };
         const data2 = { allHeroes: [FooHero, BarHero] };
 
-        const link = mockSingleLink(
+        const link = new MockLink([
           {
             request: { query },
             result: { data: data1 },
@@ -716,7 +716,7 @@ describe('Apollo', () => {
             request: { query: mutation, variables },
             result: { data: dataMutation },
           },
-        );
+        ]);
         const apollo = mockApollo(link, ngZone);
 
         const obs = apollo.watchQuery({ query });
@@ -788,7 +788,7 @@ describe('Apollo', () => {
         const data2 = { allHeroes: [FooHero, OptimisticHero] };
         const data3 = { allHeroes: [FooHero, BarHero] };
 
-        const link = mockSingleLink(
+        const link = new MockLink([
           {
             request: { query },
             result: { data: data1 },
@@ -797,7 +797,7 @@ describe('Apollo', () => {
             request: { query: mutation, variables },
             result: { data: dataMutation },
           },
-        );
+        ]);
         const apollo = mockApollo(link, ngZone);
 
         const obs = apollo.watchQuery({ query });
@@ -865,7 +865,7 @@ describe('Apollo', () => {
 
       // create
       apollo.create<any>({
-        link: mockSingleLink({ request: op, result: { data } }),
+        link: new MockLink([{ request: op, result: { data } }]),
         cache: new InMemoryCache(),
       });
 
@@ -906,7 +906,7 @@ describe('Apollo', () => {
 
       // create
       apollo.create<any>({
-        link: mockSingleLink({ request: { query }, result: { data } }),
+        link: new MockLink([{ request: { query }, result: { data } }]),
         cache: new InMemoryCache(),
       });
 
@@ -967,7 +967,7 @@ describe('Apollo', () => {
 
       // create
       apollo.create<any>({
-        link: mockSingleLink({ request: { query }, result: { data } }),
+        link: new MockLink([{ request: { query }, result: { data } }]),
         cache,
       });
 
@@ -1030,7 +1030,7 @@ describe('Apollo', () => {
 
       // create
       apollo.create<any>({
-        link: mockSingleLink({ request: { query }, result: { data } }),
+        link: new MockLink([{ request: { query }, result: { data } }]),
         cache,
       });
 
@@ -1061,11 +1061,11 @@ describe('Apollo', () => {
   test('should create default client with named options', () => {
     const apollo = new Apollo(ngZone, undefined, {
       default: {
-        link: mockSingleLink(),
+        link: new MockLink([]),
         cache: new InMemoryCache(),
       },
       test: {
-        link: mockSingleLink(),
+        link: new MockLink([]),
         cache: new InMemoryCache(),
       },
     });
@@ -1075,7 +1075,7 @@ describe('Apollo', () => {
   });
 
   test('should remove default client', () => {
-    const apollo = mockApollo(mockSingleLink(), ngZone);
+    const apollo = mockApollo(new MockLink([]), ngZone);
 
     expect(apollo.client).toBeDefined();
 
@@ -1085,10 +1085,10 @@ describe('Apollo', () => {
   });
 
   test('should remove named client', () => {
-    const apollo = mockApollo(mockSingleLink(), ngZone);
+    const apollo = mockApollo(new MockLink([]), ngZone);
 
     apollo.createNamed('test', {
-      link: mockSingleLink(),
+      link: new MockLink([]),
       cache: new InMemoryCache(),
     });
 
