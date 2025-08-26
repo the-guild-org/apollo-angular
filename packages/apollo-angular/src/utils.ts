@@ -1,4 +1,11 @@
-import { Observable, queueScheduler, SchedulerAction, SchedulerLike, Subscription } from 'rxjs';
+import {
+  from,
+  Observable,
+  queueScheduler,
+  SchedulerAction,
+  SchedulerLike,
+  Subscription,
+} from 'rxjs';
 import { map, observeOn, startWith } from 'rxjs/operators';
 import { NgZone } from '@angular/core';
 import type { ApolloQueryResult, FetchResult, ObservableQuery } from '@apollo/client/core';
@@ -60,14 +67,6 @@ export class ZoneScheduler implements SchedulerLike {
   ): Subscription {
     return this.zone.run(() => queueScheduler.schedule(work, delay, state)) as Subscription;
   }
-}
-
-export function fromObservableQuery<TData>(
-  obsQuery: ObservableQuery<TData, any>,
-): Observable<ApolloQueryResult<TData>> {
-  return new Observable(subscriber => {
-    return obsQuery.subscribe(subscriber);
-  });
 }
 
 export function wrapWithZone<T>(obs: Observable<T>, ngZone: NgZone): Observable<T> {
