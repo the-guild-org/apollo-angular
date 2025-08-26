@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, test } from 'vitest';
-import { ApolloLink, execute, gql } from "@apollo/client";
+import { ApolloLink, gql } from '@apollo/client';
 import { ApolloTestingBackend } from '../src/backend';
-import { buildOperationForLink } from './utils';
+import { buildOperationForLink, executeWithDefaultContext as execute } from './utils';
 
 const testQuery = gql`
   query allHeroes {
