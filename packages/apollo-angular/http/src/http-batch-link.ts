@@ -2,7 +2,7 @@ import { print } from 'graphql';
 import { Observable } from 'rxjs';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { ApolloLink } from "@apollo/client";
+import { ApolloLink } from '@apollo/client';
 import { BatchLink } from '@apollo/client/link/batch';
 import { BatchOptions, Body, Context, OperationPrinter, Options, Request } from './types';
 import { createHeadersWithClientAwareness, fetch, mergeHeaders, prioritize } from './utils';
@@ -171,8 +171,11 @@ export class HttpBatchLinkHandler extends ApolloLink {
     return prioritize(context.uri, this.options.uri, '') + opts;
   }
 
-  public request(op: ApolloLink.Operation): Observable<ApolloLink.Result> | null {
-    return this.batcher.request(op);
+  public request(
+    op: ApolloLink.Operation,
+    forward: ApolloLink.ForwardFunction,
+  ): Observable<ApolloLink.Result> {
+    return this.batcher.request(op, forward);
   }
 }
 
