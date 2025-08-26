@@ -1,6 +1,6 @@
 import { Observable } from 'rxjs';
 import { Inject, Injectable, NgZone, Optional } from '@angular/core';
-import type { ApolloCache, ObservableQuery, OperationVariables } from '@apollo/client';
+import type { ApolloCache, OperationVariables } from '@apollo/client';
 import { ApolloClient } from '@apollo/client';
 import { QueryRef } from './query-ref';
 import { APOLLO_FLAGS, APOLLO_NAMED_OPTIONS, APOLLO_OPTIONS } from './tokens';
@@ -33,7 +33,7 @@ export class ApolloBase {
     return new QueryRef<TData, TVariables>(
       this.ensureClient().watchQuery<TData, TVariables>({
         ...options,
-      }) as ObservableQuery<TData, TVariables>,
+      }),
       this.ngZone,
     );
   }
