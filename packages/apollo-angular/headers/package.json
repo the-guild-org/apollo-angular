@@ -2,11 +2,13 @@
   "name": "apollo-angular/headers",
   "type": "module",
   "description": "An Apollo Link to easily transform headers from being a key-value object to an instance of HttpHeaders. Great combination with apollo-angular-link-http.",
-  "author": {
-    "name": "Kamil Kisiela",
-    "email": "kamil.kisiela@gmail.com",
-    "url": "https://github.com/kamilkisiela/"
-  },
+  "contributors": [
+    {
+      "name": "Kamil Kisiela",
+      "email": "kamil.kisiela@gmail.com",
+      "url": "https://github.com/kamilkisiela/"
+    }
+  ],
   "license": "MIT",
   "module": "../build/fesm2020/ngApolloLinkHeaders.mjs",
   "typings": "../build/headers/index.d.ts",

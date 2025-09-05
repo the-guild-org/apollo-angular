@@ -10,11 +10,13 @@ jobs:
       contents: write
       id-token: write
       packages: write
+      issues: write
+      pull-requests: write
     uses: the-guild-org/shared-config/.github/workflows/release-stable.yml@main
     with:
       createGithubReleases: true
       releaseScript: release
-      nodeVersion: 18
+      nodeVersion: 22
     secrets:
-      githubToken: ${{ secrets.GUILD_BOT_TOKEN }}
+      githubToken: ${{ secrets.GITHUB_TOKEN }}
       npmToken: ${{ secrets.NPM_TOKEN }}

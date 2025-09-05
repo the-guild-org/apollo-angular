@@ -2,7 +2,13 @@
   "name": "apollo-angular/testing",
   "type": "module",
   "description": "A testing backend for Apollo",
-  "author": "Kamil Kisiela <kamil.kisiela@gmail.com> (http://github.com/kamilkisiela/)",
+  "contributors": [
+    {
+      "name": "Kamil Kisiela",
+      "email": "kamil.kisiela@gmail.com",
+      "url": "https://github.com/kamilkisiela/"
+    }
+  ],
   "license": "MIT",
   "module": "../build/fesm2020/ngApolloTesting.mjs",
   "typings": "../build/testing/index.d.ts",

@@ -2,11 +2,13 @@
   "name": "apollo-angular/http",
   "type": "module",
   "description": "An Apollo Link to allow sending an http request per operation.",
-  "author": {
-    "name": "Kamil Kisiela",
-    "email": "kamil.kisiela@gmail.com",
-    "url": "https://github.com/kamilkisiela/"
-  },
+  "contributors": [
+    {
+      "name": "Kamil Kisiela",
+      "email": "kamil.kisiela@gmail.com",
+      "url": "https://github.com/kamilkisiela/"
+    }
+  ],
   "license": "MIT",
   "module": "../build/fesm2020/ngApolloLinkHttp.mjs",
   "typings": "../build/http/index.d.ts",

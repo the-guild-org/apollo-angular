@@ -9,10 +9,9 @@ jobs:
     steps:
       - uses: actions/checkout@master
 
-      - name: Use Node.js 18
-        uses: actions/setup-node@master
+      - uses: actions/setup-node@master
         with:
-          node-version: 18
+          node-version: 22
 
       - uses: actions/cache@v4
         name: Cache node_modules
@@ -59,10 +58,9 @@ jobs:
     steps:
       - uses: actions/checkout@master
 
-      - name: Use Node.js 18
-        uses: actions/setup-node@master
+      - uses: actions/setup-node@master
         with:
-          node-version: 18
+          node-version: 22
 
       - uses: actions/cache@v4
         name: Cache node_modules
@@ -89,10 +87,9 @@ jobs:
     steps:
       - uses: actions/checkout@master
 
-      - name: Use Node.js 18
-        uses: actions/setup-node@master
+      - uses: actions/setup-node@master
         with:
-          node-version: 18
+          node-version: 22
 
       - uses: actions/cache@v4
         name: Cache node_modules
@@ -115,9 +112,15 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        angular_version: [17, 18, 19]
-        graphql_version: [15, 16]
-        node_version: [18, 20]
+        angular_version: [18, 19, 20]
+        graphql_version: [16]
+        node_version: [20, 22, 24]
+        exclude:
+          - angular_version: 18
+            node_version: 24
+
+          - angular_version: 19
+            node_version: 24
     steps:
       - name: Use Node.js ${{ matrix.node_version }}
         uses: actions/setup-node@master
