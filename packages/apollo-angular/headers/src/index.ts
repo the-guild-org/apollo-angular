@@ -1,5 +1,5 @@
 import { HttpHeaders } from '@angular/common/http';
-import { ApolloLink } from '@apollo/client';
+import { ApolloLink } from '@apollo/client/core';
 
 export const httpHeaders = () => {
   return new ApolloLink((operation: ApolloLink.Operation, forward: ApolloLink.ForwardFunction) => {

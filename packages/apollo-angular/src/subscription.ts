@@ -1,7 +1,7 @@
 import type { DocumentNode } from 'graphql';
 import type { Observable } from 'rxjs';
 import { Injectable } from '@angular/core';
-import type { ApolloClient, OperationVariables, TypedDocumentNode } from '@apollo/client';
+import type { ApolloClient, OperationVariables, TypedDocumentNode } from '@apollo/client/core';
 import { Apollo } from './apollo';
 import { EmptyObject, ExtraSubscriptionOptions, SubscriptionOptionsAlone } from './types';
 

@@ -10,7 +10,7 @@ import {
   renderModule,
   ServerModule,
 } from '@angular/platform-server';
-import { gql } from '@apollo/client';
+import { gql } from '@apollo/client/core';
 import { HttpLink } from '../src/http-link';
 import { executeWithDefaultContext as execute } from './utils';
 

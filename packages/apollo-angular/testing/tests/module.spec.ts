@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import { TestBed } from '@angular/core/testing';
-import { gql, InMemoryCache } from '@apollo/client';
+import { gql, InMemoryCache } from '@apollo/client/core';
 import { Apollo } from '../../src';
 import { APOLLO_TESTING_CACHE, ApolloTestingController, ApolloTestingModule } from '../src';
 

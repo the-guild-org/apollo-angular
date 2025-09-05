@@ -1,7 +1,7 @@
 import { of } from 'rxjs';
 import { describe, expect, test } from 'vitest';
 import { HttpHeaders } from '@angular/common/http';
-import { ApolloClient, ApolloLink, execute, gql, InMemoryCache } from '@apollo/client';
+import { ApolloClient, ApolloLink, execute, gql, InMemoryCache } from '@apollo/client/core';
 import { httpHeaders } from '../src';
 
 const query = gql`

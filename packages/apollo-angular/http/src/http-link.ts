@@ -2,7 +2,7 @@ import { print } from 'graphql';
 import { Observable } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { ApolloLink } from '@apollo/client';
+import { ApolloLink } from '@apollo/client/core';
 import { pick } from './http-batch-link';
 import { Body, Context, OperationPrinter, Options, Request } from './types';
 import { createHeadersWithClientAwareness, fetch, mergeHeaders } from './utils';

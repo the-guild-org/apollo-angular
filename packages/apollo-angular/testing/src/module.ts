@@ -1,6 +1,6 @@
 import { Apollo } from 'apollo-angular';
 import { Inject, InjectionToken, NgModule, Optional } from '@angular/core';
-import { ApolloCache, ApolloLink, InMemoryCache } from '@apollo/client';
+import { ApolloCache, ApolloLink, InMemoryCache } from '@apollo/client/core';
 import { ApolloTestingBackend } from './backend';
 import { ApolloTestingController } from './controller';
 import { Operation } from './operation';

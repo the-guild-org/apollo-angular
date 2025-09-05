@@ -6,7 +6,7 @@ import {
   execute as executeLink,
   gql,
   InMemoryCache,
-} from '@apollo/client';
+} from '@apollo/client/core';
 import { createPersistedQueryLink } from '../src';
 
 const query = gql`

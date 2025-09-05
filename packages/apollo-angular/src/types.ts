@@ -4,7 +4,7 @@ import type {
   ApolloLink,
   OperationVariables,
   TypedDocumentNode,
-} from '@apollo/client';
+} from '@apollo/client/core';
 
 export type EmptyObject = {
   [key: string]: any;

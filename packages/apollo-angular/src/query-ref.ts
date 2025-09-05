@@ -6,7 +6,7 @@ import type {
   ObservableQuery,
   OperationVariables,
   TypedDocumentNode,
-} from '@apollo/client';
+} from '@apollo/client/core';
 import { EmptyObject } from './types';
 import { wrapWithZone } from './utils';
 

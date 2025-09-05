@@ -1,5 +1,5 @@
 import { Provider } from '@angular/core';
-import { ApolloClient } from '@apollo/client';
+import { ApolloClient } from '@apollo/client/core';
 import { Apollo } from './apollo';
 import { APOLLO_FLAGS, APOLLO_NAMED_OPTIONS, APOLLO_OPTIONS } from './tokens';
 import { Flags, NamedOptions } from './types';
