@@ -1,4 +1,4 @@
-import { gql as gqlTag, TypedDocumentNode } from "@apollo/client";
+import { gql as gqlTag, TypedDocumentNode } from '@apollo/client';
 
 const typedGQLTag: <Result, Variables>(
   literals: ReadonlyArray<string> | Readonly<string>,
