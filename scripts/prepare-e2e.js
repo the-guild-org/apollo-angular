@@ -8,12 +8,19 @@ const [, , name, version] = process.argv;
 
 function updateComponent() {
   let filepath = path.join(cwd, `./${name}/src/app/app.component.ts`);
+  let suffix = 'Component';
+
+  if (!fs.existsSync(filepath)) {
+    filepath = path.join(cwd, `./${name}/src/app/app.ts`);
+    suffix = '';
+  }
+
   const code =
     `import { Apollo } from 'apollo-angular';\n` +
     `import { versionInfo } from 'graphql';\n` +
     fs
       .readFileSync(filepath, 'utf8')
-      .replace('AppComponent {', 'AppComponent { constructor(private readonly apollo: Apollo) {}') +
+      .replace(`App${suffix} {`, `App${suffix} { constructor(private readonly apollo: Apollo) {}`) +
     `\n (window as any).GRAPHQL_VERSION = versionInfo.major;`;
 
   fs.writeFileSync(filepath, code, 'utf8');
