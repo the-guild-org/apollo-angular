@@ -759,88 +759,108 @@ describe('Apollo', () => {
         });
       }));
 
-    test('should update a query with Optimistic Response after mutation', () =>
-      new Promise<void>(done => {
-        expect.assertions(3);
-        const query = gql`
-          query heroes {
-            allHeroes {
-              id
-              name
-              __typename
-            }
+    test('should update a query with Optimistic Response after mutation', async () => {
+      const query = gql`
+        query heroes {
+          allHeroes {
+            id
+            name
+            __typename
           }
-        `;
-        const mutation = gql`
-          mutation addHero($name: String!) {
-            addHero(name: $name) {
-              id
-              name
-              __typename
-            }
+        }
+      `;
+      const mutation = gql`
+        mutation addHero($name: String!) {
+          addHero(name: $name) {
+            id
+            name
+            __typename
           }
-        `;
-        const variables = { name: 'Bar' };
-        const __typename = 'Hero';
+        }
+      `;
+      const variables = { name: 'Bar' };
+      const __typename = 'Hero';
 
-        const FooHero = { id: 1, name: 'Foo', __typename };
-        const BarHero = { id: 2, name: 'Bar', __typename };
-        const OptimisticHero = { id: null, name: 'Temp', __typename };
+      const FooHero = { id: 1, name: 'Foo', __typename };
+      const BarHero = { id: 2, name: 'Bar', __typename };
+      const OptimisticHero = { id: null, name: 'Temp', __typename };
 
-        const data1 = { allHeroes: [FooHero] };
-        const dataMutation = { addHero: BarHero };
-        const data2 = { allHeroes: [FooHero, OptimisticHero] };
-        const data3 = { allHeroes: [FooHero, BarHero] };
+      const data1 = { allHeroes: [FooHero] };
+      const dataMutation = { addHero: BarHero };
+      const data2 = { allHeroes: [FooHero, OptimisticHero] };
+      const data3 = { allHeroes: [FooHero, BarHero] };
 
-        const link = new MockLink([
-          {
-            request: { query },
-            result: { data: data1 },
+      const link = new MockLink([
+        {
+          request: { query },
+          result: { data: data1 },
+        },
+        {
+          request: { query: mutation, variables },
+          result: { data: dataMutation },
+        },
+      ]);
+      const apollo = mockApollo(link, ngZone);
+
+      const obs = apollo.watchQuery({ query });
+      const stream = new ObservableStream(obs.valueChanges);
+
+      await expect(stream.takeNext()).resolves.toEqual({
+        data: undefined,
+        dataState: 'empty',
+        loading: true,
+        networkStatus: NetworkStatus.loading,
+        partial: true,
+      });
+
+      await expect(stream.takeNext()).resolves.toEqual({
+        data: data1,
+        dataState: 'complete',
+        loading: false,
+        networkStatus: NetworkStatus.ready,
+        partial: false,
+      });
+
+      apollo
+        .mutate<any>({
+          mutation,
+          variables,
+          optimisticResponse: {
+            addHero: OptimisticHero,
           },
-          {
-            request: { query: mutation, variables },
-            result: { data: dataMutation },
+          updateQueries: {
+            heroes: (prev: any, { mutationResult }: any) => {
+              return {
+                allHeroes: [...prev.allHeroes, mutationResult.data.addHero],
+              };
+            },
           },
-        ]);
-        const apollo = mockApollo(link, ngZone);
-
-        const obs = apollo.watchQuery({ query });
-
-        let calls = 0;
-        obs.valueChanges.subscribe(({ data }) => {
-          calls++;
-
-          if (calls === 1) {
-            expect(data).toMatchObject(data1);
-
-            apollo
-              .mutate<any>({
-                mutation,
-                variables,
-                optimisticResponse: {
-                  addHero: OptimisticHero,
-                },
-                updateQueries: {
-                  heroes: (prev: any, { mutationResult }: any) => {
-                    return {
-                      allHeroes: [...prev.allHeroes, mutationResult.data.addHero],
-                    };
-                  },
-                },
-              })
-              .subscribe({
-                error(error) {
-                  throw error.message;
-                },
-              });
-          } else if (calls === 2) {
-            expect(data).toMatchObject(data2);
-          } else if (calls === 3) {
-            expect(data).toMatchObject(data3);
-            done();
-          }
+        })
+        .subscribe({
+          error(error) {
+            throw error.message;
+          },
         });
-      }));
+
+      // optimistic response
+      await expect(stream.takeNext()).resolves.toEqual({
+        data: data2,
+        dataState: 'complete',
+        loading: false,
+        networkStatus: NetworkStatus.ready,
+        partial: false,
+      });
+
+      await expect(stream.takeNext()).resolves.toEqual({
+        data: data3,
+        dataState: 'complete',
+        loading: false,
+        networkStatus: NetworkStatus.ready,
+        partial: false,
+      });
+
+      await expect(stream).not.toEmitAnything();
+    });
   });
 
   test('should use HttpClient', () =>
