@@ -25,11 +25,6 @@ export type MutationResult<TData = unknown> = ApolloLink.Result<TData> & {
 
 export type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
 
-export type SubscriptionOptionsAlone<
-  TData = unknown,
-  TVariables extends OperationVariables = EmptyObject,
-> = Omit<ApolloClient.SubscribeOptions<TData, TVariables>, 'query' | 'variables'>;
-
 export type WatchQueryOptions<
   TData = unknown,
   TVariables extends OperationVariables = EmptyObject,

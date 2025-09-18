@@ -12,7 +12,6 @@ export type {
   MutationResult,
   NamedOptions,
   ResultOf,
-  SubscriptionOptionsAlone,
   VariablesOf,
   WatchQueryOptions,
 } from './types';

@@ -3,7 +3,14 @@ import type { Observable } from 'rxjs';
 import { Injectable } from '@angular/core';
 import type { ApolloClient, OperationVariables, TypedDocumentNode } from '@apollo/client/core';
 import { Apollo } from './apollo';
-import { EmptyObject, ExtraSubscriptionOptions, SubscriptionOptionsAlone } from './types';
+import { EmptyObject, ExtraSubscriptionOptions } from './types';
+
+export declare namespace Subscription {
+  export type SubscribeOptions<
+    TData = unknown,
+    TVariables extends OperationVariables = EmptyObject,
+  > = Omit<ApolloClient.SubscribeOptions<TData, TVariables>, 'query'>;
+}
 
 @Injectable()
 export abstract class Subscription<
@@ -16,16 +23,21 @@ export abstract class Subscription<
   constructor(protected readonly apollo: Apollo) {}
 
   public subscribe(
-    variables?: TVariables,
-    options?: SubscriptionOptionsAlone<TData, TVariables>,
-    extra?: ExtraSubscriptionOptions,
+    ...[options, extra]: {} extends TVariables
+      ? [
+          options?: Subscription.SubscribeOptions<TData, TVariables>,
+          extra?: ExtraSubscriptionOptions,
+        ]
+      : [
+          options: Subscription.SubscribeOptions<TData, TVariables>,
+          extra?: ExtraSubscriptionOptions,
+        ]
   ): Observable<ApolloClient.SubscribeResult<TData>> {
     return this.apollo.use(this.client).subscribe<TData, TVariables>(
       {
         ...options,
-        variables: variables as TVariables,
         query: this.document,
-      },
+      } as ApolloClient.SubscribeOptions<TData, TVariables>,
       extra,
     );
   }
