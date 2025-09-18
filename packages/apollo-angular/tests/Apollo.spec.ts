@@ -206,7 +206,7 @@ describe('Apollo', () => {
 
         const client = apollo.client;
 
-        client.query = vi.fn<any, any>(options => {
+        client.query = vi.fn<any>((options: { used: boolean }) => {
           if (options.used) {
             throw new Error('options was reused');
           }
@@ -318,7 +318,7 @@ describe('Apollo', () => {
 
         const client = apollo.client;
 
-        client.mutate = vi.fn<any, any>(options => {
+        client.mutate = vi.fn<any>((options: { used: boolean }) => {
           if (options.used) {
             throw new Error('options was reused');
           }
