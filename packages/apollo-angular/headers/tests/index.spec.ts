@@ -2,7 +2,7 @@ import { of } from 'rxjs';
 import { describe, expect, test } from 'vitest';
 import { HttpHeaders } from '@angular/common/http';
 import { ApolloClient, ApolloLink, execute, gql, InMemoryCache } from '@apollo/client/core';
-import { httpHeaders } from '../src';
+import { HttpHeadersLink } from '../src';
 
 const query = gql`
   query heroes {
@@ -19,7 +19,7 @@ const dummyClient = new ApolloClient({ cache: new InMemoryCache(), link: ApolloL
 describe('httpHeaders', () => {
   test('should turn object into HttpHeaders', () =>
     new Promise<void>(done => {
-      const headersLink = httpHeaders();
+      const headersLink = new HttpHeadersLink();
 
       const mockLink = new ApolloLink(operation => {
         const { headers } = operation.getContext();
@@ -51,7 +51,7 @@ describe('httpHeaders', () => {
 
   test('should not set headers when not defined', () =>
     new Promise<void>(done => {
-      const headersLink = httpHeaders();
+      const headersLink = new HttpHeadersLink();
 
       const mockLink = new ApolloLink(operation => {
         const { headers } = operation.getContext();
