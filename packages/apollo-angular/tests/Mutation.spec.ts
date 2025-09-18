@@ -61,7 +61,7 @@ describe('Mutation', () => {
   });
 
   test('should pass variables to Apollo.mutate', () => {
-    addHero.mutate({ foo: 1 });
+    addHero.mutate({ variables: { foo: 1 } });
 
     expect(apolloMock.mutate).toBeCalled();
     expect(apolloMock.mutate.mock.calls[0][0]).toMatchObject({
@@ -70,7 +70,7 @@ describe('Mutation', () => {
   });
 
   test('should pass options to Apollo.mutate', () => {
-    addHero.mutate({}, { fetchPolicy: 'no-cache' });
+    addHero.mutate({ fetchPolicy: 'no-cache' });
 
     expect(apolloMock.mutate).toBeCalled();
     expect(apolloMock.mutate.mock.calls[0][0]).toMatchObject({
@@ -79,7 +79,7 @@ describe('Mutation', () => {
   });
 
   test('should not overwrite query when options object is provided', () => {
-    addHero.mutate({}, { query: 'asd', fetchPolicy: 'cache-first' } as any);
+    addHero.mutate({ mutation: 'asd', fetchPolicy: 'cache-first' } as any);
 
     expect(apolloMock.mutate).toBeCalled();
     expect(apolloMock.mutate.mock.calls[0][0]).toMatchObject({

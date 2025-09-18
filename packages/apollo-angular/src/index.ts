@@ -9,7 +9,6 @@ export { APOLLO_OPTIONS, APOLLO_NAMED_OPTIONS, APOLLO_FLAGS } from './tokens';
 export type {
   ExtraSubscriptionOptions,
   Flags,
-  MutationOptionsAlone,
   MutationResult,
   NamedOptions,
   ResultOf,
