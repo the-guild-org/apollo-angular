@@ -4,8 +4,24 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { ApolloLink } from '@apollo/client/core';
 import { pick } from './http-batch-link';
-import { Body, Context, OperationPrinter, Options, Request } from './types';
+import {
+  Body,
+  Context,
+  ExtractFiles,
+  FetchOptions,
+  HttpRequestOptions,
+  OperationPrinter,
+  Request,
+} from './types';
 import { createHeadersWithClientAwareness, fetch, mergeHeaders } from './utils';
+
+export declare namespace HttpLink {
+  export interface Options extends FetchOptions, HttpRequestOptions {
+    operationPrinter?: OperationPrinter;
+    useGETForQueries?: boolean;
+    extractFiles?: ExtractFiles;
+  }
+}
 
 // XXX find a better name for it
 export class HttpLinkHandler extends ApolloLink {
@@ -14,7 +30,7 @@ export class HttpLinkHandler extends ApolloLink {
 
   constructor(
     private readonly httpClient: HttpClient,
-    private readonly options: Options,
+    private readonly options: HttpLink.Options,
   ) {
     super();
 
@@ -96,7 +112,7 @@ export class HttpLinkHandler extends ApolloLink {
 export class HttpLink {
   constructor(private readonly httpClient: HttpClient) {}
 
-  public create(options: Options): HttpLinkHandler {
+  public create(options: HttpLink.Options): HttpLinkHandler {
     return new HttpLinkHandler(this.httpClient, options);
   }
 }

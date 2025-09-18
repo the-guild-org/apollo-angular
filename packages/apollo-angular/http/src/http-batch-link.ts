@@ -4,8 +4,17 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { ApolloLink } from '@apollo/client/core';
 import { BatchLink } from '@apollo/client/link/batch';
-import { BatchOptions, Body, Context, OperationPrinter, Options, Request } from './types';
+import type { HttpLink } from './http-link';
+import { Body, Context, OperationPrinter, Request } from './types';
 import { createHeadersWithClientAwareness, fetch, mergeHeaders, prioritize } from './utils';
+
+export declare namespace HttpBatchLink {
+  export type Options = {
+    batchMax?: number;
+    batchInterval?: number;
+    batchKey?: (operation: ApolloLink.Operation) => string;
+  } & HttpLink.Options;
+}
 
 export const defaults = {
   batchInterval: 10,
@@ -23,9 +32,9 @@ export const defaults = {
  */
 export function pick<K extends keyof Omit<typeof defaults, 'batchInterval' | 'batchMax'>>(
   context: Context,
-  options: Options,
+  options: HttpLink.Options,
   key: K,
-): ReturnType<typeof prioritize<Context[K] | Options[K] | (typeof defaults)[K]>> {
+): ReturnType<typeof prioritize<Context[K] | HttpLink.Options[K] | (typeof defaults)[K]>> {
   return prioritize(context[key], options[key], defaults[key]);
 }
 
@@ -37,7 +46,7 @@ export class HttpBatchLinkHandler extends ApolloLink {
 
   constructor(
     private readonly httpClient: HttpClient,
-    private readonly options: BatchOptions,
+    private readonly options: HttpBatchLink.Options,
   ) {
     super();
 
@@ -100,7 +109,7 @@ export class HttpBatchLinkHandler extends ApolloLink {
 
   private createOptions(
     operations: ApolloLink.Operation[],
-  ): Required<Pick<Options, 'method' | 'uri' | 'withCredentials'>> {
+  ): Required<Pick<HttpLink.Options, 'method' | 'uri' | 'withCredentials'>> {
     const context: Context = operations[0].getContext();
 
     return {
@@ -185,7 +194,7 @@ export class HttpBatchLinkHandler extends ApolloLink {
 export class HttpBatchLink {
   constructor(private readonly httpClient: HttpClient) {}
 
-  public create(options: BatchOptions): HttpBatchLinkHandler {
+  public create(options: HttpBatchLink.Options): HttpBatchLinkHandler {
     return new HttpBatchLinkHandler(this.httpClient, options);
   }
 }

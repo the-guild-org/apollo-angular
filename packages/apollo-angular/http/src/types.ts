@@ -23,12 +23,6 @@ export type FetchOptions = {
 
 export type OperationPrinter = (operation: DocumentNode) => string;
 
-export interface Options extends FetchOptions, HttpRequestOptions {
-  operationPrinter?: OperationPrinter;
-  useGETForQueries?: boolean;
-  extractFiles?: ExtractFiles;
-}
-
 export type Body = {
   query?: string;
   variables?: Record<string, any>;
@@ -51,9 +45,3 @@ export type ExtractedFiles = {
 };
 
 export type ExtractFiles = (body: Body | Body[]) => ExtractedFiles;
-
-export type BatchOptions = {
-  batchMax?: number;
-  batchInterval?: number;
-  batchKey?: (operation: ApolloLink.Operation) => string;
-} & Options;
