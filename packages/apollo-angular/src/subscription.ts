@@ -6,7 +6,7 @@ import { Apollo } from './apollo';
 import { EmptyObject, ExtraSubscriptionOptions, SubscriptionOptionsAlone } from './types';
 
 @Injectable()
-export abstract class Subscription<T = any, V extends OperationVariables = EmptyObject> {
+export abstract class Subscription<T = unknown, V extends OperationVariables = EmptyObject> {
   public abstract readonly document: DocumentNode | TypedDocumentNode<T, V>;
   public client = 'default';
 
@@ -14,7 +14,7 @@ export abstract class Subscription<T = any, V extends OperationVariables = Empty
 
   public subscribe(
     variables?: V,
-    options?: SubscriptionOptionsAlone<V, T>,
+    options?: SubscriptionOptionsAlone<T, V>,
     extra?: ExtraSubscriptionOptions,
   ): Observable<ApolloClient.SubscribeResult<T>> {
     return this.apollo.use(this.client).subscribe<T, V>(

@@ -28,7 +28,7 @@ export class ApolloBase {
   }
 
   public watchQuery<TData, TVariables extends OperationVariables = EmptyObject>(
-    options: WatchQueryOptions<TVariables, TData>,
+    options: WatchQueryOptions<TData, TVariables>,
   ): QueryRef<TData, TVariables> {
     return new QueryRef<TData, TVariables>(
       this.ensureClient().watchQuery<TData, TVariables>({ ...options }),

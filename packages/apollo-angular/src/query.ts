@@ -7,13 +7,13 @@ import { QueryRef } from './query-ref';
 import { EmptyObject, QueryOptionsAlone, WatchQueryOptionsAlone } from './types';
 
 @Injectable()
-export abstract class Query<T = {}, V extends OperationVariables = EmptyObject> {
+export abstract class Query<T = unknown, V extends OperationVariables = EmptyObject> {
   public abstract readonly document: DocumentNode | TypedDocumentNode<T, V>;
   public client = 'default';
 
   constructor(protected readonly apollo: Apollo) {}
 
-  public watch(variables?: V, options?: WatchQueryOptionsAlone<V, T>): QueryRef<T, V> {
+  public watch(variables?: V, options?: WatchQueryOptionsAlone<T, V>): QueryRef<T, V> {
     return this.apollo.use(this.client).watchQuery<T, V>({
       ...options,
       variables: variables as V,
@@ -23,7 +23,7 @@ export abstract class Query<T = {}, V extends OperationVariables = EmptyObject> 
 
   public fetch(
     variables?: V,
-    options?: QueryOptionsAlone<V, T>,
+    options?: QueryOptionsAlone<T, V>,
   ): Observable<ApolloClient.QueryResult<T>> {
     return this.apollo.use(this.client).query<T, V>({
       ...options,

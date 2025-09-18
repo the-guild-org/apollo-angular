@@ -19,39 +19,39 @@ export interface ExtraSubscriptionOptions {
   useZone?: boolean;
 }
 
-export type MutationResult<TData = any> = ApolloLink.Result<TData> & {
+export type MutationResult<TData = unknown> = ApolloLink.Result<TData> & {
   loading?: boolean;
 };
 
 export type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
 
 export type WatchQueryOptionsAlone<
+  TData = unknown,
   TVariables extends OperationVariables = EmptyObject,
-  TData = any,
-> = Omit<WatchQueryOptions<TVariables, TData>, 'query' | 'variables'>;
+> = Omit<WatchQueryOptions<TData, TVariables>, 'query' | 'variables'>;
 
 export type QueryOptionsAlone<
+  TData = unknown,
   TVariables extends OperationVariables = EmptyObject,
-  TData = any,
 > = Omit<ApolloClient.QueryOptions<TData, TVariables>, 'query' | 'variables'>;
 
 export type MutationOptionsAlone<
-  TData = EmptyObject,
-  TVariables extends OperationVariables = any,
+  TData = unknown,
+  TVariables extends OperationVariables = EmptyObject,
 > = Omit<MutationOptions<TData, TVariables>, 'mutation' | 'variables'>;
 
 export type SubscriptionOptionsAlone<
+  TData = unknown,
   TVariables extends OperationVariables = EmptyObject,
-  TData = any,
 > = Omit<ApolloClient.SubscribeOptions<TData, TVariables>, 'query' | 'variables'>;
 
 export type WatchQueryOptions<
+  TData = unknown,
   TVariables extends OperationVariables = EmptyObject,
-  TData = any,
 > = ApolloClient.WatchQueryOptions<TData, TVariables>;
 
 export type MutationOptions<
-  TData = any,
+  TData = unknown,
   TVariables extends OperationVariables = EmptyObject,
 > = ApolloClient.MutateOptions<TData, TVariables> & {
   /**
@@ -64,7 +64,7 @@ export type MutationOptions<
 };
 
 export interface WatchFragmentOptions<
-  TData = any,
+  TData = unknown,
   TVariables extends OperationVariables = EmptyObject,
 > extends ApolloCache.WatchFragmentOptions<TData, TVariables> {}
 
