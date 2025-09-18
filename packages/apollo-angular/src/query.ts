@@ -7,27 +7,30 @@ import { QueryRef } from './query-ref';
 import { EmptyObject, QueryOptionsAlone, WatchQueryOptionsAlone } from './types';
 
 @Injectable()
-export abstract class Query<T = unknown, V extends OperationVariables = EmptyObject> {
-  public abstract readonly document: DocumentNode | TypedDocumentNode<T, V>;
+export abstract class Query<TData = unknown, TVariables extends OperationVariables = EmptyObject> {
+  public abstract readonly document: DocumentNode | TypedDocumentNode<TData, TVariables>;
   public client = 'default';
 
   constructor(protected readonly apollo: Apollo) {}
 
-  public watch(variables?: V, options?: WatchQueryOptionsAlone<T, V>): QueryRef<T, V> {
-    return this.apollo.use(this.client).watchQuery<T, V>({
+  public watch(
+    variables?: TVariables,
+    options?: WatchQueryOptionsAlone<TData, TVariables>,
+  ): QueryRef<TData, TVariables> {
+    return this.apollo.use(this.client).watchQuery<TData, TVariables>({
       ...options,
-      variables: variables as V,
+      variables: variables as TVariables,
       query: this.document,
     });
   }
 
   public fetch(
-    variables?: V,
-    options?: QueryOptionsAlone<T, V>,
-  ): Observable<ApolloClient.QueryResult<T>> {
-    return this.apollo.use(this.client).query<T, V>({
+    variables?: TVariables,
+    options?: QueryOptionsAlone<TData, TVariables>,
+  ): Observable<ApolloClient.QueryResult<TData>> {
+    return this.apollo.use(this.client).query<TData, TVariables>({
       ...options,
-      variables: variables as V,
+      variables: variables as TVariables,
       query: this.document,
     });
   }

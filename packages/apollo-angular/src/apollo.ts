@@ -36,19 +36,19 @@ export class ApolloBase {
     );
   }
 
-  public query<T, V extends OperationVariables = EmptyObject>(
-    options: ApolloClient.QueryOptions<T, V>,
-  ): Observable<ApolloClient.QueryResult<T>> {
-    return fromLazyPromise<ApolloClient.QueryResult<T>>(() =>
-      this.ensureClient().query<T, V>({ ...options }),
+  public query<TData, TVariables extends OperationVariables = EmptyObject>(
+    options: ApolloClient.QueryOptions<TData, TVariables>,
+  ): Observable<ApolloClient.QueryResult<TData>> {
+    return fromLazyPromise<ApolloClient.QueryResult<TData>>(() =>
+      this.ensureClient().query<TData, TVariables>({ ...options }),
     );
   }
 
-  public mutate<T, V extends OperationVariables = EmptyObject>(
-    options: MutationOptions<T, V>,
-  ): Observable<MutationResult<T>> {
+  public mutate<TData, TVariables extends OperationVariables = EmptyObject>(
+    options: MutationOptions<TData, TVariables>,
+  ): Observable<MutationResult<TData>> {
     return useMutationLoading(
-      fromLazyPromise(() => this.ensureClient().mutate<T, V>({ ...options })),
+      fromLazyPromise(() => this.ensureClient().mutate<TData, TVariables>({ ...options })),
       options.useMutationLoading ?? this.useMutationLoading,
     );
   }
@@ -65,11 +65,11 @@ export class ApolloBase {
     return extra && extra.useZone !== true ? obs : wrapWithZone(obs, this.ngZone);
   }
 
-  public subscribe<T, V extends OperationVariables = EmptyObject>(
-    options: ApolloClient.SubscribeOptions<T, V>,
+  public subscribe<TData, TVariables extends OperationVariables = EmptyObject>(
+    options: ApolloClient.SubscribeOptions<TData, TVariables>,
     extra?: ExtraSubscriptionOptions,
-  ): Observable<ApolloClient.SubscribeResult<T>> {
-    const obs = this.ensureClient().subscribe<T, V>({ ...options });
+  ): Observable<ApolloClient.SubscribeResult<TData>> {
+    const obs = this.ensureClient().subscribe<TData, TVariables>({ ...options });
 
     return extra && extra.useZone !== true ? obs : wrapWithZone(obs, this.ngZone);
   }

@@ -11,7 +11,9 @@ import { EmptyObject } from './types';
 import { wrapWithZone } from './utils';
 
 export type QueryRefFromDocument<T extends TypedDocumentNode> =
-  T extends TypedDocumentNode<infer R, infer V> ? QueryRef<R, V & OperationVariables> : never;
+  T extends TypedDocumentNode<infer TData, infer TVariables>
+    ? QueryRef<TData, TVariables & OperationVariables>
+    : never;
 
 export class QueryRef<TData, TVariables extends OperationVariables = EmptyObject> {
   public readonly valueChanges: Observable<ObservableQuery.Result<TData>>;
