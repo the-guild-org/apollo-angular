@@ -1,4 +1,5 @@
 import '@analogjs/vitest-angular/setup-zone';
+import '../test-utils/matchers';
 import { getTestBed } from '@angular/core/testing';
 import {
   BrowserDynamicTestingModule,
