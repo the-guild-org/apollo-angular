@@ -8,6 +8,7 @@ import { MockLink } from '@apollo/client/testing';
 import { Apollo, ApolloBase } from '../src/apollo';
 import { gql } from '../src/gql';
 import { ZoneScheduler } from '../src/utils';
+import { ObservableStream } from '../test-utils/ObservableStream';
 
 function mockApollo(link: ApolloLink, _ngZone: NgZone) {
   const apollo = new Apollo(_ngZone);
@@ -90,73 +91,77 @@ describe('Apollo', () => {
       expect(client.watchQuery).toBeCalledWith(options);
     });
 
-    test('should be able to refetch', () =>
-      new Promise<void>(done => {
-        expect.assertions(3);
-        const query = gql`
-          query refetch($first: Int) {
-            heroes(first: $first) {
-              name
-              __typename
-            }
+    test('should be able to refetch', async () => {
+      const query = gql`
+        query refetch($first: Int) {
+          heroes(first: $first) {
+            name
+            __typename
           }
-        `;
+        }
+      `;
 
-        const data1 = { heroes: [{ name: 'Foo', __typename: 'Hero' }] };
-        const variables1 = { first: 0 };
+      const data1 = { heroes: [{ name: 'Foo', __typename: 'Hero' }] };
+      const variables1 = { first: 0 };
 
-        const data2 = { heroes: [{ name: 'Bar', __typename: 'Hero' }] };
-        const variables2 = { first: 1 };
+      const data2 = { heroes: [{ name: 'Bar', __typename: 'Hero' }] };
+      const variables2 = { first: 1 };
 
-        const link = new MockLink([
-          {
-            request: { query, variables: variables1 },
-            result: { data: data1 },
-          },
-          {
-            request: { query, variables: variables2 },
-            result: { data: data2 },
-          },
-        ]);
+      const link = new MockLink([
+        {
+          request: { query, variables: variables1 },
+          result: { data: data1 },
+        },
+        {
+          request: { query, variables: variables2 },
+          result: { data: data2 },
+        },
+      ]);
 
-        const apollo = mockApollo(link, ngZone);
-        const options = { query, variables: variables1 };
-        const obs = apollo.watchQuery(options);
+      const apollo = mockApollo(link, ngZone);
+      const options = { query, variables: variables1 };
+      const obs = apollo.watchQuery(options);
 
-        let calls = 0;
+      const stream = new ObservableStream(obs.valueChanges);
 
-        obs.valueChanges.subscribe({
-          next: ({ data }) => {
-            calls++;
+      await expect(stream.takeNext()).resolves.toEqual({
+        data: undefined,
+        dataState: 'empty',
+        loading: true,
+        networkStatus: NetworkStatus.loading,
+        partial: true,
+      });
 
-            try {
-              if (calls === 1) {
-                expect(data).toMatchObject(data1);
-              } else if (calls === 2) {
-                expect(data).toMatchObject(data2);
-                done();
-              } else if (calls > 2) {
-                throw new Error('Called third time');
-              }
-            } catch (e: any) {
-              throw e;
-            }
-          },
-          error: err => {
-            throw err;
-          },
-        });
+      await expect(stream.takeNext()).resolves.toEqual({
+        data: data1,
+        dataState: 'complete',
+        loading: false,
+        networkStatus: NetworkStatus.ready,
+        partial: false,
+      });
 
-        setTimeout(() => {
-          obs.refetch(variables2).then(({ data }) => {
-            try {
-              expect(data).toMatchObject(data2);
-            } catch (e: any) {
-              throw e;
-            }
-          });
-        });
-      }));
+      await expect(stream.peek()).rejects.toThrow(/Timeout waiting/);
+
+      await expect(obs.refetch(variables2)).resolves.toEqual({ data: data2 });
+
+      await expect(stream.takeNext()).resolves.toEqual({
+        data: undefined,
+        dataState: 'empty',
+        loading: true,
+        networkStatus: NetworkStatus.refetch,
+        partial: true,
+      });
+
+      await expect(stream.takeNext()).resolves.toEqual({
+        data: data2,
+        dataState: 'complete',
+        loading: false,
+        networkStatus: NetworkStatus.ready,
+        partial: false,
+      });
+
+      await expect(stream.peek()).rejects.toThrow(/Timeout waiting/);
+    });
   });
 
   describe('query()', () => {
