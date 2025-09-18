@@ -152,7 +152,8 @@ export class HttpBatchLinkHandler extends ApolloLink {
   private createHeaders(operations: ApolloLink.Operation[]): HttpHeaders {
     return operations.reduce(
       (headers: HttpHeaders, operation: ApolloLink.Operation) => {
-        return mergeHeaders(headers, operation.getContext().headers);
+        const { headers: contextHeaders } = operation.getContext();
+        return contextHeaders ? mergeHeaders(headers, contextHeaders) : headers;
       },
       createHeadersWithClientAwareness({
         headers: this.options.headers,
