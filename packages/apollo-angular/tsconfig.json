@@ -14,6 +14,7 @@
     "persisted-queries/**/*.ts",
     "src/**/*.ts",
     "testing/**/*.ts",
-    "tests/**/*.ts"
+    "tests/**/*.ts",
+    "test-utils/**/*.ts"
   ]
 }
