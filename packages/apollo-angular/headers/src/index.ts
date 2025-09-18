@@ -8,10 +8,7 @@ export class HttpHeadersLink extends ApolloLink {
       const context = getContext();
 
       if (context.headers) {
-        setContext({
-          ...context,
-          headers: new HttpHeaders(context.headers),
-        });
+        setContext({ headers: new HttpHeaders(context.headers) });
       }
 
       return forward(operation);
