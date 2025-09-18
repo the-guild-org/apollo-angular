@@ -12,11 +12,9 @@ export type {
   MutationOptionsAlone,
   MutationResult,
   NamedOptions,
-  QueryOptionsAlone,
   ResultOf,
   SubscriptionOptionsAlone,
   VariablesOf,
   WatchQueryOptions,
-  WatchQueryOptionsAlone,
 } from './types';
 export { gql } from './gql';

@@ -84,7 +84,7 @@ describe('Query', () => {
     });
 
     test('should pass variables to Apollo.watchQuery', () => {
-      heroesQuery.watch({ foo: 1 });
+      heroesQuery.watch({ variables: { foo: 1 } });
 
       expect(apolloMock.watchQuery).toBeCalled();
       expect(apolloMock.watchQuery.mock.calls[0][0]).toMatchObject({
@@ -93,7 +93,7 @@ describe('Query', () => {
     });
 
     test('should pass options to Apollo.watchQuery', () => {
-      heroesQuery.watch({}, { fetchPolicy: 'network-only' });
+      heroesQuery.watch({ fetchPolicy: 'network-only' });
 
       expect(apolloMock.watchQuery).toBeCalled();
       expect(apolloMock.watchQuery.mock.calls[0][0]).toMatchObject({
@@ -102,7 +102,7 @@ describe('Query', () => {
     });
 
     test('should not overwrite query when options object is provided', () => {
-      heroesQuery.watch({}, { query: 'asd', fetchPolicy: 'cache-first' } as any);
+      heroesQuery.watch({ query: 'asd', fetchPolicy: 'cache-first' } as any);
 
       expect(apolloMock.watchQuery).toBeCalled();
       expect(apolloMock.watchQuery.mock.calls[0][0]).toMatchObject({
@@ -133,7 +133,7 @@ describe('Query', () => {
     });
 
     test('should pass variables to Apollo.query', () => {
-      heroesQuery.fetch({ foo: 1 });
+      heroesQuery.fetch({ variables: { foo: 1 } });
 
       expect(apolloMock.query).toBeCalled();
       expect(apolloMock.query.mock.calls[0][0]).toMatchObject({
@@ -142,7 +142,7 @@ describe('Query', () => {
     });
 
     test('should pass options to Apollo.query', () => {
-      heroesQuery.fetch({}, { fetchPolicy: 'network-only' });
+      heroesQuery.fetch({ fetchPolicy: 'network-only' });
 
       expect(apolloMock.query).toBeCalled();
       expect(apolloMock.query.mock.calls[0][0]).toMatchObject({
@@ -151,7 +151,7 @@ describe('Query', () => {
     });
 
     test('should not overwrite query when options object is provided', () => {
-      heroesQuery.fetch({}, { query: 'asd', fetchPolicy: 'cache-first' } as any);
+      heroesQuery.fetch({ query: 'asd', fetchPolicy: 'cache-first' } as any);
 
       expect(apolloMock.query).toBeCalled();
       expect(apolloMock.query.mock.calls[0][0]).toMatchObject({
