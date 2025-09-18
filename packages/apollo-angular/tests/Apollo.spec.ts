@@ -140,7 +140,7 @@ describe('Apollo', () => {
         partial: false,
       });
 
-      await expect(stream.peek()).rejects.toThrow(/Timeout waiting/);
+      await expect(stream).not.toEmitAnything();
 
       await expect(obs.refetch(variables2)).resolves.toEqual({ data: data2 });
 
@@ -160,7 +160,7 @@ describe('Apollo', () => {
         partial: false,
       });
 
-      await expect(stream.peek()).rejects.toThrow(/Timeout waiting/);
+      await expect(stream).not.toEmitAnything();
     });
   });
 
