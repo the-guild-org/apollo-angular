@@ -3,13 +3,13 @@ import type { Observable } from 'rxjs';
 import { Injectable } from '@angular/core';
 import type { OperationVariables, TypedDocumentNode } from '@apollo/client/core';
 import { Apollo } from './apollo';
-import type { EmptyObject, MutationOptions, MutationResult } from './types';
+import type { EmptyObject, MutationResult } from './types';
 
 export declare namespace Mutation {
   export type MutateOptions<
     TData = unknown,
     TVariables extends OperationVariables = EmptyObject,
-  > = Omit<MutationOptions<TData, TVariables>, 'mutation'>;
+  > = Omit<Apollo.MutateOptions<TData, TVariables>, 'mutation'>;
 }
 
 @Injectable()
@@ -30,6 +30,6 @@ export abstract class Mutation<
     return this.apollo.use(this.client).mutate<TData, TVariables>({
       ...options,
       mutation: this.document,
-    } as MutationOptions<TData, TVariables>);
+    } as Apollo.MutateOptions<TData, TVariables>);
   }
 }

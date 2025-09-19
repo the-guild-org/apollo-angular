@@ -8,13 +8,45 @@ import type {
   EmptyObject,
   ExtraSubscriptionOptions,
   Flags,
-  MutationOptions,
   MutationResult,
   NamedOptions,
-  WatchFragmentOptions,
-  WatchQueryOptions,
 } from './types';
 import { fromLazyPromise, useMutationLoading, wrapWithZone } from './utils';
+
+export declare namespace Apollo {
+  export type WatchQueryOptions<
+    TData = unknown,
+    TVariables extends OperationVariables = EmptyObject,
+  > = ApolloClient.WatchQueryOptions<TData, TVariables>;
+
+  export type QueryOptions<
+    TData = unknown,
+    TVariables extends OperationVariables = EmptyObject,
+  > = ApolloClient.QueryOptions<TData, TVariables>;
+
+  export type MutateOptions<
+    TData = unknown,
+    TVariables extends OperationVariables = EmptyObject,
+  > = ApolloClient.MutateOptions<TData, TVariables> & {
+    /**
+     * Observable starts with `{ loading: true }`.
+     * There's a big chance the next major version will enable that by default.
+     *
+     * Disabled by default
+     */
+    useMutationLoading?: boolean;
+  };
+
+  export type SubscribeOptions<
+    TData = unknown,
+    TVariables extends OperationVariables = EmptyObject,
+  > = ApolloClient.SubscribeOptions<TData, TVariables>;
+
+  export interface WatchFragmentOptions<
+    TData = unknown,
+    TVariables extends OperationVariables = EmptyObject,
+  > extends ApolloCache.WatchFragmentOptions<TData, TVariables> {}
+}
 
 export class ApolloBase {
   private useMutationLoading: boolean;
@@ -28,7 +60,7 @@ export class ApolloBase {
   }
 
   public watchQuery<TData, TVariables extends OperationVariables = EmptyObject>(
-    options: WatchQueryOptions<TData, TVariables>,
+    options: Apollo.WatchQueryOptions<TData, TVariables>,
   ): QueryRef<TData, TVariables> {
     return new QueryRef<TData, TVariables>(
       this.ensureClient().watchQuery<TData, TVariables>({ ...options }),
@@ -37,7 +69,7 @@ export class ApolloBase {
   }
 
   public query<TData, TVariables extends OperationVariables = EmptyObject>(
-    options: ApolloClient.QueryOptions<TData, TVariables>,
+    options: Apollo.QueryOptions<TData, TVariables>,
   ): Observable<ApolloClient.QueryResult<TData>> {
     return fromLazyPromise<ApolloClient.QueryResult<TData>>(() =>
       this.ensureClient().query<TData, TVariables>({ ...options }),
@@ -45,7 +77,7 @@ export class ApolloBase {
   }
 
   public mutate<TData, TVariables extends OperationVariables = EmptyObject>(
-    options: MutationOptions<TData, TVariables>,
+    options: Apollo.MutateOptions<TData, TVariables>,
   ): Observable<MutationResult<TData>> {
     return useMutationLoading(
       fromLazyPromise(() => this.ensureClient().mutate<TData, TVariables>({ ...options })),
@@ -57,7 +89,7 @@ export class ApolloBase {
     TFragmentData = unknown,
     TVariables extends OperationVariables = EmptyObject,
   >(
-    options: WatchFragmentOptions<TFragmentData, TVariables>,
+    options: Apollo.WatchFragmentOptions<TFragmentData, TVariables>,
     extra?: ExtraSubscriptionOptions,
   ): Observable<ApolloCache.WatchFragmentResult<TFragmentData>> {
     const obs = this.ensureClient().watchFragment<TFragmentData, TVariables>({ ...options });
@@ -66,7 +98,7 @@ export class ApolloBase {
   }
 
   public subscribe<TData, TVariables extends OperationVariables = EmptyObject>(
-    options: ApolloClient.SubscribeOptions<TData, TVariables>,
+    options: Apollo.SubscribeOptions<TData, TVariables>,
     extra?: ExtraSubscriptionOptions,
   ): Observable<ApolloClient.SubscribeResult<TData>> {
     const obs = this.ensureClient().subscribe<TData, TVariables>({ ...options });

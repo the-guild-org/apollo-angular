@@ -13,6 +13,7 @@ export type {
   NamedOptions,
   ResultOf,
   VariablesOf,
-  WatchQueryOptions,
 } from './types';
 export { gql } from './gql';
+
+export { MutationOptions, WatchQueryOptions } from './deprecated';

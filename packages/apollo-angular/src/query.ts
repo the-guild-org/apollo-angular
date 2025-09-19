@@ -4,13 +4,13 @@ import { Injectable } from '@angular/core';
 import type { ApolloClient, OperationVariables, TypedDocumentNode } from '@apollo/client/core';
 import { Apollo } from './apollo';
 import { QueryRef } from './query-ref';
-import { EmptyObject, WatchQueryOptions } from './types';
+import { EmptyObject } from './types';
 
 export declare namespace Query {
   export type WatchOptions<
     TData = unknown,
     TVariables extends OperationVariables = EmptyObject,
-  > = Omit<WatchQueryOptions<TData, TVariables>, 'query'>;
+  > = Omit<Apollo.WatchQueryOptions<TData, TVariables>, 'query'>;
 
   export type FetchOptions<
     TData = unknown,

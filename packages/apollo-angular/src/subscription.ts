@@ -9,7 +9,7 @@ export declare namespace Subscription {
   export type SubscribeOptions<
     TData = unknown,
     TVariables extends OperationVariables = EmptyObject,
-  > = Omit<ApolloClient.SubscribeOptions<TData, TVariables>, 'query'>;
+  > = Omit<Apollo.SubscribeOptions<TData, TVariables>, 'query'>;
 }
 
 @Injectable()

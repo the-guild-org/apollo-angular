@@ -1,10 +1,4 @@
-import type {
-  ApolloCache,
-  ApolloClient,
-  ApolloLink,
-  OperationVariables,
-  TypedDocumentNode,
-} from '@apollo/client/core';
+import type { ApolloClient, ApolloLink, TypedDocumentNode } from '@apollo/client/core';
 
 export type EmptyObject = {
   [key: string]: any;
@@ -24,29 +18,6 @@ export type MutationResult<TData = unknown> = ApolloLink.Result<TData> & {
 };
 
 export type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
-
-export type WatchQueryOptions<
-  TData = unknown,
-  TVariables extends OperationVariables = EmptyObject,
-> = ApolloClient.WatchQueryOptions<TData, TVariables>;
-
-export type MutationOptions<
-  TData = unknown,
-  TVariables extends OperationVariables = EmptyObject,
-> = ApolloClient.MutateOptions<TData, TVariables> & {
-  /**
-   * Observable starts with `{ loading: true }`.
-   * There's a big chance the next major version will enable that by default.
-   *
-   * Disabled by default
-   */
-  useMutationLoading?: boolean;
-};
-
-export interface WatchFragmentOptions<
-  TData = unknown,
-  TVariables extends OperationVariables = EmptyObject,
-> extends ApolloCache.WatchFragmentOptions<TData, TVariables> {}
 
 export type NamedOptions = Record<string, ApolloClient.Options>;
 
