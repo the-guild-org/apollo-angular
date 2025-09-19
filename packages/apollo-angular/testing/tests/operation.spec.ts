@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, test } from 'vitest';
-import { ApolloLink, gql } from '@apollo/client/core';
+import { ApolloLink, gql } from "@apollo/client";
 import { ApolloTestingBackend } from '../src/backend';
 import { buildOperationForLink, executeWithDefaultContext as execute } from './utils';
 

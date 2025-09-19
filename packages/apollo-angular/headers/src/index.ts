@@ -1,5 +1,5 @@
 import { HttpHeaders } from '@angular/common/http';
-import { ApolloLink } from '@apollo/client/core';
+import { ApolloLink } from "@apollo/client";
 
 export class HttpHeadersLink extends ApolloLink {
   constructor() {

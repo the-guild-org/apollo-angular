@@ -1,7 +1,7 @@
 import { Observable } from 'rxjs';
 import { Inject, Injectable, NgZone, Optional } from '@angular/core';
-import type { OperationVariables } from '@apollo/client/core';
-import { ApolloClient } from '@apollo/client/core';
+import type { OperationVariables } from "@apollo/client";
+import { ApolloClient } from "@apollo/client";
 import { QueryRef } from './query-ref';
 import { APOLLO_FLAGS, APOLLO_NAMED_OPTIONS, APOLLO_OPTIONS } from './tokens';
 import type { EmptyObject, Flags, NamedOptions } from './types';

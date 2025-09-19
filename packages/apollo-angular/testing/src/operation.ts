@@ -1,6 +1,6 @@
 import { GraphQLFormattedError, OperationTypeNode } from 'graphql';
 import { Observer } from 'rxjs';
-import { ApolloLink, ErrorLike } from '@apollo/client/core';
+import { ApolloLink, ErrorLike } from "@apollo/client";
 import { isErrorLike } from '@apollo/client/errors';
 
 export type Operation = ApolloLink.Operation & {
