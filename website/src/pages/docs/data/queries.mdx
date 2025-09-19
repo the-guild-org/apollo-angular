@@ -369,9 +369,15 @@ to render partial results.
 
 ## Loading State
 
-Every response you get from `Apollo.watchQuery()` contains `loading` property. By default, it's
-always `false` and the first result is emitted with the response from the ApolloLink execution
-chain. In order to correct it you can enable `useInitialLoading` flag in configuration.
+Every response you get from `Apollo.watchQuery()` contains the `loading` property. The option
+[`notifyOnNetworkStatusChange`](https://www.apollographql.com/docs/react/data/queries#queryhookoptions-interface-notifyonnetworkstatuschange)
+defaults to `true`. That means the observable will emit immediately and synchronously with
+`loading: true` and `data: undefined`. When the XHR is completed, the observable will emit with
+`loading: false` and with a defined `result`.
+
+If you prefer to be notified only when result is available, and you are not interested in loading
+state, then you can configure `notifyOnNetworkStatusChange` to `false`, globally when constructing
+`ApolloClient` of for a specific query only. Something like this:
 
 ```ts filename="app.config.ts"
 import { provideApollo } from 'apollo-angular';
@@ -384,15 +390,12 @@ provideApollo(
     return {
       link: inject(HttpLink).create({ uri: '/graphql' }),
       cache: new InMemoryCache(),
+      defaultOptions: {
+        watchQuery: {
+          notifyOnNetworkStatusChange: false,
+        },
+      },
     };
-  },
-  {
-    useInitialLoading: true, // enable it here
-  },
+  }
 );
 ```
-
-<Callout>
-  `useInitialLoading` is disabled to avoid any breaking changes, this may be enabled in next major
-  version.
-</Callout>
