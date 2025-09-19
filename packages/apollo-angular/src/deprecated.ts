@@ -13,3 +13,6 @@ export type MutationOptions<
   TData = unknown,
   TVariables extends OperationVariables = EmptyObject,
 > = Apollo.MutateOptions<TData, TVariables>;
+
+/** @deprecated Use `Apollo.MutateResult` instead */
+export type MutationResult<TData = unknown> = Apollo.MutateResult<TData>;

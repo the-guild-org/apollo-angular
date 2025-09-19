@@ -4,7 +4,7 @@ import type { ApolloCache, OperationVariables } from '@apollo/client/core';
 import { ApolloClient } from '@apollo/client/core';
 import { QueryRef } from './query-ref';
 import { APOLLO_FLAGS, APOLLO_NAMED_OPTIONS, APOLLO_OPTIONS } from './tokens';
-import type { EmptyObject, Flags, MutationResult, NamedOptions } from './types';
+import type { EmptyObject, Flags, NamedOptions } from './types';
 import { fromLazyPromise, useMutationLoading, wrapWithZone } from './utils';
 
 export declare namespace Apollo {
@@ -17,6 +17,8 @@ export declare namespace Apollo {
     TData = unknown,
     TVariables extends OperationVariables = EmptyObject,
   > = ApolloClient.QueryOptions<TData, TVariables>;
+
+  export type QueryResult<TData = unknown> = ApolloClient.QueryResult<TData>;
 
   export type MutateOptions<
     TData = unknown,
@@ -31,6 +33,10 @@ export declare namespace Apollo {
     useMutationLoading?: boolean;
   };
 
+  export type MutateResult<TData = unknown> = ApolloClient.MutateResult<TData> & {
+    loading?: boolean;
+  };
+
   export type SubscribeOptions<
     TData = unknown,
     TVariables extends OperationVariables = EmptyObject,
@@ -38,12 +44,16 @@ export declare namespace Apollo {
     useZone?: boolean;
   };
 
+  export type SubscribeResult<TData = unknown> = ApolloClient.SubscribeResult<TData>;
+
   export interface WatchFragmentOptions<
     TData = unknown,
     TVariables extends OperationVariables = EmptyObject,
   > extends ApolloCache.WatchFragmentOptions<TData, TVariables> {
     useZone?: boolean;
   }
+
+  export type WatchFragmentResult<TData = unknown> = ApolloCache.WatchFragmentResult<TData>;
 }
 
 export class ApolloBase {
@@ -68,7 +78,7 @@ export class ApolloBase {
 
   public query<TData, TVariables extends OperationVariables = EmptyObject>(
     options: Apollo.QueryOptions<TData, TVariables>,
-  ): Observable<ApolloClient.QueryResult<TData>> {
+  ): Observable<Apollo.QueryResult<TData>> {
     return fromLazyPromise<ApolloClient.QueryResult<TData>>(() =>
       this.ensureClient().query<TData, TVariables>({ ...options }),
     );
@@ -76,7 +86,7 @@ export class ApolloBase {
 
   public mutate<TData, TVariables extends OperationVariables = EmptyObject>(
     options: Apollo.MutateOptions<TData, TVariables>,
-  ): Observable<MutationResult<TData>> {
+  ): Observable<Apollo.MutateResult<TData>> {
     return useMutationLoading(
       fromLazyPromise(() => this.ensureClient().mutate<TData, TVariables>({ ...options })),
       options.useMutationLoading ?? this.useMutationLoading,
@@ -88,7 +98,7 @@ export class ApolloBase {
     TVariables extends OperationVariables = EmptyObject,
   >(
     options: Apollo.WatchFragmentOptions<TFragmentData, TVariables>,
-  ): Observable<ApolloCache.WatchFragmentResult<TFragmentData>> {
+  ): Observable<Apollo.WatchFragmentResult<TFragmentData>> {
     const { useZone, ...opts } = options;
     const obs = this.ensureClient().watchFragment<TFragmentData, TVariables>({ ...opts });
 
@@ -97,11 +107,11 @@ export class ApolloBase {
 
   public subscribe<TData, TVariables extends OperationVariables = EmptyObject>(
     options: Apollo.SubscribeOptions<TData, TVariables>,
-  ): Observable<ApolloClient.SubscribeResult<TData>> {
+  ): Observable<Apollo.SubscribeResult<TData>> {
     const { useZone, ...opts } = options;
     const obs = this.ensureClient().subscribe<TData, TVariables>({
       ...opts,
-    } as Apollo.SubscribeOptions<TData, TVariables>);
+    } as ApolloClient.SubscribeOptions<TData, TVariables>);
 
     return useZone !== true ? obs : wrapWithZone(obs, this.ngZone);
   }
