@@ -28,7 +28,7 @@ Create an `InMemoryCache` object and provide to Apollo options, like so:
 import { provideApollo } from 'apollo-angular';
 import { HttpLink } from 'apollo-angular/http';
 import { inject } from '@angular/core';
-import { InMemoryCache } from '@apollo/client/core';
+import { InMemoryCache } from '@apollo/client';
 
 provideApollo(() => {
   const httpLink = inject(HttpLink);
@@ -167,7 +167,7 @@ If you need to define a single fallback `keyFields` function that isn't specific
 `__typename`, you can use the `dataIdFromObject` function that was introduced in Apollo Client 2.x:
 
 ```ts
-import { defaultDataIdFromObject } from '@apollo/client/core';
+import { defaultDataIdFromObject } from '@apollo/client';
 
 const cache = new InMemoryCache({
   dataIdFromObject(responseObject) {

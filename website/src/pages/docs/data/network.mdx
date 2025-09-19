@@ -24,7 +24,7 @@ easier testing.
 import { provideApollo } from 'apollo-angular';
 import { HttpLink } from 'apollo-angular/http';
 import { inject } from '@angular/core';
-import { InMemoryCache } from '@apollo/client/core';
+import { InMemoryCache } from '@apollo/client';
 
 provideApollo(() => {
   const httpLink = inject(HttpLink);
@@ -96,7 +96,7 @@ apollo.query({
 import { provideApollo } from 'apollo-angular';
 import { HttpLink } from 'apollo-angular/http';
 import { inject } from '@angular/core';
-import { InMemoryCache } from '@apollo/client/core';
+import { InMemoryCache } from '@apollo/client';
 
 provideApollo(() => {
   const httpLink = inject(HttpLink);
@@ -128,7 +128,7 @@ import { HttpLink } from 'apollo-angular/http';
 import extractFiles from 'extract-files/extractFiles.mjs';
 import isExtractableFile from 'extract-files/isExtractableFile.mjs';
 import { inject } from '@angular/core';
-import { InMemoryCache } from '@apollo/client/core';
+import { InMemoryCache } from '@apollo/client';
 
 provideApollo(() => {
   const httpLink = inject(HttpLink);
@@ -162,7 +162,7 @@ import { provideApollo } from 'apollo-angular';
 import { HttpLink } from 'apollo-angular/http';
 import { HttpHeaders } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { ApolloLink, InMemoryCache } from '@apollo/client/core';
+import { ApolloLink, InMemoryCache } from '@apollo/client';
 
 provideApollo(() => {
   const httpLink = inject(HttpLink);
@@ -194,7 +194,7 @@ provideApollo(() => {
 import { provideApollo } from 'apollo-angular';
 import { HttpLink } from 'apollo-angular/http';
 import { inject } from '@angular/core';
-import { InMemoryCache } from '@apollo/client/core';
+import { InMemoryCache } from '@apollo/client';
 import { onError } from '@apollo/client/link/error';
 
 provideApollo(() => {
@@ -226,7 +226,7 @@ An Apollo Link to combine multiple GraphQL operations into single HTTP request.
 import { provideApollo } from 'apollo-angular';
 import { HttpBatchLink } from 'apollo-angular/http';
 import { inject } from '@angular/core';
-import { InMemoryCache } from '@apollo/client/core';
+import { InMemoryCache } from '@apollo/client';
 
 provideApollo(() => {
   const httpBatchLink = inject(HttpBatchLink);
