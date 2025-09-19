@@ -385,17 +385,15 @@ import { HttpLink } from 'apollo-angular/http';
 import { inject } from '@angular/core';
 import { InMemoryCache } from '@apollo/client';
 
-provideApollo(
-  () => {
-    return {
-      link: inject(HttpLink).create({ uri: '/graphql' }),
-      cache: new InMemoryCache(),
-      defaultOptions: {
-        watchQuery: {
-          notifyOnNetworkStatusChange: false,
-        },
+provideApollo(() => {
+  return {
+    link: inject(HttpLink).create({ uri: '/graphql' }),
+    cache: new InMemoryCache(),
+    defaultOptions: {
+      watchQuery: {
+        notifyOnNetworkStatusChange: false,
       },
-    };
-  }
-);
+    },
+  };
+});
 ```
