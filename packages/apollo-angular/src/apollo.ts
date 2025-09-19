@@ -4,13 +4,7 @@ import type { ApolloCache, OperationVariables } from '@apollo/client/core';
 import { ApolloClient } from '@apollo/client/core';
 import { QueryRef } from './query-ref';
 import { APOLLO_FLAGS, APOLLO_NAMED_OPTIONS, APOLLO_OPTIONS } from './tokens';
-import type {
-  EmptyObject,
-  ExtraSubscriptionOptions,
-  Flags,
-  MutationResult,
-  NamedOptions,
-} from './types';
+import type { EmptyObject, Flags, MutationResult, NamedOptions } from './types';
 import { fromLazyPromise, useMutationLoading, wrapWithZone } from './utils';
 
 export declare namespace Apollo {
@@ -40,12 +34,16 @@ export declare namespace Apollo {
   export type SubscribeOptions<
     TData = unknown,
     TVariables extends OperationVariables = EmptyObject,
-  > = ApolloClient.SubscribeOptions<TData, TVariables>;
+  > = ApolloClient.SubscribeOptions<TData, TVariables> & {
+    useZone?: boolean;
+  };
 
   export interface WatchFragmentOptions<
     TData = unknown,
     TVariables extends OperationVariables = EmptyObject,
-  > extends ApolloCache.WatchFragmentOptions<TData, TVariables> {}
+  > extends ApolloCache.WatchFragmentOptions<TData, TVariables> {
+    useZone?: boolean;
+  }
 }
 
 export class ApolloBase {
@@ -90,20 +88,22 @@ export class ApolloBase {
     TVariables extends OperationVariables = EmptyObject,
   >(
     options: Apollo.WatchFragmentOptions<TFragmentData, TVariables>,
-    extra?: ExtraSubscriptionOptions,
   ): Observable<ApolloCache.WatchFragmentResult<TFragmentData>> {
-    const obs = this.ensureClient().watchFragment<TFragmentData, TVariables>({ ...options });
+    const { useZone, ...opts } = options;
+    const obs = this.ensureClient().watchFragment<TFragmentData, TVariables>({ ...opts });
 
-    return extra && extra.useZone !== true ? obs : wrapWithZone(obs, this.ngZone);
+    return useZone !== true ? obs : wrapWithZone(obs, this.ngZone);
   }
 
   public subscribe<TData, TVariables extends OperationVariables = EmptyObject>(
     options: Apollo.SubscribeOptions<TData, TVariables>,
-    extra?: ExtraSubscriptionOptions,
   ): Observable<ApolloClient.SubscribeResult<TData>> {
-    const obs = this.ensureClient().subscribe<TData, TVariables>({ ...options });
+    const { useZone, ...opts } = options;
+    const obs = this.ensureClient().subscribe<TData, TVariables>({
+      ...opts,
+    } as Apollo.SubscribeOptions<TData, TVariables>);
 
-    return extra && extra.useZone !== true ? obs : wrapWithZone(obs, this.ngZone);
+    return useZone !== true ? obs : wrapWithZone(obs, this.ngZone);
   }
 
   /**

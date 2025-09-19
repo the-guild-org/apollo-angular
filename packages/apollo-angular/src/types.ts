@@ -9,10 +9,6 @@ export type ResultOf<T extends TypedDocumentNode> =
 export type VariablesOf<T extends TypedDocumentNode> =
   T extends TypedDocumentNode<any, infer V> ? V : never;
 
-export interface ExtraSubscriptionOptions {
-  useZone?: boolean;
-}
-
 export type MutationResult<TData = unknown> = ApolloLink.Result<TData> & {
   loading?: boolean;
 };
