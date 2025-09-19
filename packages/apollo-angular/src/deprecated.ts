@@ -4,8 +4,8 @@ import type { EmptyObject } from './types';
 
 /** @deprecated Use `Apollo.WatchQueryOptions` instead */
 export type WatchQueryOptions<
-  TData = unknown,
   TVariables extends OperationVariables = EmptyObject,
+  TData = unknown,
 > = Apollo.WatchQueryOptions<TData, TVariables>;
 
 /** @deprecated Use `Apollo.MutateOptions` instead */
