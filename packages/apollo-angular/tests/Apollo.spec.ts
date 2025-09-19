@@ -574,7 +574,7 @@ describe('Apollo', () => {
 
       client.subscribe = vi.fn().mockReturnValue(['subscription']);
 
-      const obs = apollo.subscribe(options, { useZone: false });
+      const obs = apollo.subscribe({ ...options, useZone: false });
       const operator = (obs as any).operator;
 
       expect(operator).toBeUndefined();
