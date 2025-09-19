@@ -41,14 +41,14 @@ export function useMutationLoading<T>(
   }
 
   return source.pipe(
-    startWith<Apollo.MutateResult<T>>({
-      data: undefined,
-      loading: true,
-    }),
     map<ApolloClient.MutateResult<T>, Apollo.MutateResult<T>>(result => ({
       ...result,
       loading: false,
     })),
+    startWith<Apollo.MutateResult<T>>({
+      data: undefined,
+      loading: true,
+    }),
   );
 }
 
