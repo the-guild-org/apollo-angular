@@ -2,7 +2,7 @@ import { Apollo, gql } from 'apollo-angular';
 import { Observable } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
 import { AsyncPipe } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 interface Film {
@@ -15,6 +15,8 @@ interface Film {
 interface Query {
   allFilms: { films: Film[] };
 }
+
+type Variables = Record<PropertyKey, never>;
 
 @Component({
   selector: 'movies-page',
@@ -37,13 +39,12 @@ interface Query {
 })
 export class MoviesPageComponent implements OnInit {
   films$!: Observable<Film[]>;
-
-  constructor(private readonly apollo: Apollo) {}
+  private readonly apollo = inject(Apollo);
 
   ngOnInit() {
     this.films$ = this.apollo
-      .watchQuery<Query>({
-        query: gql`
+      .watchQuery({
+        query: gql<Query, Variables>`
           query AllFilms {
             allFilms {
               films {
