@@ -98,7 +98,7 @@ function includeAsyncIterableLib(): Rule {
         '\n' +
           tags.stripIndent`
               We couldn't find '${requiredLib}' in the list of library files to be included in the compilation.
-              It's required by '@apollo/client/core' package so please add it to your tsconfig.
+              It's required by '@apollo/client' package so please add it to your tsconfig.
             ` +
           '\n',
       );
@@ -151,7 +151,7 @@ function allowSyntheticDefaultImports(): Rule {
         '\n' +
           tags.stripIndent`
               We couldn't enable 'allowSyntheticDefaultImports' flag.
-              It's required by '@apollo/client/core' package so please add it to your tsconfig.
+              It's required by '@apollo/client' package so please add it to your tsconfig.
             ` +
           '\n',
       );
@@ -201,7 +201,7 @@ function importSetup(options: Schema): Rule {
         link: httpLink.create({
           uri: '<%= endpoint %>',
         }),
-        cache: new ${external('InMemoryCache', '@apollo/client/core')}(),
+        cache: new ${external('InMemoryCache', '@apollo/client')}(),
       };
     })`;
       });
