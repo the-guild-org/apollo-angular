@@ -431,49 +431,37 @@ describe('Apollo', () => {
         });
       }));
 
-    test('should NOT useMutationLoading by default', () =>
-      new Promise<void>(done => {
-        expect.assertions(2);
-        const apollo = testBed.inject(Apollo);
-        const query = gql`
-          mutation addRandomHero {
-            addRandomHero {
-              name
-              __typename
-            }
+    test('should NOT useMutationLoading by default', async () => {
+      const apollo = testBed.inject(Apollo);
+      const query = gql`
+        mutation addRandomHero {
+          addRandomHero {
+            name
+            __typename
           }
-        `;
-        const data = {
-          addRandomHero: {
-            name: 'Superman',
-            __typename: 'Hero',
-          },
-        };
+        }
+      `;
+      const data = {
+        addRandomHero: {
+          name: 'Superman',
+          __typename: 'Hero',
+        },
+      };
 
-        // create
-        apollo.create({
-          link: new MockLink([{ request: { query }, result: { data } }]),
-          cache: new InMemoryCache(),
-        });
+      apollo.create({
+        link: new MockLink([{ request: { query }, result: { data } }]),
+        cache: new InMemoryCache(),
+      });
 
-        // mutation
-        apollo
-          .mutate<any>({
-            mutation: query,
-          })
-          .subscribe({
-            next: result => {
-              expect(result.loading).toBe(false);
-              expect(result.data).toMatchObject(data);
-              setTimeout(() => {
-                return done();
-              }, 3000);
-            },
-            error: e => {
-              throw e;
-            },
-          });
-      }));
+      const stream = new ObservableStream(apollo.mutate({ mutation: query }));
+
+      await expect(stream.takeNext()).resolves.toEqual({
+        data,
+        loading: false,
+      });
+
+      await expect(stream).not.toEmitAnything();
+    });
 
     test('should useMutationLoading on demand', async () => {
       const apollo = testBed.inject(Apollo);
