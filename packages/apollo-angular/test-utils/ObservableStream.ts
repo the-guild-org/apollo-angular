@@ -120,7 +120,9 @@ export class ObservableStream<T> {
 
   async takeNext(options?: TakeOptions): Promise<T> {
     const event = await this.take(options);
-    validateEquals(event, { type: 'next', value: expect.anything() });
+    if (event.type !== 'next') {
+      throw new EventMismatchError({ type: 'next', value: expect.anything() }, event);
+    }
     return (event as ObservableEvent<T> & { type: 'next' }).value;
   }
 
