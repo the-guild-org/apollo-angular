@@ -26,7 +26,6 @@ export declare namespace Apollo {
   > = ApolloClient.MutateOptions<TData, TVariables> & {
     /**
      * Observable starts with `{ loading: true }`.
-     * There's a big chance the next major version will enable that by default.
      *
      * Disabled by default
      */
