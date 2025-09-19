@@ -1,7 +1,7 @@
 import type { DocumentNode } from 'graphql';
 import type { Observable } from 'rxjs';
 import { Injectable } from '@angular/core';
-import type { ApolloClient, OperationVariables, TypedDocumentNode } from '@apollo/client/core';
+import type { OperationVariables, TypedDocumentNode } from '@apollo/client/core';
 import { Apollo } from './apollo';
 import { EmptyObject } from './types';
 
@@ -26,7 +26,7 @@ export abstract class Subscription<
     ...[options]: {} extends TVariables
       ? [options?: Subscription.SubscribeOptions<TData, TVariables>]
       : [options: Subscription.SubscribeOptions<TData, TVariables>]
-  ): Observable<ApolloClient.SubscribeResult<TData>> {
+  ): Observable<Apollo.SubscribeResult<TData>> {
     return this.apollo.use(this.client).subscribe<TData, TVariables>({
       ...options,
       query: this.document,
