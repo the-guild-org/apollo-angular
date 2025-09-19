@@ -2,7 +2,7 @@ import { Observable, queueScheduler, SchedulerAction, SchedulerLike, Subscriptio
 import { map, observeOn, startWith } from 'rxjs/operators';
 import { NgZone } from '@angular/core';
 import type { ApolloClient } from '@apollo/client/core';
-import { MutationResult } from './types';
+import { Apollo } from './apollo';
 
 /**
  * Like RxJS's `fromPromise()`, but starts the promise only when the observable is subscribed to.
@@ -33,7 +33,7 @@ export function useMutationLoading<T>(
 ) {
   if (!enabled) {
     return source.pipe(
-      map<ApolloClient.MutateResult<T>, MutationResult<T>>(result => ({
+      map<ApolloClient.MutateResult<T>, Apollo.MutateResult<T>>(result => ({
         ...result,
         loading: false,
       })),
@@ -41,12 +41,13 @@ export function useMutationLoading<T>(
   }
 
   return source.pipe(
-    startWith<MutationResult<T>>({
+    startWith<Apollo.MutateResult<T>>({
+      data: undefined,
       loading: true,
     }),
-    map<MutationResult<T>, MutationResult<T>>(result => ({
+    map<ApolloClient.MutateResult<T>, Apollo.MutateResult<T>>(result => ({
       ...result,
-      loading: !!result.loading,
+      loading: false,
     })),
   );
 }
