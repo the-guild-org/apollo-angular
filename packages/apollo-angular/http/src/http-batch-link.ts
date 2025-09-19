@@ -32,9 +32,9 @@ export const defaults = {
  */
 export function pick<K extends keyof Omit<typeof defaults, 'batchInterval' | 'batchMax'>>(
   context: Context,
-  options: HttpLink.Options,
+  options: HttpBatchLink.Options,
   key: K,
-): ReturnType<typeof prioritize<Context[K] | HttpLink.Options[K] | (typeof defaults)[K]>> {
+): ReturnType<typeof prioritize<Context[K] | HttpBatchLink.Options[K] | (typeof defaults)[K]>> {
   return prioritize(context[key], options[key], defaults[key]);
 }
 
@@ -109,7 +109,7 @@ export class HttpBatchLinkHandler extends ApolloLink {
 
   private createOptions(
     operations: ApolloLink.Operation[],
-  ): Required<Pick<HttpLink.Options, 'method' | 'uri' | 'withCredentials'>> {
+  ): Required<Pick<HttpBatchLink.Options, 'method' | 'uri' | 'withCredentials'>> {
     const context: Context = operations[0].getContext();
 
     return {
