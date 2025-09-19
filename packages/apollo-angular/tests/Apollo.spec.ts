@@ -475,57 +475,47 @@ describe('Apollo', () => {
           });
       }));
 
-    test('should useMutationLoading on demand', () =>
-      new Promise<void>(done => {
-        expect.assertions(3);
-        const apollo = testBed.inject(Apollo);
-        const query = gql`
-          mutation addRandomHero {
-            addRandomHero {
-              name
-              __typename
-            }
+    test('should useMutationLoading on demand', async () => {
+      const apollo = testBed.inject(Apollo);
+      const query = gql`
+        mutation addRandomHero {
+          addRandomHero {
+            name
+            __typename
           }
-        `;
-        const data = {
-          addRandomHero: {
-            name: 'Superman',
-            __typename: 'Hero',
-          },
-        };
+        }
+      `;
+      const data = {
+        addRandomHero: {
+          name: 'Superman',
+          __typename: 'Hero',
+        },
+      };
 
-        let alreadyCalled = false;
+      apollo.create({
+        link: new MockLink([{ request: { query }, result: { data } }]),
+        cache: new InMemoryCache(),
+      });
 
-        // create
-        apollo.create({
-          link: new MockLink([{ request: { query }, result: { data } }]),
-          cache: new InMemoryCache(),
-        });
+      const stream = new ObservableStream(
+        apollo.mutate({
+          mutation: query,
+          useMutationLoading: true,
+        }),
+      );
 
-        // mutation
-        apollo
-          .mutate<any>({
-            mutation: query,
-            useMutationLoading: true,
-          })
-          .subscribe({
-            next: result => {
-              if (alreadyCalled) {
-                expect(result.loading).toBe(false);
-                expect(result.data).toMatchObject(data);
-                setTimeout(() => {
-                  return done();
-                }, 3000);
-              } else {
-                expect(result.loading).toBe(true);
-                alreadyCalled = true;
-              }
-            },
-            error: e => {
-              throw e;
-            },
-          });
-      }));
+      await expect(stream.takeNext()).resolves.toEqual({
+        data: undefined,
+        loading: true,
+      });
+
+      await expect(stream.takeNext()).resolves.toEqual({
+        data,
+        loading: false,
+      });
+
+      await expect(stream).not.toEmitAnything();
+    });
   });
 
   describe('subscribe', () => {
