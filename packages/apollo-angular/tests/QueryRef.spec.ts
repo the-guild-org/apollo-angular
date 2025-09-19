@@ -2,10 +2,17 @@ import { Subject } from 'rxjs';
 import { map, takeUntil } from 'rxjs/operators';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { NgZone } from '@angular/core';
-import { ApolloClient, ApolloLink, InMemoryCache, ObservableQuery } from '@apollo/client';
+import {
+  ApolloClient,
+  ApolloLink,
+  InMemoryCache,
+  NetworkStatus,
+  ObservableQuery,
+} from '@apollo/client';
 import { MockLink } from '@apollo/client/testing';
 import { gql } from '../src/gql';
 import { QueryRef } from '../src/query-ref';
+import { ObservableStream } from '../test-utils/ObservableStream';
 
 const createClient = (link: ApolloLink) =>
   new ApolloClient({
@@ -61,20 +68,14 @@ describe('QueryRef', () => {
     queryRef = new QueryRef<any>(obsQuery, ngZone);
   });
 
-  test('should listen to changes', () =>
-    new Promise<void>(done => {
-      queryRef.valueChanges.subscribe({
-        next: result => {
-          if (result.dataState === 'complete') {
-            expect(result.data).toBeDefined();
-            done();
-          }
-        },
-        error: e => {
-          throw e;
-        },
-      });
-    }));
+  test('should listen to changes', async () => {
+    const stream = new ObservableStream(queryRef.valueChanges);
+
+    await expect(stream.takeNext()).resolves.toMatchObject({ loading: true });
+
+    const result = await stream.takeNext();
+    expect(result.data).toBeDefined();
+  });
 
   test('should be able to call refetch', () => {
     const mockCallback = vi.fn();
@@ -85,65 +86,59 @@ describe('QueryRef', () => {
     expect(mockCallback.mock.calls.length).toBe(1);
   });
 
-  test('should be able refetch and receive new results', () =>
-    new Promise<void>(done => {
-      let calls = 0;
+  test('should be able refetch and receive new results', async () => {
+    const stream = new ObservableStream(queryRef.valueChanges);
 
-      queryRef.valueChanges.subscribe({
-        next: result => {
-          calls++;
+    await expect(stream.takeNext()).resolves.toEqual({
+      data: undefined,
+      dataState: 'empty',
+      loading: true,
+      networkStatus: NetworkStatus.loading,
+      partial: true,
+    });
 
-          if (result.dataState === 'complete') {
-            expect(result.data).toBeDefined();
-          }
+    await expect(stream.takeNext()).resolves.toEqual({
+      data: { heroes: [Superman] },
+      dataState: 'complete',
+      loading: false,
+      networkStatus: NetworkStatus.ready,
+      partial: false,
+    });
 
-          if (calls === 4) {
-            done();
-          }
-        },
-        error: e => {
-          throw e;
-        },
-        complete: () => {
-          throw 'Should not be here';
-        },
-      });
+    queryRef.refetch();
 
-      setTimeout(() => {
-        queryRef.refetch();
-      }, 200);
-    }));
+    await expect(stream.takeNext()).resolves.toEqual({
+      data: { heroes: [Superman] },
+      dataState: 'complete',
+      loading: true,
+      networkStatus: NetworkStatus.refetch,
+      partial: false,
+    });
 
-  test('should be able refetch and receive new results after using rxjs operator', () =>
-    new Promise<void>(done => {
-      let calls = 0;
-      const obs = queryRef.valueChanges;
+    await expect(stream.takeNext()).resolves.toEqual({
+      data: { heroes: [Superman, Batman] },
+      dataState: 'complete',
+      loading: false,
+      networkStatus: NetworkStatus.ready,
+      partial: false,
+    });
 
-      obs.pipe(map(result => result.data)).subscribe({
-        next: result => {
-          calls++;
+    await expect(stream).not.toEmitAnything();
+  });
 
-          // loading -> data; refetch() -> loading -> data
-          if (calls === 2) {
-            expect(result.heroes.length).toBe(1);
-          } else if (calls === 4) {
-            expect(result.heroes.length).toBe(2);
+  test('should be able refetch and receive new results after using rxjs operator', async () => {
+    const obs = queryRef.valueChanges.pipe(map(result => result.data));
+    const stream = new ObservableStream(obs);
 
-            done();
-          }
-        },
-        error: e => {
-          throw e;
-        },
-        complete: () => {
-          throw 'Should not be here';
-        },
-      });
+    await expect(stream.takeNext()).resolves.toBeUndefined();
+    await expect(stream.takeNext()).resolves.toEqual({ heroes: [Superman] });
 
-      setTimeout(() => {
-        queryRef.refetch();
-      }, 200);
-    }));
+    queryRef.refetch();
+
+    await expect(stream.takeNext()).resolves.toEqual({ heroes: [Superman] });
+    await expect(stream.takeNext()).resolves.toEqual({ heroes: [Superman, Batman] });
+    await expect(stream).not.toEmitAnything();
+  });
 
   test('should be able to call updateQuery()', () => {
     const mockCallback = vi.fn();
@@ -156,37 +151,69 @@ describe('QueryRef', () => {
     expect(mockCallback.mock.calls[0][0]).toBe(mapFn);
   });
 
-  test('should be able to call getCurrentResult() and get updated results', () =>
-    new Promise<void>(done => {
-      let calls = 0;
-      const obs = queryRef.valueChanges;
+  test('should be able to call getCurrentResult() and get updated results', async () => {
+    const stream = new ObservableStream(queryRef.valueChanges);
 
-      obs.pipe(map(result => result.data)).subscribe({
-        next: result => {
-          calls++;
+    {
+      const result = await stream.takeNext();
+      const currentResult = queryRef.getCurrentResult();
 
-          const currentResult = queryRef.getCurrentResult();
-
-          if (currentResult.dataState === 'complete') {
-            expect(currentResult.data.heroes.length).toBe(result.heroes.length);
-          }
-
-          if (calls === 4) {
-            done();
-          }
-        },
-        error: e => {
-          throw e;
-        },
-        complete: () => {
-          throw 'Should not be here';
-        },
+      expect(currentResult).toEqual(result);
+      expect(currentResult).toEqual({
+        data: undefined,
+        dataState: 'empty',
+        loading: true,
+        networkStatus: NetworkStatus.loading,
+        partial: true,
       });
+    }
 
-      setTimeout(() => {
-        queryRef.refetch();
-      }, 200);
-    }));
+    {
+      const result = await stream.takeNext();
+      const currentResult = queryRef.getCurrentResult();
+
+      expect(currentResult).toEqual(result);
+      expect(currentResult).toEqual({
+        data: { heroes: [Superman] },
+        dataState: 'complete',
+        loading: false,
+        networkStatus: NetworkStatus.ready,
+        partial: false,
+      });
+    }
+
+    queryRef.refetch();
+
+    {
+      const result = await stream.takeNext();
+      const currentResult = queryRef.getCurrentResult();
+
+      expect(currentResult).toEqual(result);
+      expect(currentResult).toEqual({
+        data: { heroes: [Superman] },
+        dataState: 'complete',
+        loading: true,
+        networkStatus: NetworkStatus.refetch,
+        partial: false,
+      });
+    }
+
+    {
+      const result = await stream.takeNext();
+      const currentResult = queryRef.getCurrentResult();
+
+      expect(currentResult).toEqual(result);
+      expect(currentResult).toEqual({
+        data: { heroes: [Superman, Batman] },
+        dataState: 'complete',
+        loading: false,
+        networkStatus: NetworkStatus.ready,
+        partial: false,
+      });
+    }
+
+    await expect(stream).not.toEmitAnything();
+  });
 
   test('should be able to call fetchMore()', () => {
     const mockCallback = vi.fn();
