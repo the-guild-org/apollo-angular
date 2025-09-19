@@ -1,6 +1,6 @@
 import { DocumentNode } from 'graphql';
 import { HttpHeaders } from '@angular/common/http';
-import { ApolloLink } from "@apollo/client";
+import { ApolloLink } from '@apollo/client';
 
 declare module '@apollo/client' {
   export interface DefaultContext extends Context {}

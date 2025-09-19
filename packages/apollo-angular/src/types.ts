@@ -1,4 +1,4 @@
-import type { ApolloClient, TypedDocumentNode } from "@apollo/client";
+import type { ApolloClient, TypedDocumentNode } from '@apollo/client';
 
 export type EmptyObject = {
   [key: string]: any;

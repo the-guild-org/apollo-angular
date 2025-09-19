@@ -1,5 +1,5 @@
 import { Observable } from 'rxjs';
-import { ApolloClient, ApolloLink, execute, InMemoryCache } from "@apollo/client";
+import { ApolloClient, ApolloLink, execute, InMemoryCache } from '@apollo/client';
 
 export function createDefaultExecuteContext(): ApolloLink.ExecuteContext {
   return {

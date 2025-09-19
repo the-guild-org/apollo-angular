@@ -1,6 +1,6 @@
 import { DocumentNode } from 'graphql';
 import { Observable } from 'rxjs';
-import { ApolloClient, execute, InMemoryCache, OperationVariables } from "@apollo/client";
+import { ApolloClient, execute, InMemoryCache, OperationVariables } from '@apollo/client';
 import { ApolloLink } from '@apollo/client/link';
 import { addTypenameToDocument } from '@apollo/client/utilities';
 

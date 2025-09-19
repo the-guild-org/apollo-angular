@@ -2,7 +2,7 @@ import { Subject } from 'rxjs';
 import { map, takeUntil } from 'rxjs/operators';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { NgZone } from '@angular/core';
-import { ApolloClient, ApolloLink, InMemoryCache, ObservableQuery } from "@apollo/client";
+import { ApolloClient, ApolloLink, InMemoryCache, ObservableQuery } from '@apollo/client';
 import { MockLink } from '@apollo/client/testing';
 import { gql } from '../src/gql';
 import { QueryRef } from '../src/query-ref';

@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, test } from 'vitest';
 import { HttpHeaders, provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { ApolloLink, gql, InMemoryCache } from "@apollo/client";
+import { ApolloLink, gql, InMemoryCache } from '@apollo/client';
 import { Apollo } from '../../src';
 import { HttpLink } from '../src/http-link';
 import { executeWithDefaultContext as execute } from './utils';

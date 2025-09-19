@@ -1,6 +1,12 @@
 import { Observable } from 'rxjs';
 import { describe, expect, test, vi } from 'vitest';
-import { ApolloClient, ApolloLink, execute as executeLink, gql, InMemoryCache } from "@apollo/client";
+import {
+  ApolloClient,
+  ApolloLink,
+  execute as executeLink,
+  gql,
+  InMemoryCache,
+} from '@apollo/client';
 import { createPersistedQueryLink } from '../src';
 
 const query = gql`

@@ -1,7 +1,7 @@
 import { Observable, queueScheduler, SchedulerAction, SchedulerLike, Subscription } from 'rxjs';
 import { map, observeOn, startWith } from 'rxjs/operators';
 import { NgZone } from '@angular/core';
-import type { ApolloClient } from "@apollo/client";
+import type { ApolloClient } from '@apollo/client';
 import { Apollo } from './apollo';
 
 /**

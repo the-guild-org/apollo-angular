@@ -2,7 +2,7 @@ import { print } from 'graphql';
 import { Observable } from 'rxjs';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { ApolloLink } from "@apollo/client";
+import { ApolloLink } from '@apollo/client';
 import { BatchLink } from '@apollo/client/link/batch';
 import type { HttpLink } from './http-link';
 import { Body, Context, OperationPrinter, Request } from './types';

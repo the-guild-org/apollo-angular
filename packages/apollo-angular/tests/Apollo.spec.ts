@@ -3,7 +3,7 @@ import { mergeMap } from 'rxjs/operators';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { NgZone } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { ApolloLink, InMemoryCache, NetworkStatus } from "@apollo/client";
+import { ApolloLink, InMemoryCache, NetworkStatus } from '@apollo/client';
 import { MockLink } from '@apollo/client/testing';
 import { Apollo, ApolloBase } from '../src/apollo';
 import { gql } from '../src/gql';
