@@ -16,7 +16,7 @@ const data = { heroes: [{ name: 'Foo', __typename: 'Hero' }] };
 
 const dummyClient = new ApolloClient({ cache: new InMemoryCache(), link: ApolloLink.empty() });
 
-describe('httpHeaders', () => {
+describe('HttpHeadersLink', () => {
   test('should turn object into HttpHeaders', () =>
     new Promise<void>(done => {
       const headersLink = new HttpHeadersLink();

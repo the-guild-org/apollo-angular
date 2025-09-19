@@ -15,10 +15,3 @@ export class HttpHeadersLink extends ApolloLink {
     });
   }
 }
-
-/**
- * @deprecated Use `HttpHeadersLink` instead.
- */
-export const httpHeaders = () => {
-  return new HttpHeadersLink();
-};
