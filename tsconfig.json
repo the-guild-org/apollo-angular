@@ -9,7 +9,7 @@
     "sourceMap": true,
     "declaration": true,
     "outDir": "build",
-    "lib": ["es6", "dom", "esnext.asynciterable"],
+    "lib": ["es6", "dom"],
     "downlevelIteration": true,
     "experimentalDecorators": true,
     "noImplicitAny": true,

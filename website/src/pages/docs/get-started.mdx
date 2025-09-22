@@ -33,18 +33,6 @@ npm i apollo-angular @apollo/client graphql
 - `apollo-angular`: Bridge between Angular and Apollo Client
 - `graphql`: Second most important package
 
-The `@apollo/client` package requires `AsyncIterable` so make sure your `tsconfig.json` includes
-`ES2020` or later:
-
-```jsonc filename="tsconfig.json" /"es2020"/
-{
-  "compilerOptions": {
-    // ...
-    "lib": ["es2020", "dom"],
-  },
-}
-```
-
 Great, now that you have all the dependencies you need, let's create your first Apollo Client.
 
 In `app.config.ts` file, provide Apollo with some options:

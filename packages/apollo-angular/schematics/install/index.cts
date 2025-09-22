@@ -1,6 +1,4 @@
 import { dirname } from 'path';
-import { CompilerOptions } from 'typescript';
-import { tags } from '@angular-devkit/core';
 import {
   apply,
   chain,
@@ -23,8 +21,6 @@ import { Schema } from './schema.cjs';
 export function factory(options: Schema): Rule {
   return chain([
     addDependencies(options),
-    includeAsyncIterableLib(),
-    allowSyntheticDefaultImports(),
     addSetupFiles(options),
     importHttpClient(options),
     importSetup(options),
@@ -66,96 +62,6 @@ function addDependencies(options: Schema): Rule {
 
     // schedule `npm install`
     context.addTask(new NodePackageInstallTask());
-
-    return host;
-  };
-}
-
-function includeAsyncIterableLib(): Rule {
-  const requiredLib = 'esnext.asynciterable';
-
-  function updateFn(tsconfig: any): boolean {
-    const compilerOptions: CompilerOptions = tsconfig.compilerOptions;
-
-    if (
-      compilerOptions &&
-      compilerOptions.lib &&
-      !compilerOptions.lib.find(lib => lib.toLowerCase() === requiredLib)
-    ) {
-      compilerOptions.lib.push(requiredLib);
-      return true;
-    }
-
-    return false;
-  }
-
-  return (host: Tree) => {
-    if (
-      !updateTSConfig('tsconfig.json', host, updateFn) &&
-      !updateTSConfig('tsconfig.base.json', host, updateFn)
-    ) {
-      console.error(
-        '\n' +
-          tags.stripIndent`
-              We couldn't find '${requiredLib}' in the list of library files to be included in the compilation.
-              It's required by '@apollo/client' package so please add it to your tsconfig.
-            ` +
-          '\n',
-      );
-    }
-
-    return host;
-  };
-}
-
-function updateTSConfig(
-  tsconfigPath: string,
-  host: Tree,
-  updateFn: (tsconfig: any) => boolean,
-): boolean {
-  try {
-    const tsconfig = getJsonFile(host, tsconfigPath);
-
-    if (updateFn(tsconfig)) {
-      host.overwrite(tsconfigPath, JSON.stringify(tsconfig, null, 2));
-
-      return true;
-    }
-  } catch (error) {
-    //
-  }
-
-  return false;
-}
-
-function allowSyntheticDefaultImports(): Rule {
-  function updateFn(tsconfig: any): boolean {
-    if (
-      tsconfig?.compilerOptions &&
-      tsconfig?.compilerOptions?.lib &&
-      !tsconfig.compilerOptions.allowSyntheticDefaultImports
-    ) {
-      tsconfig.compilerOptions.allowSyntheticDefaultImports = true;
-      return true;
-    }
-
-    return false;
-  }
-
-  return (host: Tree) => {
-    if (
-      !updateTSConfig('tsconfig.json', host, updateFn) &&
-      !updateTSConfig('tsconfig.base.json', host, updateFn)
-    ) {
-      console.error(
-        '\n' +
-          tags.stripIndent`
-              We couldn't enable 'allowSyntheticDefaultImports' flag.
-              It's required by '@apollo/client' package so please add it to your tsconfig.
-            ` +
-          '\n',
-      );
-    }
 
     return host;
   };

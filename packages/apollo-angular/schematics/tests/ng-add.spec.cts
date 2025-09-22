@@ -50,13 +50,6 @@ describe('ng-add with module', () => {
 
         expect(content).toMatch(/import { HttpClientModule } from '@angular\/common\/http'/);
     });
-
-    it('should add esnext.asynciterable to tsconfig.json', async () => {
-        const config = getJsonFile(tree, '/tsconfig.json');
-        const compilerOptions: CompilerOptions = config.compilerOptions;
-
-        expect(compilerOptions.lib).toContain('esnext.asynciterable');
-    });
 });
 
 describe('ng-add with standalone', () => {
@@ -97,12 +90,5 @@ describe('ng-add with standalone', () => {
         const content = getFileContent(tree, '/projects/apollo/src/app/app.config.ts');
 
         expect(content).toMatch(/import { provideHttpClient } from '@angular\/common\/http'/);
-    });
-
-    it('should add esnext.asynciterable to tsconfig.json', async () => {
-        const config = getJsonFile(tree, '/tsconfig.json');
-        const compilerOptions: CompilerOptions = config.compilerOptions;
-
-        expect(compilerOptions.lib).toContain('esnext.asynciterable');
     });
 });
