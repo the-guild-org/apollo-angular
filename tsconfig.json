@@ -2,27 +2,23 @@
   "compileOnSave": false,
   "compilerOptions": {
     "target": "ES2022",
-    "module": "esnext",
-    "moduleResolution": "node",
+    "module": "preserve",
     "importHelpers": true,
-    "inlineSources": true,
     "sourceMap": true,
     "declaration": true,
     "outDir": "build",
-    "lib": ["es6", "dom"],
-    "downlevelIteration": true,
     "experimentalDecorators": true,
-    "noImplicitAny": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "strictNullChecks": true,
     "strict": true
   },
   "angularCompilerOptions": {
-    "enableResourceInlining": true,
-    "fullTemplateTypeCheck": true,
-    "skipTemplateCodegen": true,
     "strictInjectionParameters": true,
+    "strictInputAccessModifiers": true,
+    "typeCheckHostBindings": true,
+    "strictTemplates": true,
     "strictMetadataEmit": true
   }
 }

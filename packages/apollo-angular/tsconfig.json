@@ -3,10 +3,8 @@
   "compilerOptions": {
     "rootDir": ".",
     "baseUrl": ".",
-    "outDir": "build"
-  },
-  "angularCompilerOptions": {
-    "enableIvy": false
+    "outDir": "build",
+    "inlineSources": true
   },
   "include": [
     "headers/**/*.ts",
