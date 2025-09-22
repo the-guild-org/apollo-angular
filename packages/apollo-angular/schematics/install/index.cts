@@ -112,7 +112,12 @@ function importSetup(options: Schema): Rule {
     })`;
       });
     } else {
-      return addModuleImportToRootModule(host, 'GraphQLModule', './graphql.module', options.project);
+      return addModuleImportToRootModule(
+        host,
+        'GraphQLModule',
+        './graphql.module',
+        options.project,
+      );
     }
   };
 }
@@ -125,7 +130,7 @@ function importHttpClient(options: Schema): Rule {
         return code`${external('provideHttpClient', '@angular/common/http')}()`;
       });
     } else {
-      return  addModuleImportToRootModule(
+      return addModuleImportToRootModule(
         host,
         'HttpClientModule',
         '@angular/common/http',
