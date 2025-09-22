@@ -1,5 +1,3 @@
-
-import {CompilerOptions} from 'typescript';
 import {UnitTestTree} from '@angular-devkit/schematics/testing';
 import {createDependenciesMap} from '../install/index.cjs';
 import {getFileContent, getJsonFile, runNgAdd} from '../utils/index.cjs';
