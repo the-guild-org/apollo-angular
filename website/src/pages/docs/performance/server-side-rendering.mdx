@@ -28,7 +28,7 @@ import { provideApollo } from 'apollo-angular';
 import { HttpLink } from 'apollo-angular/http';
 import { provideHttpClient } from '@angular/common/http';
 import { ApplicationConfig, inject, InjectionToken } from '@angular/core';
-import { InMemoryCache } from '@apollo/client/core';
+import { InMemoryCache } from '@apollo/client';
 
 const MY_APOLLO_CACHE = new InjectionToken<InMemoryCache>('apollo-cache');
 
@@ -84,7 +84,7 @@ import {
   makeStateKey,
   TransferState,
 } from '@angular/core';
-import { InMemoryCache, NormalizedCacheObject } from '@apollo/client/core';
+import { InMemoryCache, NormalizedCacheObject } from '@apollo/client';
 
 const MY_APOLLO_CACHE = new InjectionToken<InMemoryCache>('apollo-cache');
 const STATE_KEY = makeStateKey<NormalizedCacheObject>('apollo.state');

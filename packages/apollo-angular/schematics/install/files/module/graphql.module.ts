@@ -1,9 +1,9 @@
 import { provideApollo } from 'apollo-angular';
 import { HttpLink } from 'apollo-angular/http';
 import { inject, NgModule } from '@angular/core';
-import { ApolloClientOptions, InMemoryCache } from '@apollo/client/core';
+import { ApolloClient, InMemoryCache } from '@apollo/client';
 
-export function createApollo(): ApolloClientOptions<any> {
+export function createApollo(): ApolloClient.Options {
   const uri = '<%= endpoint %>'; // <-- add the URL of the GraphQL server here
   const httpLink = inject(HttpLink);
 

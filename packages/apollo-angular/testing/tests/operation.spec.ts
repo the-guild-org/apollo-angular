@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, test } from 'vitest';
-import { ApolloLink, execute, FetchResult, gql } from '@apollo/client/core';
+import { ApolloLink, gql } from '@apollo/client';
 import { ApolloTestingBackend } from '../src/backend';
-import { buildOperationForLink } from './utils';
+import { buildOperationForLink, executeWithDefaultContext as execute } from './utils';
 
 const testQuery = gql`
   query allHeroes {
@@ -73,7 +73,7 @@ describe('TestOperation', () => {
   test('should leave the operation open for a subscription', () =>
     new Promise<void>(done => {
       const operation = buildOperationForLink(testSubscription, {});
-      const emittedResults: FetchResult[] = [];
+      const emittedResults: ApolloLink.Result[] = [];
 
       execute(link, operation).subscribe({
         next(result) {
@@ -112,7 +112,7 @@ describe('TestOperation', () => {
   test('should close the operation after a query', () =>
     new Promise<void>(done => {
       const operation = buildOperationForLink(testQuery, {});
-      const emittedResults: FetchResult[] = [];
+      const emittedResults: ApolloLink.Result[] = [];
 
       execute(link, operation).subscribe({
         next(result) {
@@ -144,7 +144,7 @@ describe('TestOperation', () => {
   test('should close the operation after a mutation', () =>
     new Promise<void>(done => {
       const operation = buildOperationForLink(testMutation, { hero: 'firstHero' });
-      const emittedResults: FetchResult[] = [];
+      const emittedResults: ApolloLink.Result[] = [];
 
       execute(link, operation).subscribe({
         next(result) {

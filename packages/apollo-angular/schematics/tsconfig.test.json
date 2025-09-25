@@ -1,8 +1,7 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "emitDecoratorMetadata": true,
-    "allowSyntheticDefaultImports": true
+    "emitDecoratorMetadata": true
   },
   "include": ["tests/*.spec.cts"]
 }

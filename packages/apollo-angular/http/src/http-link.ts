@@ -1,24 +1,36 @@
 import { print } from 'graphql';
+import { Observable } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import {
-  ApolloLink,
-  FetchResult,
-  Observable as LinkObservable,
-  Operation,
-} from '@apollo/client/core';
+import { ApolloLink } from '@apollo/client';
 import { pick } from './http-batch-link';
-import { Body, Context, OperationPrinter, Options, Request } from './types';
+import {
+  Body,
+  Context,
+  ExtractFiles,
+  FetchOptions,
+  HttpRequestOptions,
+  OperationPrinter,
+  Request,
+} from './types';
 import { createHeadersWithClientAwareness, fetch, mergeHeaders } from './utils';
+
+export declare namespace HttpLink {
+  export interface Options extends FetchOptions, HttpRequestOptions {
+    operationPrinter?: OperationPrinter;
+    useGETForQueries?: boolean;
+    extractFiles?: ExtractFiles;
+  }
+}
 
 // XXX find a better name for it
 export class HttpLinkHandler extends ApolloLink {
-  public requester: (operation: Operation) => LinkObservable<FetchResult> | null;
+  public requester: (operation: ApolloLink.Operation) => Observable<ApolloLink.Result>;
   private print: OperationPrinter = print;
 
   constructor(
     private readonly httpClient: HttpClient,
-    private readonly options: Options,
+    private readonly options: HttpLink.Options,
   ) {
     super();
 
@@ -26,8 +38,8 @@ export class HttpLinkHandler extends ApolloLink {
       this.print = this.options.operationPrinter;
     }
 
-    this.requester = (operation: Operation) =>
-      new LinkObservable((observer: any) => {
+    this.requester = (operation: ApolloLink.Operation) =>
+      new Observable((observer: any) => {
         const context: Context = operation.getContext();
 
         let method = pick(context, this.options, 'method');
@@ -89,7 +101,7 @@ export class HttpLinkHandler extends ApolloLink {
       });
   }
 
-  public request(op: Operation): LinkObservable<FetchResult> | null {
+  public request(op: ApolloLink.Operation): Observable<ApolloLink.Result> {
     return this.requester(op);
   }
 }
@@ -100,7 +112,7 @@ export class HttpLinkHandler extends ApolloLink {
 export class HttpLink {
   constructor(private readonly httpClient: HttpClient) {}
 
-  public create(options: Options): HttpLinkHandler {
+  public create(options: HttpLink.Options): HttpLinkHandler {
     return new HttpLinkHandler(this.httpClient, options);
   }
 }

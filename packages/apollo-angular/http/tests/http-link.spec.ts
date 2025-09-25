@@ -1,12 +1,13 @@
 import { print, stripIgnoredCharacters } from 'graphql';
-import { mergeMap } from 'rxjs/operators';
+import { map, mergeMap } from 'rxjs/operators';
 import { afterEach, beforeEach, describe, expect, test } from 'vitest';
 import { HttpHeaders, provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { ApolloLink, execute, gql, InMemoryCache } from '@apollo/client/core';
+import { ApolloLink, gql, InMemoryCache } from '@apollo/client';
 import { Apollo } from '../../src';
 import { HttpLink } from '../src/http-link';
+import { executeWithDefaultContext as execute } from './utils';
 
 const noop = () => {
   //
@@ -512,14 +513,16 @@ describe('HttpLink', () => {
   test('should set response in context', () =>
     new Promise<void>(done => {
       const afterware = new ApolloLink((op, forward) => {
-        return forward(op).map(response => {
-          const context = op.getContext();
+        return forward(op).pipe(
+          map(response => {
+            const context = op.getContext();
 
-          expect(context.response).toBeDefined();
-          done();
+            expect(context.response).toBeDefined();
+            done();
 
-          return response;
-        });
+            return response;
+          }),
+        );
       });
       const link = afterware.concat(
         httpLink.create({

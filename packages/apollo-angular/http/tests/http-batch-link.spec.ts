@@ -2,8 +2,10 @@ import { afterEach, beforeEach, describe, expect, test } from 'vitest';
 import { HttpHeaders, provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { ApolloLink, execute, gql, Operation } from '@apollo/client/core';
+import { ApolloLink, gql } from '@apollo/client';
+import { getOperationName } from '@apollo/client/utilities/internal';
 import { HttpBatchLink } from '../src/http-batch-link';
+import { executeWithDefaultContext as execute } from './utils';
 
 const noop = () => {
   //
@@ -36,7 +38,6 @@ describe('HttpBatchLink', () => {
             }
           }
         `,
-        operationName: 'heroes',
         variables: {},
       };
       const data = {
@@ -71,7 +72,6 @@ describe('HttpBatchLink', () => {
             }
           }
         `,
-        operationName: 'heroes',
         variables: {},
       };
 
@@ -96,7 +96,6 @@ describe('HttpBatchLink', () => {
             }
           }
         `,
-        operationName: 'heroes-1',
         variables: {},
       };
       const op2 = {
@@ -107,7 +106,6 @@ describe('HttpBatchLink', () => {
             }
           }
         `,
-        operationName: 'heroes-2',
         variables: {},
       };
 
@@ -116,8 +114,8 @@ describe('HttpBatchLink', () => {
 
       setTimeout(() => {
         httpBackend.match(req => {
-          expect(req.body[0].operationName).toEqual(op1.operationName);
-          expect(req.body[1].operationName).toEqual(op2.operationName);
+          expect(req.body[0].operationName).toEqual(getOperationName(op1.query));
+          expect(req.body[1].operationName).toEqual(getOperationName(op2.query));
           done();
           return true;
         });
@@ -135,7 +133,6 @@ describe('HttpBatchLink', () => {
             }
           }
         `,
-        operationName: 'heroes',
         variables: {},
       };
 
@@ -143,7 +140,7 @@ describe('HttpBatchLink', () => {
 
       setTimeout(() => {
         httpBackend.match(req => {
-          expect(req.body[0].operationName).toEqual(op.operationName);
+          expect(req.body[0].operationName).toEqual(getOperationName(op.query));
           expect(req.reportProgress).toEqual(false);
           expect(req.responseType).toEqual('json');
           expect(req.detectContentTypeHeader()).toEqual('application/json');
@@ -164,7 +161,6 @@ describe('HttpBatchLink', () => {
             }
           }
         `,
-        operationName: 'heroes',
         variables: {},
       };
 
@@ -173,7 +169,7 @@ describe('HttpBatchLink', () => {
       setTimeout(() => {
         httpBackend.match(req => {
           expect(req.method).toEqual('POST');
-          expect(req.body[0].operationName).toEqual(op.operationName);
+          expect(req.body[0].operationName).toEqual(getOperationName(op.query));
           expect(req.detectContentTypeHeader()).toEqual('application/json');
           done();
           return true;
@@ -196,7 +192,6 @@ describe('HttpBatchLink', () => {
             }
           }
         `,
-        operationName: 'heroes',
         variables: { up: 'dog' },
         extensions: { what: 'what' },
       };
@@ -525,7 +520,7 @@ describe('HttpBatchLink', () => {
 
       execute(link, {
         query: gql`
-          query heroes($first: Int!) {
+          query op1($first: Int!) {
             heroes(first: $first) {
               name
             }
@@ -534,17 +529,15 @@ describe('HttpBatchLink', () => {
         variables: {
           first: 5,
         },
-        operationName: 'op1',
       }).subscribe(noop);
       execute(link, {
         query: gql`
-          query heroes {
+          query op2 {
             heroes {
               name
             }
           }
         `,
-        operationName: 'op2',
       }).subscribe(noop);
 
       setTimeout(() => {
@@ -571,7 +564,8 @@ describe('HttpBatchLink', () => {
     new Promise<void>(done => {
       const link = httpLink.create({
         uri: 'graphql',
-        batchKey: (operation: Operation) => operation.getContext().uri || 'graphql',
+        batchKey: (operation: ApolloLink.Operation) =>
+          (operation.getContext().uri as string) || 'graphql',
       });
 
       execute(link, {
@@ -582,7 +576,6 @@ describe('HttpBatchLink', () => {
             }
           }
         `,
-        operationName: 'op1',
       }).subscribe(noop);
 
       execute(link, {
@@ -593,7 +586,6 @@ describe('HttpBatchLink', () => {
             }
           }
         `,
-        operationName: 'op2',
         context: {
           uri: 'gql',
         },
@@ -639,7 +631,6 @@ describe('HttpBatchLink', () => {
             }
           }
         `,
-        operationName: 'op1',
       }).subscribe(noop);
 
       execute(link, {
@@ -650,7 +641,6 @@ describe('HttpBatchLink', () => {
             }
           }
         `,
-        operationName: 'op2',
         context: {
           uri: 'gql',
         },
@@ -698,7 +688,6 @@ describe('HttpBatchLink', () => {
             }
           }
         `,
-        operationName: 'op1',
       }).subscribe(noop);
 
       execute(link, {
@@ -709,7 +698,6 @@ describe('HttpBatchLink', () => {
             }
           }
         `,
-        operationName: 'op2',
         context: {
           skipBatching: true,
         },
@@ -752,7 +740,6 @@ describe('HttpBatchLink', () => {
             }
           }
         `,
-        operationName: 'heroes',
         variables: {},
       };
 

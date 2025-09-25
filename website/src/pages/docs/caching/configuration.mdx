@@ -28,7 +28,7 @@ Create an `InMemoryCache` object and provide to Apollo options, like so:
 import { provideApollo } from 'apollo-angular';
 import { HttpLink } from 'apollo-angular/http';
 import { inject } from '@angular/core';
-import { InMemoryCache } from '@apollo/client/core';
+import { InMemoryCache } from '@apollo/client';
 
 provideApollo(() => {
   const httpLink = inject(HttpLink);
@@ -61,7 +61,6 @@ object supports the following fields:
 
 | Name                                | Type                                 | Description                                                                                                                                                                                                                                                                                                                                                                             |
 | ----------------------------------- | ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `addTypename`                       | boolean                              | If `true`, the cache automatically adds `__typename` fields to all outgoing queries, removing the need to add them manually.<br/>Default: `true`                                                                                                                                                                                                                                        |
 | `resultCaching`                     | boolean                              | If `true`, the cache returns an identical (`===`) response object for every execution of the same query, as long as the underlying data remains unchanged. This makes it easier to detect changes to a query's result.<br/>Default: `true`                                                                                                                                              |
 | `possibleTypes`                     | `{ [supertype: string]: string[] }`  | Include this object to define polymorphic relationships between your schema's types. Doing so enables you to look up cached data by interface or by union.<br/>The key for each entry is the `__typename` of an interface or union, and the value is an array of the `__typename`s of the types that either belong to the corresponding union or implement the corresponding interface. |
 | `typePolicies`                      | `{ [typename: string]: TypePolicy }` | Include this object to customize the cache's behavior on a type-by-type basis.<br/>The key for each entry is a type's `__typename`. For details, see [`TypePolicy` fields](#typepolicy-fields).                                                                                                                                                                                         |
@@ -168,7 +167,7 @@ If you need to define a single fallback `keyFields` function that isn't specific
 `__typename`, you can use the `dataIdFromObject` function that was introduced in Apollo Client 2.x:
 
 ```ts
-import { defaultDataIdFromObject } from '@apollo/client/core';
+import { defaultDataIdFromObject } from '@apollo/client';
 
 const cache = new InMemoryCache({
   dataIdFromObject(responseObject) {

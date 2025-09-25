@@ -24,7 +24,7 @@ backend, it is very easy to tell your network interface to send the cookie along
 import { provideApollo } from 'apollo-angular';
 import { HttpLink } from 'apollo-angular/http';
 import { inject } from '@angular/core';
-import { InMemoryCache } from '@apollo/client/core';
+import { InMemoryCache } from '@apollo/client';
 
 provideApollo(() => {
   const httpLink = inject(HttpLink);
@@ -60,7 +60,7 @@ pull the login token from `localStorage` every time a request is sent.
 import { provideApollo } from 'apollo-angular';
 import { HttpLink } from 'apollo-angular/http';
 import { inject } from '@angular/core';
-import { ApolloLink, InMemoryCache } from '@apollo/client/core';
+import { ApolloLink, InMemoryCache } from '@apollo/client';
 import { setContext } from '@apollo/client/link/context';
 
 provideApollo(() => {

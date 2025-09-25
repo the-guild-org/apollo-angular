@@ -1,8 +1,8 @@
 import { Apollo, gql } from 'apollo-angular';
 import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { filter, map } from 'rxjs/operators';
 import { AsyncPipe } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 
 interface Character {
@@ -19,6 +19,10 @@ interface Film {
 
 interface Query {
   film: Film;
+}
+
+interface Variables {
+  id: string;
 }
 
 @Component({
@@ -43,21 +47,13 @@ interface Query {
 })
 export class MoviePageComponent implements OnInit {
   film$!: Observable<Film>;
-
-  constructor(
-    private readonly apollo: Apollo,
-    private readonly route: ActivatedRoute,
-  ) {}
+  private readonly apollo = inject(Apollo);
+  private readonly route = inject(ActivatedRoute);
 
   ngOnInit() {
     this.film$ = this.apollo
-      .watchQuery<
-        Query,
-        {
-          id: string;
-        }
-      >({
-        query: gql`
+      .watchQuery({
+        query: gql<Query, Variables>`
           query FilmCharacters($id: ID) {
             film(id: $id) {
               title
@@ -74,6 +70,9 @@ export class MoviePageComponent implements OnInit {
           id: this.route.snapshot.paramMap.get('id')!,
         },
       })
-      .valueChanges.pipe(map(result => result.data.film));
+      .valueChanges.pipe(
+        map(result => (result.dataState === 'complete' ? result.data.film : null)),
+        filter(Boolean),
+      );
   }
 }

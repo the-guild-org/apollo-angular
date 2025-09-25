@@ -314,7 +314,7 @@ a different query, Apollo Client doesn't know that. To tell Apollo Client where 
 existing `book` data, we can define a field policy `read` function for the `book` field:
 
 ```ts
-import { InMemoryCache } from '@apollo/client/core';
+import { InMemoryCache } from '@apollo/client';
 
 const cache = new InMemoryCache({
   typePolicies: {
@@ -383,7 +383,7 @@ write to the cache with a short configurable debounce interval.
 
 ```ts
 import { LocalStorageWrapper, persistCacheSync } from 'apollo3-cache-persist';
-import { InMemoryCache } from '@apollo/client/core';
+import { InMemoryCache } from '@apollo/client';
 
 const cache = new InMemoryCache();
 

@@ -1,6 +1,10 @@
 import { DocumentNode } from 'graphql';
 import { HttpHeaders } from '@angular/common/http';
-import { Operation } from '@apollo/client/core';
+import { ApolloLink } from '@apollo/client';
+
+declare module '@apollo/client' {
+  export interface DefaultContext extends Context {}
+}
 
 export type HttpRequestOptions = {
   headers?: HttpHeaders;
@@ -8,7 +12,7 @@ export type HttpRequestOptions = {
   useMultipart?: boolean;
 };
 
-export type URIFunction = (operation: Operation) => string;
+export type URIFunction = (operation: ApolloLink.Operation) => string;
 
 export type FetchOptions = {
   method?: string;
@@ -18,12 +22,6 @@ export type FetchOptions = {
 };
 
 export type OperationPrinter = (operation: DocumentNode) => string;
-
-export interface Options extends FetchOptions, HttpRequestOptions {
-  operationPrinter?: OperationPrinter;
-  useGETForQueries?: boolean;
-  extractFiles?: ExtractFiles;
-}
 
 export type Body = {
   query?: string;
@@ -47,9 +45,3 @@ export type ExtractedFiles = {
 };
 
 export type ExtractFiles = (body: Body | Body[]) => ExtractedFiles;
-
-export type BatchOptions = {
-  batchMax?: number;
-  batchInterval?: number;
-  batchKey?: (operation: Operation) => string;
-} & Options;

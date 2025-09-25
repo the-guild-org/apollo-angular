@@ -33,18 +33,6 @@ npm i apollo-angular @apollo/client graphql
 - `apollo-angular`: Bridge between Angular and Apollo Client
 - `graphql`: Second most important package
 
-The `@apollo/client` package requires `AsyncIterable` so make sure your `tsconfig.json` includes
-`ES2020` or later:
-
-```jsonc filename="tsconfig.json" /"es2020"/
-{
-  "compilerOptions": {
-    // ...
-    "lib": ["es2020", "dom"],
-  },
-}
-```
-
 Great, now that you have all the dependencies you need, let's create your first Apollo Client.
 
 In `app.config.ts` file, provide Apollo with some options:
@@ -54,7 +42,7 @@ import { provideApollo } from 'apollo-angular';
 import { HttpLink } from 'apollo-angular/http';
 import { provideHttpClient } from '@angular/common/http';
 import { ApplicationConfig, inject } from '@angular/core';
-import { InMemoryCache } from '@apollo/client/core';
+import { InMemoryCache } from '@apollo/client';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -76,7 +64,7 @@ Take a closer look what we did there:
 
 1. With `apollo-angular/http` and `HttpLink` service we connect our client to an external GraphQL
    Server
-1. Thanks to `@apollo/client/core` and `InMemoryCache` we have a place to store data in
+1. Thanks to `@apollo/client` and `InMemoryCache` we have a place to store data in
 
 ## Links and Cache
 

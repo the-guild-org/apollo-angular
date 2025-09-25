@@ -1,33 +1,26 @@
-import { FormattedExecutionResult, GraphQLError, Kind, OperationTypeNode } from 'graphql';
+import { GraphQLFormattedError, OperationTypeNode } from 'graphql';
 import { Observer } from 'rxjs';
-import { ApolloError, FetchResult, Operation as LinkOperation } from '@apollo/client/core';
-import { getMainDefinition } from '@apollo/client/utilities';
+import { ApolloLink, ErrorLike } from '@apollo/client';
+import { isErrorLike } from '@apollo/client/errors';
 
-const isApolloError = (err: any): err is ApolloError => err && err.hasOwnProperty('graphQLErrors');
-
-export type Operation = LinkOperation & {
+export type Operation = ApolloLink.Operation & {
   clientName: string;
 };
 
 export class TestOperation<T = { [key: string]: any }> {
   constructor(
     public readonly operation: Operation,
-    private readonly observer: Observer<FetchResult<T>>,
+    private readonly observer: Observer<ApolloLink.Result<T>>,
   ) {}
 
-  public flush(result: FormattedExecutionResult<T> | ApolloError): void {
-    if (isApolloError(result)) {
+  public flush(result: ApolloLink.Result<T> | ErrorLike): void {
+    if (isErrorLike(result)) {
       this.observer.error(result);
     } else {
       const fetchResult = result ? { ...result } : result;
       this.observer.next(fetchResult);
 
-      const definition = getMainDefinition(this.operation.query);
-
-      if (
-        definition.kind === Kind.OPERATION_DEFINITION &&
-        definition.operation !== OperationTypeNode.SUBSCRIPTION
-      ) {
+      if (this.operation.operationType !== OperationTypeNode.SUBSCRIPTION) {
         this.complete();
       }
     }
@@ -38,20 +31,14 @@ export class TestOperation<T = { [key: string]: any }> {
   }
 
   public flushData(data: T | null): void {
-    this.flush({
-      data,
-    });
+    this.flush({ data });
   }
 
-  public networkError(error: Error): void {
-    const apolloError = new ApolloError({
-      networkError: error,
-    });
-
-    this.flush(apolloError);
+  public networkError(error: ErrorLike): void {
+    this.flush(error);
   }
 
-  public graphqlErrors(errors: GraphQLError[]): void {
+  public graphqlErrors(errors: GraphQLFormattedError[]): void {
     this.flush({
       errors,
     });

@@ -58,7 +58,7 @@ import { HttpLink } from 'apollo-angular/http';
 import { createPersistedQueryLink } from 'apollo-angular/persisted-queries';
 import { sha256 } from 'crypto-hash';
 import { inject } from '@angular/core';
-import { InMemoryCache } from '@apollo/client/core';
+import { InMemoryCache } from '@apollo/client';
 
 provideApollo(() => {
   const httpLink = inject(HttpLink);

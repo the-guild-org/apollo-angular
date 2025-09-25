@@ -1,7 +1,8 @@
+import { of } from 'rxjs';
 import { describe, expect, test } from 'vitest';
 import { HttpHeaders } from '@angular/common/http';
-import { ApolloLink, execute, gql, Observable as LinkObservable } from '@apollo/client/core';
-import { httpHeaders } from '../src';
+import { ApolloClient, ApolloLink, execute, gql, InMemoryCache } from '@apollo/client';
+import { HttpHeadersLink } from '../src';
 
 const query = gql`
   query heroes {
@@ -13,10 +14,12 @@ const query = gql`
 `;
 const data = { heroes: [{ name: 'Foo', __typename: 'Hero' }] };
 
-describe('httpHeaders', () => {
+const dummyClient = new ApolloClient({ cache: new InMemoryCache(), link: ApolloLink.empty() });
+
+describe('HttpHeadersLink', () => {
   test('should turn object into HttpHeaders', () =>
     new Promise<void>(done => {
-      const headersLink = httpHeaders();
+      const headersLink = new HttpHeadersLink();
 
       const mockLink = new ApolloLink(operation => {
         const { headers } = operation.getContext();
@@ -24,19 +27,23 @@ describe('httpHeaders', () => {
         expect(headers instanceof HttpHeaders).toBe(true);
         expect(headers.get('Authorization')).toBe('Bearer Foo');
 
-        return LinkObservable.of({ data });
+        return of({ data });
       });
 
       const link = headersLink.concat(mockLink);
 
-      execute(link, {
-        query,
-        context: {
-          headers: {
-            Authorization: 'Bearer Foo',
+      execute(
+        link,
+        {
+          query,
+          context: {
+            headers: {
+              Authorization: 'Bearer Foo',
+            },
           },
         },
-      }).subscribe(result => {
+        { client: dummyClient },
+      ).subscribe(result => {
         expect(result.data).toEqual(data);
         done();
       });
@@ -44,21 +51,19 @@ describe('httpHeaders', () => {
 
   test('should not set headers when not defined', () =>
     new Promise<void>(done => {
-      const headersLink = httpHeaders();
+      const headersLink = new HttpHeadersLink();
 
       const mockLink = new ApolloLink(operation => {
         const { headers } = operation.getContext();
 
         expect(headers).toBeUndefined();
 
-        return LinkObservable.of({ data });
+        return of({ data });
       });
 
       const link = headersLink.concat(mockLink);
 
-      execute(link, {
-        query,
-      }).subscribe(result => {
+      execute(link, { query }, { client: dummyClient }).subscribe(result => {
         expect(result.data).toEqual(data);
         done();
       });

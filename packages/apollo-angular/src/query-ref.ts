@@ -1,66 +1,28 @@
 import { from, Observable } from 'rxjs';
 import { NgZone } from '@angular/core';
 import type {
-  ApolloQueryResult,
-  FetchMoreQueryOptions,
+  ApolloClient,
   MaybeMasked,
   ObservableQuery,
   OperationVariables,
-  SubscribeToMoreOptions,
   TypedDocumentNode,
-  Unmasked,
-} from '@apollo/client/core';
-import { NetworkStatus } from '@apollo/client/core';
-import { EmptyObject, WatchQueryOptions } from './types';
-import { fixObservable, wrapWithZone } from './utils';
-
-function useInitialLoading<T, V extends OperationVariables>(obsQuery: ObservableQuery<T, V>) {
-  return function useInitialLoadingOperator<T>(source: Observable<T>): Observable<T> {
-    return new Observable(function useInitialLoadingSubscription(subscriber) {
-      const currentResult = obsQuery.getCurrentResult();
-      const { loading, errors, error, partial, data } = currentResult;
-      const { partialRefetch, fetchPolicy } = obsQuery.options;
-
-      const hasError = errors || error;
-
-      if (
-        partialRefetch &&
-        partial &&
-        (!data || Object.keys(data).length === 0) &&
-        fetchPolicy !== 'cache-only' &&
-        !loading &&
-        !hasError
-      ) {
-        subscriber.next({
-          ...currentResult,
-          loading: true,
-          networkStatus: NetworkStatus.loading,
-        } as any);
-      }
-
-      return source.subscribe(subscriber);
-    });
-  };
-}
+} from '@apollo/client';
+import { EmptyObject } from './types';
+import { wrapWithZone } from './utils';
 
 export type QueryRefFromDocument<T extends TypedDocumentNode> =
-  T extends TypedDocumentNode<infer R, infer V> ? QueryRef<R, V & OperationVariables> : never;
+  T extends TypedDocumentNode<infer TData, infer TVariables>
+    ? QueryRef<TData, TVariables & OperationVariables>
+    : never;
 
 export class QueryRef<TData, TVariables extends OperationVariables = EmptyObject> {
-  public readonly valueChanges: Observable<ApolloQueryResult<TData>>;
-  public readonly queryId: ObservableQuery<TData, TVariables>['queryId'];
+  public readonly valueChanges: Observable<ObservableQuery.Result<TData>>;
 
   constructor(
     private readonly obsQuery: ObservableQuery<TData, TVariables>,
     ngZone: NgZone,
-    options: WatchQueryOptions<TVariables, TData>,
   ) {
-    const wrapped = wrapWithZone(from(fixObservable(this.obsQuery)), ngZone);
-
-    this.valueChanges = options.useInitialLoading
-      ? wrapped.pipe(useInitialLoading(this.obsQuery))
-      : wrapped;
-    this.queryId = this.obsQuery.queryId;
+    this.valueChanges = wrapWithZone(from(this.obsQuery), ngZone);
   }
 
   // ObservableQuery's methods
@@ -73,24 +35,8 @@ export class QueryRef<TData, TVariables extends OperationVariables = EmptyObject
     return this.obsQuery.variables;
   }
 
-  public result(): ReturnType<ObservableQuery<TData, TVariables>['result']> {
-    return this.obsQuery.result();
-  }
-
   public getCurrentResult(): ReturnType<ObservableQuery<TData, TVariables>['getCurrentResult']> {
     return this.obsQuery.getCurrentResult();
-  }
-
-  public getLastResult(): ReturnType<ObservableQuery<TData, TVariables>['getLastResult']> {
-    return this.obsQuery.getLastResult();
-  }
-
-  public getLastError(): ReturnType<ObservableQuery<TData, TVariables>['getLastError']> {
-    return this.obsQuery.getLastError();
-  }
-
-  public resetLastResults(): ReturnType<ObservableQuery<TData, TVariables>['resetLastResults']> {
-    return this.obsQuery.resetLastResults();
   }
 
   public refetch(
@@ -100,16 +46,8 @@ export class QueryRef<TData, TVariables extends OperationVariables = EmptyObject
   }
 
   public fetchMore<TFetchData = TData, TFetchVars extends OperationVariables = TVariables>(
-    fetchMoreOptions: FetchMoreQueryOptions<TFetchVars, TFetchData> & {
-      updateQuery?: (
-        previousQueryResult: Unmasked<TData>,
-        options: {
-          fetchMoreResult: Unmasked<TFetchData>;
-          variables: TFetchVars;
-        },
-      ) => Unmasked<TData>;
-    },
-  ): Promise<ApolloQueryResult<MaybeMasked<TFetchData>>> {
+    fetchMoreOptions: ObservableQuery.FetchMoreOptions<TData, TVariables, TFetchData, TFetchVars>,
+  ): Promise<ApolloClient.QueryResult<MaybeMasked<TFetchData>>> {
     return this.obsQuery.fetchMore(fetchMoreOptions);
   }
 
@@ -117,7 +55,12 @@ export class QueryRef<TData, TVariables extends OperationVariables = EmptyObject
     TSubscriptionData = TData,
     TSubscriptionVariables extends OperationVariables = TVariables,
   >(
-    options: SubscribeToMoreOptions<TData, TSubscriptionVariables, TSubscriptionData, TVariables>,
+    options: ObservableQuery.SubscribeToMoreOptions<
+      TData,
+      TSubscriptionVariables,
+      TSubscriptionData,
+      TVariables
+    >,
   ): ReturnType<ObservableQuery<TData, TVariables>['subscribeToMore']> {
     return this.obsQuery.subscribeToMore(options);
   }
@@ -138,15 +81,15 @@ export class QueryRef<TData, TVariables extends OperationVariables = EmptyObject
     return this.obsQuery.startPolling(pollInterval);
   }
 
-  public setOptions(
-    opts: Parameters<ObservableQuery<TData, TVariables>['setOptions']>[0],
-  ): ReturnType<ObservableQuery<TData, TVariables>['setOptions']> {
-    return this.obsQuery.setOptions(opts);
-  }
-
   public setVariables(
     variables: Parameters<ObservableQuery<TData, TVariables>['setVariables']>[0],
   ): ReturnType<ObservableQuery<TData, TVariables>['setVariables']> {
     return this.obsQuery.setVariables(variables);
+  }
+
+  public reobserve(
+    options: ObservableQuery.Options<TData, TVariables>,
+  ): ReturnType<ObservableQuery<TData, TVariables>['reobserve']> {
+    return this.obsQuery.reobserve(options);
   }
 }

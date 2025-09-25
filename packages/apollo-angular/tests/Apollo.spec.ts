@@ -3,11 +3,12 @@ import { mergeMap } from 'rxjs/operators';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { NgZone } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { ApolloLink, InMemoryCache, NetworkStatus } from '@apollo/client/core';
-import { mockSingleLink } from '@apollo/client/testing';
+import { ApolloLink, InMemoryCache, NetworkStatus } from '@apollo/client';
+import { MockLink } from '@apollo/client/testing';
 import { Apollo, ApolloBase } from '../src/apollo';
 import { gql } from '../src/gql';
 import { ZoneScheduler } from '../src/utils';
+import { ObservableStream } from '../test-utils/ObservableStream';
 
 function mockApollo(link: ApolloLink, _ngZone: NgZone) {
   const apollo = new Apollo(_ngZone);
@@ -40,7 +41,7 @@ describe('Apollo', () => {
       const apollo = new Apollo(ngZone);
 
       apollo.create({
-        link: mockSingleLink(),
+        link: new MockLink([]),
         cache: new InMemoryCache(),
       });
 
@@ -55,7 +56,7 @@ describe('Apollo', () => {
 
       apollo.create(
         {
-          link: mockSingleLink(),
+          link: new MockLink([]),
           cache: new InMemoryCache(),
         },
         'extra',
@@ -71,7 +72,7 @@ describe('Apollo', () => {
       const apollo = new Apollo(ngZone);
 
       apollo.create({
-        link: mockSingleLink(),
+        link: new MockLink([]),
         cache: new InMemoryCache(),
       });
 
@@ -90,73 +91,77 @@ describe('Apollo', () => {
       expect(client.watchQuery).toBeCalledWith(options);
     });
 
-    test('should be able to refetch', () =>
-      new Promise<void>(done => {
-        expect.assertions(3);
-        const query = gql`
-          query refetch($first: Int) {
-            heroes(first: $first) {
-              name
-              __typename
-            }
+    test('should be able to refetch', async () => {
+      const query = gql`
+        query refetch($first: Int) {
+          heroes(first: $first) {
+            name
+            __typename
           }
-        `;
+        }
+      `;
 
-        const data1 = { heroes: [{ name: 'Foo', __typename: 'Hero' }] };
-        const variables1 = { first: 0 };
+      const data1 = { heroes: [{ name: 'Foo', __typename: 'Hero' }] };
+      const variables1 = { first: 0 };
 
-        const data2 = { heroes: [{ name: 'Bar', __typename: 'Hero' }] };
-        const variables2 = { first: 1 };
+      const data2 = { heroes: [{ name: 'Bar', __typename: 'Hero' }] };
+      const variables2 = { first: 1 };
 
-        const link = mockSingleLink(
-          {
-            request: { query, variables: variables1 },
-            result: { data: data1 },
-          },
-          {
-            request: { query, variables: variables2 },
-            result: { data: data2 },
-          },
-        );
+      const link = new MockLink([
+        {
+          request: { query, variables: variables1 },
+          result: { data: data1 },
+        },
+        {
+          request: { query, variables: variables2 },
+          result: { data: data2 },
+        },
+      ]);
 
-        const apollo = mockApollo(link, ngZone);
-        const options = { query, variables: variables1 };
-        const obs = apollo.watchQuery(options);
+      const apollo = mockApollo(link, ngZone);
+      const options = { query, variables: variables1 };
+      const obs = apollo.watchQuery(options);
 
-        let calls = 0;
+      const stream = new ObservableStream(obs.valueChanges);
 
-        obs.valueChanges.subscribe({
-          next: ({ data }) => {
-            calls++;
+      await expect(stream.takeNext()).resolves.toEqual({
+        data: undefined,
+        dataState: 'empty',
+        loading: true,
+        networkStatus: NetworkStatus.loading,
+        partial: true,
+      });
 
-            try {
-              if (calls === 1) {
-                expect(data).toMatchObject(data1);
-              } else if (calls === 2) {
-                expect(data).toMatchObject(data2);
-                done();
-              } else if (calls > 2) {
-                throw new Error('Called third time');
-              }
-            } catch (e: any) {
-              throw e;
-            }
-          },
-          error: err => {
-            throw err;
-          },
-        });
+      await expect(stream.takeNext()).resolves.toEqual({
+        data: data1,
+        dataState: 'complete',
+        loading: false,
+        networkStatus: NetworkStatus.ready,
+        partial: false,
+      });
 
-        setTimeout(() => {
-          obs.refetch(variables2).then(({ data }) => {
-            try {
-              expect(data).toMatchObject(data2);
-            } catch (e: any) {
-              throw e;
-            }
-          });
-        });
-      }));
+      await expect(stream).not.toEmitAnything();
+
+      await expect(obs.refetch(variables2)).resolves.toEqual({ data: data2 });
+
+      await expect(stream.takeNext()).resolves.toEqual({
+        data: undefined,
+        dataState: 'empty',
+        loading: true,
+        networkStatus: NetworkStatus.refetch,
+        partial: true,
+      });
+
+      await expect(stream.takeNext()).resolves.toEqual({
+        data: data2,
+        dataState: 'complete',
+        loading: false,
+        networkStatus: NetworkStatus.ready,
+        partial: false,
+      });
+
+      await expect(stream).not.toEmitAnything();
+    });
   });
 
   describe('query()', () => {
@@ -166,7 +171,7 @@ describe('Apollo', () => {
         const apollo = new Apollo(ngZone);
 
         apollo.create({
-          link: mockSingleLink(),
+          link: new MockLink([]),
           cache: new InMemoryCache(),
         });
 
@@ -195,13 +200,13 @@ describe('Apollo', () => {
         const apollo = new Apollo(ngZone);
 
         apollo.create({
-          link: mockSingleLink(),
+          link: new MockLink([]),
           cache: new InMemoryCache(),
         });
 
         const client = apollo.client;
 
-        client.query = vi.fn<any, any>(options => {
+        client.query = vi.fn<any>((options: { used: boolean }) => {
           if (options.used) {
             throw new Error('options was reused');
           }
@@ -235,7 +240,7 @@ describe('Apollo', () => {
         const apollo = new Apollo(ngZone);
 
         apollo.create({
-          link: mockSingleLink(),
+          link: new MockLink([]),
           cache: new InMemoryCache(),
         });
 
@@ -254,52 +259,6 @@ describe('Apollo', () => {
           },
         });
       }));
-
-    test('should NOT useInitialLoading by default', () =>
-      new Promise<void>(done => {
-        expect.assertions(2);
-        const apollo = testBed.inject(Apollo);
-        const query = gql`
-          query heroes {
-            heroes {
-              name
-              __typename
-            }
-          }
-        `;
-        const data = {
-          heroes: [
-            {
-              name: 'Superman',
-              __typename: 'Hero',
-            },
-          ],
-        };
-
-        // create
-        apollo.create<any>({
-          link: mockSingleLink({ request: { query }, result: { data } }),
-          cache: new InMemoryCache(),
-        });
-
-        // query
-        apollo
-          .query<any>({
-            query,
-          })
-          .subscribe({
-            next: result => {
-              expect(result.loading).toBe(false);
-              expect(result.data).toMatchObject(data);
-              setTimeout(() => {
-                return done();
-              }, 3000);
-            },
-            error: e => {
-              throw e;
-            },
-          });
-      }));
   });
 
   describe('mutate()', () => {
@@ -309,7 +268,7 @@ describe('Apollo', () => {
         const apollo = new Apollo(ngZone);
 
         apollo.create({
-          link: mockSingleLink(),
+          link: new MockLink([]),
           cache: new InMemoryCache(),
         });
 
@@ -353,13 +312,13 @@ describe('Apollo', () => {
         const apollo = new Apollo(ngZone);
 
         apollo.create({
-          link: mockSingleLink(),
+          link: new MockLink([]),
           cache: new InMemoryCache(),
         });
 
         const client = apollo.client;
 
-        client.mutate = vi.fn<any, any>(options => {
+        client.mutate = vi.fn<any>((options: { used: boolean }) => {
           if (options.used) {
             throw new Error('options was reused');
           }
@@ -393,7 +352,7 @@ describe('Apollo', () => {
         const apollo = new Apollo(ngZone);
 
         apollo.create({
-          link: mockSingleLink(),
+          link: new MockLink([]),
           cache: new InMemoryCache(),
         });
 
@@ -440,7 +399,7 @@ describe('Apollo', () => {
         };
 
         apollo.create({
-          link: mockSingleLink(
+          link: new MockLink([
             {
               request: op1,
               result: { data: data1 },
@@ -449,7 +408,7 @@ describe('Apollo', () => {
               request: op2,
               result: { data: data2 },
             },
-          ),
+          ]),
           cache: new InMemoryCache(),
         });
 
@@ -472,101 +431,79 @@ describe('Apollo', () => {
         });
       }));
 
-    test('should NOT useMutationLoading by default', () =>
-      new Promise<void>(done => {
-        expect.assertions(2);
-        const apollo = testBed.inject(Apollo);
-        const query = gql`
-          mutation addRandomHero {
-            addRandomHero {
-              name
-              __typename
-            }
+    test('should NOT useMutationLoading by default', async () => {
+      const apollo = testBed.inject(Apollo);
+      const query = gql`
+        mutation addRandomHero {
+          addRandomHero {
+            name
+            __typename
           }
-        `;
-        const data = {
-          addRandomHero: {
-            name: 'Superman',
-            __typename: 'Hero',
-          },
-        };
+        }
+      `;
+      const data = {
+        addRandomHero: {
+          name: 'Superman',
+          __typename: 'Hero',
+        },
+      };
 
-        // create
-        apollo.create<any>({
-          link: mockSingleLink({ request: { query }, result: { data } }),
-          cache: new InMemoryCache(),
-        });
+      apollo.create({
+        link: new MockLink([{ request: { query }, result: { data } }]),
+        cache: new InMemoryCache(),
+      });
 
-        // mutation
-        apollo
-          .mutate<any>({
-            mutation: query,
-          })
-          .subscribe({
-            next: result => {
-              expect(result.loading).toBe(false);
-              expect(result.data).toMatchObject(data);
-              setTimeout(() => {
-                return done();
-              }, 3000);
-            },
-            error: e => {
-              throw e;
-            },
-          });
-      }));
+      const stream = new ObservableStream(apollo.mutate({ mutation: query }));
 
-    test('should useMutationLoading on demand', () =>
-      new Promise<void>(done => {
-        expect.assertions(3);
-        const apollo = testBed.inject(Apollo);
-        const query = gql`
-          mutation addRandomHero {
-            addRandomHero {
-              name
-              __typename
-            }
+      await expect(stream.takeNext()).resolves.toEqual({
+        data,
+        loading: false,
+      });
+
+      await expect(stream).not.toEmitAnything();
+    });
+
+    test('should useMutationLoading on demand', async () => {
+      const apollo = testBed.inject(Apollo);
+      const query = gql`
+        mutation addRandomHero {
+          addRandomHero {
+            name
+            __typename
           }
-        `;
-        const data = {
-          addRandomHero: {
-            name: 'Superman',
-            __typename: 'Hero',
-          },
-        };
+        }
+      `;
+      const data = {
+        addRandomHero: {
+          name: 'Superman',
+          __typename: 'Hero',
+        },
+      };
 
-        let alreadyCalled = false;
+      apollo.create({
+        link: new MockLink([{ request: { query }, result: { data } }]),
+        cache: new InMemoryCache(),
+      });
 
-        // create
-        apollo.create<any>({
-          link: mockSingleLink({ request: { query }, result: { data } }),
-          cache: new InMemoryCache(),
-        });
+      const stream = new ObservableStream(
+        apollo.mutate({
+          mutation: query,
+          useMutationLoading: true,
+        }),
+      );
 
-        // mutation
-        apollo
-          .mutate<any>({
-            mutation: query,
-            useMutationLoading: true,
-          })
-          .subscribe({
-            next: result => {
-              if (alreadyCalled) {
-                expect(result.loading).toBe(false);
-                expect(result.data).toMatchObject(data);
-                setTimeout(() => {
-                  return done();
-                }, 3000);
-              } else {
-                expect(result.loading).toBe(true);
-                alreadyCalled = true;
-              }
-            },
-            error: e => {
-              throw e;
-            },
-          });
-      }));
+      await expect(stream.takeNext()).resolves.toEqual({
+        data: undefined,
+        loading: true,
+      });
+
+      await expect(stream.takeNext()).resolves.toEqual({
+        data,
+        loading: false,
+      });
+
+      await expect(stream).not.toEmitAnything();
+    });
   });
 
   describe('subscribe', () => {
@@ -576,7 +513,7 @@ describe('Apollo', () => {
         const apollo = new Apollo(ngZone);
 
         apollo.create({
-          link: mockSingleLink(),
+          link: new MockLink([]),
           cache: new InMemoryCache(),
         });
 
@@ -609,7 +546,7 @@ describe('Apollo', () => {
       const apollo = new Apollo(ngZone);
 
       apollo.create({
-        link: mockSingleLink(),
+        link: new MockLink([]),
         cache: new InMemoryCache(),
       });
 
@@ -628,7 +565,7 @@ describe('Apollo', () => {
       const apollo = new Apollo(ngZone);
 
       apollo.create({
-        link: mockSingleLink(),
+        link: new MockLink([]),
         cache: new InMemoryCache(),
       });
 
@@ -637,7 +574,7 @@ describe('Apollo', () => {
 
       client.subscribe = vi.fn().mockReturnValue(['subscription']);
 
-      const obs = apollo.subscribe(options, { useZone: false });
+      const obs = apollo.subscribe({ ...options, useZone: false });
       const operator = (obs as any).operator;
 
       expect(operator).toBeUndefined();
@@ -649,7 +586,7 @@ describe('Apollo', () => {
       const apollo = new Apollo(ngZone);
 
       apollo.create({
-        link: mockSingleLink(),
+        link: new MockLink([]),
         cache: new InMemoryCache(),
       });
 
@@ -677,166 +614,197 @@ describe('Apollo', () => {
   });
 
   describe('query updates', () => {
-    test('should update a query after mutation', () =>
-      new Promise<void>(done => {
-        expect.assertions(3);
-        const query = gql`
-          query heroes {
-            allHeroes {
-              name
-              __typename
-            }
+    test('should update a query after mutation', async () => {
+      const query = gql`
+        query heroes {
+          allHeroes {
+            name
+            __typename
           }
-        `;
-        const mutation = gql`
-          mutation addHero($name: String!) {
-            addHero(name: $name) {
-              name
-              __typename
-            }
+        }
+      `;
+      const mutation = gql`
+        mutation addHero($name: String!) {
+          addHero(name: $name) {
+            name
+            __typename
           }
-        `;
-        const variables = { name: 'Bar' };
-        // tslint:disable:variable-name
-        const __typename = 'Hero';
+        }
+      `;
+      const variables = { name: 'Bar' };
+      // tslint:disable:variable-name
+      const __typename = 'Hero';
 
-        const FooHero = { name: 'Foo', __typename };
-        const BarHero = { name: 'Bar', __typename };
+      const FooHero = { name: 'Foo', __typename };
+      const BarHero = { name: 'Bar', __typename };
 
-        const data1 = { allHeroes: [FooHero] };
-        const dataMutation = { addHero: BarHero };
-        const data2 = { allHeroes: [FooHero, BarHero] };
+      const data1 = { allHeroes: [FooHero] };
+      const dataMutation = { addHero: BarHero };
+      const data2 = { allHeroes: [FooHero, BarHero] };
 
-        const link = mockSingleLink(
-          {
-            request: { query },
-            result: { data: data1 },
+      const link = new MockLink([
+        {
+          request: { query },
+          result: { data: data1 },
+        },
+        {
+          request: { query: mutation, variables },
+          result: { data: dataMutation },
+        },
+      ]);
+      const apollo = mockApollo(link, ngZone);
+
+      const obs = apollo.watchQuery({ query });
+      const stream = new ObservableStream(obs.valueChanges);
+
+      await expect(stream.takeNext()).resolves.toEqual({
+        data: undefined,
+        dataState: 'empty',
+        loading: true,
+        networkStatus: NetworkStatus.loading,
+        partial: true,
+      });
+
+      await expect(stream.takeNext()).resolves.toEqual({
+        data: data1,
+        dataState: 'complete',
+        loading: false,
+        networkStatus: NetworkStatus.ready,
+        partial: false,
+      });
+
+      const mutationStream = new ObservableStream(
+        apollo.mutate<any>({
+          mutation,
+          variables,
+          updateQueries: {
+            heroes: (prev: any, { mutationResult }: any) => {
+              return {
+                allHeroes: [...prev.allHeroes, mutationResult.data.addHero],
+              };
+            },
           },
-          {
-            request: { query: mutation, variables },
-            result: { data: dataMutation },
-          },
-        );
-        const apollo = mockApollo(link, ngZone);
+        }),
+      );
 
-        const obs = apollo.watchQuery({ query });
+      await expect(mutationStream.takeNext()).resolves.toEqual({
+        data: { addHero: BarHero },
+        loading: false,
+      });
 
-        let calls = 0;
-        obs.valueChanges.subscribe(({ data }) => {
-          calls++;
+      await expect(stream.takeNext()).resolves.toEqual({
+        data: data2,
+        dataState: 'complete',
+        loading: false,
+        networkStatus: NetworkStatus.ready,
+        partial: false,
+      });
 
-          if (calls === 1) {
-            expect(data).toMatchObject(data1);
+      await expect(stream).not.toEmitAnything();
+    });
 
-            apollo
-              .mutate<any>({
-                mutation,
-                variables,
-                updateQueries: {
-                  heroes: (prev: any, { mutationResult }: any) => {
-                    return {
-                      allHeroes: [...prev.allHeroes, mutationResult.data.addHero],
-                    };
-                  },
-                },
-              })
-              .subscribe({
-                next: result => {
-                  expect(result.data.addHero).toMatchObject(BarHero);
-                },
-                error(error) {
-                  throw error.message;
-                },
-              });
-          } else if (calls === 2) {
-            expect(data).toMatchObject(data2);
-            done();
+    test('should update a query with Optimistic Response after mutation', async () => {
+      const query = gql`
+        query heroes {
+          allHeroes {
+            id
+            name
+            __typename
           }
+        }
+      `;
+      const mutation = gql`
+        mutation addHero($name: String!) {
+          addHero(name: $name) {
+            id
+            name
+            __typename
+          }
+        }
+      `;
+      const variables = { name: 'Bar' };
+      const __typename = 'Hero';
+
+      const FooHero = { id: 1, name: 'Foo', __typename };
+      const BarHero = { id: 2, name: 'Bar', __typename };
+      const OptimisticHero = { id: null, name: 'Temp', __typename };
+
+      const data1 = { allHeroes: [FooHero] };
+      const dataMutation = { addHero: BarHero };
+      const data2 = { allHeroes: [FooHero, OptimisticHero] };
+      const data3 = { allHeroes: [FooHero, BarHero] };
+
+      const link = new MockLink([
+        {
+          request: { query },
+          result: { data: data1 },
+        },
+        {
+          request: { query: mutation, variables },
+          result: { data: dataMutation },
+        },
+      ]);
+      const apollo = mockApollo(link, ngZone);
+
+      const obs = apollo.watchQuery({ query });
+      const stream = new ObservableStream(obs.valueChanges);
+
+      await expect(stream.takeNext()).resolves.toEqual({
+        data: undefined,
+        dataState: 'empty',
+        loading: true,
+        networkStatus: NetworkStatus.loading,
+        partial: true,
+      });
+
+      await expect(stream.takeNext()).resolves.toEqual({
+        data: data1,
+        dataState: 'complete',
+        loading: false,
+        networkStatus: NetworkStatus.ready,
+        partial: false,
+      });
+
+      apollo
+        .mutate<any>({
+          mutation,
+          variables,
+          optimisticResponse: {
+            addHero: OptimisticHero,
+          },
+          updateQueries: {
+            heroes: (prev: any, { mutationResult }: any) => {
+              return {
+                allHeroes: [...prev.allHeroes, mutationResult.data.addHero],
+              };
+            },
+          },
+        })
+        .subscribe({
+          error(error) {
+            throw error.message;
+          },
         });
-      }));
 
-    test('should update a query with Optimistic Response after mutation', () =>
-      new Promise<void>(done => {
-        expect.assertions(3);
-        const query = gql`
-          query heroes {
-            allHeroes {
-              id
-              name
-              __typename
-            }
-          }
-        `;
-        const mutation = gql`
-          mutation addHero($name: String!) {
-            addHero(name: $name) {
-              id
-              name
-              __typename
-            }
-          }
-        `;
-        const variables = { name: 'Bar' };
-        const __typename = 'Hero';
+      // optimistic response
+      await expect(stream.takeNext()).resolves.toEqual({
+        data: data2,
+        dataState: 'complete',
+        loading: false,
+        networkStatus: NetworkStatus.ready,
+        partial: false,
+      });
 
-        const FooHero = { id: 1, name: 'Foo', __typename };
-        const BarHero = { id: 2, name: 'Bar', __typename };
-        const OptimisticHero = { id: null, name: 'Temp', __typename };
+      await expect(stream.takeNext()).resolves.toEqual({
+        data: data3,
+        dataState: 'complete',
+        loading: false,
+        networkStatus: NetworkStatus.ready,
+        partial: false,
+      });
 
-        const data1 = { allHeroes: [FooHero] };
-        const dataMutation = { addHero: BarHero };
-        const data2 = { allHeroes: [FooHero, OptimisticHero] };
-        const data3 = { allHeroes: [FooHero, BarHero] };
-
-        const link = mockSingleLink(
-          {
-            request: { query },
-            result: { data: data1 },
-          },
-          {
-            request: { query: mutation, variables },
-            result: { data: dataMutation },
-          },
-        );
-        const apollo = mockApollo(link, ngZone);
-
-        const obs = apollo.watchQuery({ query });
-
-        let calls = 0;
-        obs.valueChanges.subscribe(({ data }) => {
-          calls++;
-
-          if (calls === 1) {
-            expect(data).toMatchObject(data1);
-
-            apollo
-              .mutate<any>({
-                mutation,
-                variables,
-                optimisticResponse: {
-                  addHero: OptimisticHero,
-                },
-                updateQueries: {
-                  heroes: (prev: any, { mutationResult }: any) => {
-                    return {
-                      allHeroes: [...prev.allHeroes, mutationResult.data.addHero],
-                    };
-                  },
-                },
-              })
-              .subscribe({
-                error(error) {
-                  throw error.message;
-                },
-              });
-          } else if (calls === 2) {
-            expect(data).toMatchObject(data2);
-          } else if (calls === 3) {
-            expect(data).toMatchObject(data3);
-            done();
-          }
-        });
-      }));
+      await expect(stream).not.toEmitAnything();
+    });
   });
 
   test('should use HttpClient', () =>
@@ -864,8 +832,8 @@ describe('Apollo', () => {
       };
 
       // create
-      apollo.create<any>({
-        link: mockSingleLink({ request: op, result: { data } }),
+      apollo.create({
+        link: new MockLink([{ request: op, result: { data } }]),
         cache: new InMemoryCache(),
       });
 
@@ -879,123 +847,6 @@ describe('Apollo', () => {
           throw e;
         },
       });
-    }));
-
-  test('should useInitialLoading', () =>
-    new Promise<void>(done => {
-      expect.assertions(3);
-      const apollo = testBed.inject(Apollo);
-      const query = gql`
-        query heroes {
-          heroes {
-            name
-            __typename
-          }
-        }
-      `;
-      const data = {
-        heroes: [
-          {
-            name: 'Superman',
-            __typename: 'Hero',
-          },
-        ],
-      };
-
-      let alreadyCalled = false;
-
-      // create
-      apollo.create<any>({
-        link: mockSingleLink({ request: { query }, result: { data } }),
-        cache: new InMemoryCache(),
-      });
-
-      // query
-      apollo
-        .watchQuery<any>({
-          query,
-          useInitialLoading: true,
-        })
-        .valueChanges.subscribe({
-          next: result => {
-            if (alreadyCalled) {
-              expect(result.data).toMatchObject(data);
-              setTimeout(() => {
-                return done();
-              }, 3000);
-            } else {
-              expect(result.loading).toBe(true);
-              expect(result.networkStatus).toBe(NetworkStatus.loading);
-              alreadyCalled = true;
-            }
-          },
-          error: e => {
-            throw e;
-          },
-        });
-    }));
-
-  test('useInitialLoading should emit false once when data is already available', () =>
-    new Promise<void>(done => {
-      expect.assertions(4);
-      const apollo = testBed.inject(Apollo);
-      const query = gql`
-        query heroes {
-          heroes {
-            name
-            __typename
-          }
-        }
-      `;
-      const data = {
-        heroes: [
-          {
-            name: 'Superman',
-            __typename: 'Hero',
-          },
-        ],
-      };
-
-      let calls = 0;
-
-      const cache = new InMemoryCache();
-
-      cache.writeQuery({
-        query: query,
-        data,
-      });
-
-      // create
-      apollo.create<any>({
-        link: mockSingleLink({ request: { query }, result: { data } }),
-        cache,
-      });
-
-      // query
-      apollo
-        .watchQuery<any>({
-          query,
-          notifyOnNetworkStatusChange: true,
-          useInitialLoading: true,
-        })
-        .valueChanges.subscribe({
-          next: result => {
-            calls++;
-
-            if (calls === 1) {
-              setTimeout(() => {
-                expect(calls).toEqual(1);
-                expect(result.loading).toEqual(false);
-                expect(result.networkStatus).toEqual(NetworkStatus.ready);
-                expect(result.data).toEqual(data);
-                return done();
-              }, 3000);
-            }
-          },
-          error: e => {
-            throw e;
-          },
-        });
     }));
 
   test('should emit cached result only once', () =>
@@ -1029,8 +880,8 @@ describe('Apollo', () => {
       });
 
       // create
-      apollo.create<any>({
-        link: mockSingleLink({ request: { query }, result: { data } }),
+      apollo.create({
+        link: new MockLink([{ request: { query }, result: { data } }]),
         cache,
       });
 
@@ -1061,11 +912,11 @@ describe('Apollo', () => {
   test('should create default client with named options', () => {
     const apollo = new Apollo(ngZone, undefined, {
       default: {
-        link: mockSingleLink(),
+        link: new MockLink([]),
         cache: new InMemoryCache(),
       },
       test: {
-        link: mockSingleLink(),
+        link: new MockLink([]),
         cache: new InMemoryCache(),
       },
     });
@@ -1075,7 +926,7 @@ describe('Apollo', () => {
   });
 
   test('should remove default client', () => {
-    const apollo = mockApollo(mockSingleLink(), ngZone);
+    const apollo = mockApollo(new MockLink([]), ngZone);
 
     expect(apollo.client).toBeDefined();
 
@@ -1085,10 +936,10 @@ describe('Apollo', () => {
   });
 
   test('should remove named client', () => {
-    const apollo = mockApollo(mockSingleLink(), ngZone);
+    const apollo = mockApollo(new MockLink([]), ngZone);
 
     apollo.createNamed('test', {
-      link: mockSingleLink(),
+      link: new MockLink([]),
       cache: new InMemoryCache(),
     });
 

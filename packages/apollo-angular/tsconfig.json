@@ -3,10 +3,8 @@
   "compilerOptions": {
     "rootDir": ".",
     "baseUrl": ".",
-    "outDir": "build"
-  },
-  "angularCompilerOptions": {
-    "enableIvy": false
+    "outDir": "build",
+    "inlineSources": true
   },
   "include": [
     "headers/**/*.ts",
@@ -14,6 +12,7 @@
     "persisted-queries/**/*.ts",
     "src/**/*.ts",
     "testing/**/*.ts",
-    "tests/**/*.ts"
+    "tests/**/*.ts",
+    "test-utils/**/*.ts"
   ]
 }

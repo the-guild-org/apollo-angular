@@ -2,10 +2,17 @@ import { Subject } from 'rxjs';
 import { map, takeUntil } from 'rxjs/operators';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { NgZone } from '@angular/core';
-import { ApolloClient, ApolloLink, InMemoryCache, ObservableQuery } from '@apollo/client/core';
-import { mockSingleLink } from '@apollo/client/testing';
+import {
+  ApolloClient,
+  ApolloLink,
+  InMemoryCache,
+  NetworkStatus,
+  ObservableQuery,
+} from '@apollo/client';
+import { MockLink } from '@apollo/client/testing';
 import { gql } from '../src/gql';
 import { QueryRef } from '../src/query-ref';
+import { ObservableStream } from '../test-utils/ObservableStream';
 
 const createClient = (link: ApolloLink) =>
   new ApolloClient({
@@ -23,7 +30,6 @@ const heroesOperation = {
     }
   `,
   variables: {},
-  operationName: 'allHeroes',
 };
 
 // tslint:disable:variable-name
@@ -40,13 +46,13 @@ const Batman = {
 
 describe('QueryRef', () => {
   let ngZone: NgZone;
-  let client: ApolloClient<any>;
+  let client: ApolloClient;
   let obsQuery: ObservableQuery<any>;
   let queryRef: QueryRef<any>;
 
   beforeEach(() => {
     ngZone = { run: vi.fn(cb => cb()) } as any;
-    const mockedLink = mockSingleLink(
+    const mockedLink = new MockLink([
       {
         request: heroesOperation,
         result: { data: { heroes: [Superman] } },
@@ -55,25 +61,21 @@ describe('QueryRef', () => {
         request: heroesOperation,
         result: { data: { heroes: [Superman, Batman] } },
       },
-    );
+    ]);
 
     client = createClient(mockedLink);
     obsQuery = client.watchQuery(heroesOperation);
-    queryRef = new QueryRef<any>(obsQuery, ngZone, {} as any);
+    queryRef = new QueryRef<any>(obsQuery, ngZone);
   });
 
-  test('should listen to changes', () =>
-    new Promise<void>(done => {
-      queryRef.valueChanges.subscribe({
-        next: result => {
-          expect(result.data).toBeDefined();
-          done();
-        },
-        error: e => {
-          throw e;
-        },
-      });
-    }));
+  test('should listen to changes', async () => {
+    const stream = new ObservableStream(queryRef.valueChanges);
+
+    await expect(stream.takeNext()).resolves.toMatchObject({ loading: true });
+
+    const result = await stream.takeNext();
+    expect(result.data).toBeDefined();
+  });
 
   test('should be able to call refetch', () => {
     const mockCallback = vi.fn();
@@ -84,62 +86,59 @@ describe('QueryRef', () => {
     expect(mockCallback.mock.calls.length).toBe(1);
   });
 
-  test('should be able refetch and receive new results', () =>
-    new Promise<void>(done => {
-      let calls = 0;
+  test('should be able refetch and receive new results', async () => {
+    const stream = new ObservableStream(queryRef.valueChanges);
 
-      queryRef.valueChanges.subscribe({
-        next: result => {
-          calls++;
+    await expect(stream.takeNext()).resolves.toEqual({
+      data: undefined,
+      dataState: 'empty',
+      loading: true,
+      networkStatus: NetworkStatus.loading,
+      partial: true,
+    });
 
-          expect(result.data).toBeDefined();
+    await expect(stream.takeNext()).resolves.toEqual({
+      data: { heroes: [Superman] },
+      dataState: 'complete',
+      loading: false,
+      networkStatus: NetworkStatus.ready,
+      partial: false,
+    });
 
-          if (calls === 2) {
-            done();
-          }
-        },
-        error: e => {
-          throw e;
-        },
-        complete: () => {
-          throw 'Should not be here';
-        },
-      });
+    queryRef.refetch();
 
-      setTimeout(() => {
-        queryRef.refetch();
-      }, 200);
-    }));
+    await expect(stream.takeNext()).resolves.toEqual({
+      data: { heroes: [Superman] },
+      dataState: 'complete',
+      loading: true,
+      networkStatus: NetworkStatus.refetch,
+      partial: false,
+    });
 
-  test('should be able refetch and receive new results after using rxjs operator', () =>
-    new Promise<void>(done => {
-      let calls = 0;
-      const obs = queryRef.valueChanges;
+    await expect(stream.takeNext()).resolves.toEqual({
+      data: { heroes: [Superman, Batman] },
+      dataState: 'complete',
+      loading: false,
+      networkStatus: NetworkStatus.ready,
+      partial: false,
+    });
 
-      obs.pipe(map(result => result.data)).subscribe({
-        next: result => {
-          calls++;
+    await expect(stream).not.toEmitAnything();
+  });
 
-          if (calls === 1) {
-            expect(result.heroes.length).toBe(1);
-          } else if (calls === 2) {
-            expect(result.heroes.length).toBe(2);
+  test('should be able refetch and receive new results after using rxjs operator', async () => {
+    const obs = queryRef.valueChanges.pipe(map(result => result.data));
+    const stream = new ObservableStream(obs);
 
-            done();
-          }
-        },
-        error: e => {
-          throw e;
-        },
-        complete: () => {
-          throw 'Should not be here';
-        },
-      });
+    await expect(stream.takeNext()).resolves.toBeUndefined();
+    await expect(stream.takeNext()).resolves.toEqual({ heroes: [Superman] });
 
-      setTimeout(() => {
-        queryRef.refetch();
-      }, 200);
-    }));
+    queryRef.refetch();
+
+    await expect(stream.takeNext()).resolves.toEqual({ heroes: [Superman] });
+    await expect(stream.takeNext()).resolves.toEqual({ heroes: [Superman, Batman] });
+    await expect(stream).not.toEmitAnything();
+  });
 
   test('should be able to call updateQuery()', () => {
     const mockCallback = vi.fn();
@@ -152,72 +151,68 @@ describe('QueryRef', () => {
     expect(mockCallback.mock.calls[0][0]).toBe(mapFn);
   });
 
-  test('should be able to call result()', () => {
-    const mockCallback = vi.fn();
-    obsQuery.result = mockCallback.mockReturnValue('expected');
+  test('should be able to call getCurrentResult() and get updated results', async () => {
+    const stream = new ObservableStream(queryRef.valueChanges);
 
-    const result = queryRef.result();
+    {
+      const result = await stream.takeNext();
+      const currentResult = queryRef.getCurrentResult();
 
-    expect(result).toBe('expected');
-    expect(mockCallback.mock.calls.length).toBe(1);
-  });
-
-  test('should be able to call getCurrentResult() and get updated results', () =>
-    new Promise<void>(done => {
-      let calls = 0;
-      const obs = queryRef.valueChanges;
-
-      obs.pipe(map(result => result.data)).subscribe({
-        next: result => {
-          calls++;
-          const currentResult = queryRef.getCurrentResult();
-          expect(currentResult.data.heroes.length).toBe(result.heroes.length);
-
-          if (calls === 2) {
-            done();
-          }
-        },
-        error: e => {
-          throw e;
-        },
-        complete: () => {
-          throw 'Should not be here';
-        },
+      expect(currentResult).toEqual(result);
+      expect(currentResult).toEqual({
+        data: undefined,
+        dataState: 'empty',
+        loading: true,
+        networkStatus: NetworkStatus.loading,
+        partial: true,
       });
+    }
 
-      setTimeout(() => {
-        queryRef.refetch();
-      }, 200);
-    }));
+    {
+      const result = await stream.takeNext();
+      const currentResult = queryRef.getCurrentResult();
 
-  test('should be able to call getLastResult()', () => {
-    const mockCallback = vi.fn();
-    obsQuery.getLastResult = mockCallback.mockReturnValue('expected');
+      expect(currentResult).toEqual(result);
+      expect(currentResult).toEqual({
+        data: { heroes: [Superman] },
+        dataState: 'complete',
+        loading: false,
+        networkStatus: NetworkStatus.ready,
+        partial: false,
+      });
+    }
 
-    const result = queryRef.getLastResult();
+    queryRef.refetch();
 
-    expect(result).toBe('expected');
-    expect(mockCallback.mock.calls.length).toBe(1);
-  });
+    {
+      const result = await stream.takeNext();
+      const currentResult = queryRef.getCurrentResult();
 
-  test('should be able to call getLastError()', () => {
-    const mockCallback = vi.fn();
-    obsQuery.getLastError = mockCallback.mockReturnValue('expected');
+      expect(currentResult).toEqual(result);
+      expect(currentResult).toEqual({
+        data: { heroes: [Superman] },
+        dataState: 'complete',
+        loading: true,
+        networkStatus: NetworkStatus.refetch,
+        partial: false,
+      });
+    }
 
-    const result = queryRef.getLastError();
+    {
+      const result = await stream.takeNext();
+      const currentResult = queryRef.getCurrentResult();
 
-    expect(result).toBe('expected');
-    expect(mockCallback.mock.calls.length).toBe(1);
-  });
+      expect(currentResult).toEqual(result);
+      expect(currentResult).toEqual({
+        data: { heroes: [Superman, Batman] },
+        dataState: 'complete',
+        loading: false,
+        networkStatus: NetworkStatus.ready,
+        partial: false,
+      });
+    }
 
-  test('should be able to call resetLastResults()', () => {
-    const mockCallback = vi.fn();
-    obsQuery.resetLastResults = mockCallback.mockReturnValue('expected');
-
-    const result = queryRef.resetLastResults();
-
-    expect(result).toBe('expected');
-    expect(mockCallback.mock.calls.length).toBe(1);
+    await expect(stream).not.toEmitAnything();
   });
 
   test('should be able to call fetchMore()', () => {
@@ -262,18 +257,6 @@ describe('QueryRef', () => {
     expect(mockCallback.mock.calls[0][0]).toBe(3000);
   });
 
-  test('should be able to call setOptions()', () => {
-    const mockCallback = vi.fn();
-    const opts = {};
-    obsQuery.setOptions = mockCallback.mockReturnValue('expected');
-
-    const result = queryRef.setOptions(opts);
-
-    expect(result).toBe('expected');
-    expect(mockCallback.mock.calls.length).toBe(1);
-    expect(mockCallback.mock.calls[0][0]).toBe(opts);
-  });
-
   test('should be able to call setVariables()', () => {
     const mockCallback = vi.fn();
     const variables = {};
@@ -300,7 +283,8 @@ describe('QueryRef', () => {
         next: result => {
           calls.first++;
 
-          expect(result.data).toBeDefined();
+          // Initial loading state
+          expect(result.data).not.toBeDefined();
         },
         error: e => {
           throw e;
@@ -314,7 +298,8 @@ describe('QueryRef', () => {
         next: result => {
           calls.second++;
 
-          expect(result.data).toBeDefined();
+          // Initial loading state
+          expect(result.data).not.toBeDefined();
 
           setTimeout(() => {
             subSecond.unsubscribe();
@@ -346,17 +331,16 @@ describe('QueryRef', () => {
   test('should unsubscribe', () =>
     new Promise<void>(done => {
       const obs = queryRef.valueChanges;
-      const id = queryRef.queryId;
 
       const sub = obs.subscribe(() => {
         //
       });
 
-      expect(client['queryManager'].queries.get(id)).toBeDefined();
+      expect(client.getObservableQueries().size).toBe(1);
 
       setTimeout(() => {
         sub.unsubscribe();
-        expect(client['queryManager'].queries.get(id)).toBeUndefined();
+        expect(client.getObservableQueries().size).toBe(0);
         done();
       });
     }));
@@ -365,17 +349,16 @@ describe('QueryRef', () => {
     new Promise<void>(done => {
       const gate = new Subject<void>();
       const obs = queryRef.valueChanges.pipe(takeUntil(gate));
-      const id = queryRef.queryId;
 
       obs.subscribe(() => {
         //
       });
 
-      expect(client['queryManager'].queries.get(id)).toBeDefined();
+      expect(client.getObservableQueries().size).toBe(1);
 
       gate.next();
 
-      expect(client['queryManager'].queries.get(id)).toBeUndefined();
+      expect(client.getObservableQueries().size).toBe(0);
       done();
     }));
 });
