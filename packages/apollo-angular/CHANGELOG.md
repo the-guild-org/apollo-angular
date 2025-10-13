@@ -1,5 +1,158 @@
 # Change log
 
+## 12.0.0
+
+### Major Changes
+
+- [#2372](https://github.com/the-guild-org/apollo-angular/pull/2372)
+  [`44ed9a5`](https://github.com/the-guild-org/apollo-angular/commit/44ed9a53ae686ec758b70ae08b0002dd8f5d919b)
+  Thanks [@jerelmiller](https://github.com/jerelmiller)! - Namespaced types
+
+  Before:
+
+  ```ts
+  import type {
+    MutationOptionsAlone,
+    QueryOptionsAlone,
+    SubscriptionOptionsAlone,
+    WatchQueryOptions,
+    WatchQueryOptionsAlone,
+  } from 'apollo-angular';
+  import type { BatchOptions, Options } from 'apollo-angular/http';
+
+  type AllTypes =
+    | Options
+    | BatchOptions
+    | MutationOptionsAlone
+    | QueryOptionsAlone
+    | SubscriptionOptionsAlone
+    | WatchQueryOptions
+    | WatchQueryOptionsAlone;
+  ```
+
+  After:
+
+  ```ts
+  import type { Apollo, Mutation, Query, Subscription } from 'apollo-angular';
+  import type { HttpBatchLink, HttpLink } from 'apollo-angular/http';
+
+  type AllTypes =
+    | HttpLink.Options
+    | HttpBatchLink.Options
+    | Mutation.MutateOptions
+    | Query.FetchOptions
+    | Subscription.SubscribeOptions
+    | Apollo.WatchQueryOptions
+    | Query.WatchOptions;
+  ```
+
+- [#2372](https://github.com/the-guild-org/apollo-angular/pull/2372)
+  [`bdc93df`](https://github.com/the-guild-org/apollo-angular/commit/bdc93dfca9c1d408f5bbce45713d63affede0f5c)
+  Thanks [@jerelmiller](https://github.com/jerelmiller)! - `httpHeaders` is a class
+
+  Migrate your code like so:
+
+  ```diff
+  - const link = httpHeaders();
+  + const link = new HttpHeadersLink();
+  ```
+
+- [#2372](https://github.com/the-guild-org/apollo-angular/pull/2372)
+  [`8c0b7f0`](https://github.com/the-guild-org/apollo-angular/commit/8c0b7f0b47f4b45ee668a4805edd384f66bf30a2)
+  Thanks [@jerelmiller](https://github.com/jerelmiller)! - Move `useZone` option into subscription
+  options
+
+  ```diff
+  - const obs = apollo.subscribe(options, { useZone: false });
+  + const obs = apollo.subscribe({ ...options, useZone: false });
+  ```
+
+- [#2372](https://github.com/the-guild-org/apollo-angular/pull/2372)
+  [`b9c62a5`](https://github.com/the-guild-org/apollo-angular/commit/b9c62a5b4b3b10c408bfb8386286013051bce71d)
+  Thanks [@jerelmiller](https://github.com/jerelmiller)! - Combined parameters of `Query`,
+  `Mutation` and `Subscription` classes generated via codegen
+
+  Migrate your code like so:
+
+  ```diff
+  class MyComponent {
+    myQuery = inject(MyQuery);
+    myMutation = inject(MyMutation);
+    mySubscription = inject(MySubscription);
+
+    constructor() {
+  -    myQuery.watch({ myVariable: 'foo' }, { fetchPolicy: 'cache-and-network' });
+  +    myQuery.watch({ variables: { myVariable: 'foo' }, fetchPolicy: 'cache-and-network' })
+
+  -    myMutation.mutate({ myVariable: 'foo' }, { errorPolicy: 'ignore' });
+  +    myMutation.mutate({ variables: { myVariable: 'foo' }, errorPolicy: 'ignore' });
+
+  -    mySubscription.subscribe({ myVariable: 'foo' }, { fetchPolicy: 'network-only' });
+  +    mySubscription.subscribe({ variables: { myVariable: 'foo' }, fetchPolicy: 'network-only' });
+    }
+  }
+  ```
+
+### Minor Changes
+
+- [#2379](https://github.com/the-guild-org/apollo-angular/pull/2379)
+  [`7e4a609`](https://github.com/the-guild-org/apollo-angular/commit/7e4a60918026373de18ba5357835f43aa1994e8d)
+  Thanks [@PowerKiKi](https://github.com/PowerKiKi)! - New `onlyComplete()` helper to filter only
+  complete results
+
+  If you use this, you should probably combine it with
+  [`notifyOnNetworkStatusChange`](https://www.apollographql.com/docs/react/data/queries#queryhookoptions-interface-notifyonnetworkstatuschange).
+  This tells `@apollo/client` to not emit the first `partial` result, so `apollo-angular` does not
+  need to filter it out. The overall behavior is identical, but it saves some CPU cycles.
+
+  So something like this:
+
+  ```ts
+  apollo
+    .watchQuery({
+      query: myQuery,
+      notifyOnNetworkStatusChange: false, // Adding this will save CPU cycles
+    })
+    .valueChanges.pipe(onlyComplete())
+    .subscribe(result => {
+      // Do something with complete result
+    });
+  ```
+
+### Patch Changes
+
+- [#2355](https://github.com/the-guild-org/apollo-angular/pull/2355)
+  [`226a963`](https://github.com/the-guild-org/apollo-angular/commit/226a96337f73be26496a9cfd6682230fd61e7304)
+  Thanks [@PowerKiKi](https://github.com/PowerKiKi)! - dependencies updates:
+
+  - Updated dependency
+    [`@apollo/client@^4.0.1` ↗︎](https://www.npmjs.com/package/@apollo/client/v/4.0.1) (from
+    `^3.13.1`, in `peerDependencies`)
+  - Updated dependency [`rxjs@^7.3.0` ↗︎](https://www.npmjs.com/package/rxjs/v/7.3.0) (from
+    `^6.0.0 || ^7.0.0`, in `peerDependencies`)
+
+- [#2373](https://github.com/the-guild-org/apollo-angular/pull/2373)
+  [`e65bcce`](https://github.com/the-guild-org/apollo-angular/commit/e65bcce125ac9cfca25ea707f904610afac90906)
+  Thanks [@PowerKiKi](https://github.com/PowerKiKi)! - Drop support for node 18
+
+- [#2366](https://github.com/the-guild-org/apollo-angular/pull/2366)
+  [`bdff9d9`](https://github.com/the-guild-org/apollo-angular/commit/bdff9d9c7f8b4c9758126326bed8e1459fb5a533)
+  Thanks [@PowerKiKi](https://github.com/PowerKiKi)! - Drop ESM2022 in favor of FESM2022
+
+- [#2368](https://github.com/the-guild-org/apollo-angular/pull/2368)
+  [`0f10355`](https://github.com/the-guild-org/apollo-angular/commit/0f103552a78c9031efb4ec732454f6ce17f02f04)
+  Thanks [@PowerKiKi](https://github.com/PowerKiKi)! - New repository owners
+
+  [@kamilkisiela](https://github.com/kamilkisiela), the creator of this library, has found new
+  interests and is not able to contribute like in the past. He gracefully transferred ownership of
+  the repository to me. I have been maintaining this library since 2022, and will continue doing so
+  in the foreseeable future.
+
+  For the package consumers, pretty much nothing will change. The package name, the code, the
+  relation with [The Guild](https://github.com/the-guild-org), and the maintenance style will all
+  remain the same. The only difference is the new repository URL:
+  https://github.com/the-guild-org/apollo-angular.
+
 ## 11.0.0
 
 ### Major Changes
@@ -364,7 +517,8 @@
   [`9a8ea5f`](https://github.com/the-guild-org/apollo-angular/commit/9a8ea5f229cf7937d74332092cb3eba40828b7b1)
 - Add `useMutationLoading` flag
   [`bc223fe`](https://github.com/the-guild-org/apollo-angular/commit/bc223fe6487edd35c56ad908e4739580ce69f056)
-- Fix type inference for Mutations [#1659](https://github.com/the-guild-org/apollo-angular/pull/1659)
+- Fix type inference for Mutations
+  [#1659](https://github.com/the-guild-org/apollo-angular/pull/1659)
 - Declare support for Angular 13
 - Remove `extract-files` library from dependencies (you need to pass `extractFiles` function to
   HttpLink's options)
@@ -540,7 +694,8 @@ Changes:
   ([PR #607](https://github.com/the-guild-org/apollo-angular/pull/607))
 - Adds `sideEffects: false` (webpack)
   ([PR #580](https://github.com/the-guild-org/apollo-angular/pull/580))
-- Supports Angular 6 and RxJS 6 ([PR #580](https://github.com/the-guild-org/apollo-angular/pull/580))
+- Supports Angular 6 and RxJS 6
+  ([PR #580](https://github.com/the-guild-org/apollo-angular/pull/580))
 
 ## v1.0.1
 
@@ -638,7 +793,8 @@ Behaves the same as the `ObservableQuery` of `apollo-client`.
 
 ## v0.9.0
 
-- Support `apollo-client@0.8.0` ([PR #206](https://github.com/the-guild-org/apollo-angular/pull/206))
+- Support `apollo-client@0.8.0`
+  ([PR #206](https://github.com/the-guild-org/apollo-angular/pull/206))
 - Support `es6` modules and `tree-shaking`
   ([PR #151](https://github.com/the-guild-org/apollo-angular/pull/151),
   [PR #206](https://github.com/the-guild-org/apollo-angular/pull/206))
@@ -669,7 +825,8 @@ Behaves the same as the `ObservableQuery` of `apollo-client`.
 ## v0.6.0
 
 - Added support for ApolloClient `v0.5.X` ([PR #])
-- Added `subscribeToMore` function ([PR](https://github.com/the-guild-org/apollo-client-rxjs/pull/5))
+- Added `subscribeToMore` function
+  ([PR](https://github.com/the-guild-org/apollo-client-rxjs/pull/5))
 - **BREAKING CHANGE** No no longer support ApolloClient `v0.4.X`
 - **BREAKING CHANGE** Removed `Apollo` decorator (use `Angular2Apollo` service)
 - **BREAKING CHANGE** Removed `ApolloQueryPipe` (use `SelectPipe` instead)
