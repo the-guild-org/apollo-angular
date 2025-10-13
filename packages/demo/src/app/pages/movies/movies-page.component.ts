@@ -1,6 +1,6 @@
-import { Apollo, gql } from 'apollo-angular';
+import { Apollo, gql, onlyComplete } from 'apollo-angular';
 import { Observable } from 'rxjs';
-import { filter, map } from 'rxjs/operators';
+import { map } from 'rxjs/operators';
 import { AsyncPipe } from '@angular/common';
 import { Component, inject, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
@@ -56,10 +56,11 @@ export class MoviesPageComponent implements OnInit {
             }
           }
         `,
+        notifyOnNetworkStatusChange: false,
       })
       .valueChanges.pipe(
-        map(result => (result.dataState == 'complete' ? result.data.allFilms.films : null)),
-        filter(Boolean),
+        onlyComplete(),
+        map(result => result.data.allFilms.films),
       );
   }
 }

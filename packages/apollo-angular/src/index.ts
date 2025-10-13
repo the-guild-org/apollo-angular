@@ -8,3 +8,4 @@ export { Subscription } from './subscription';
 export { APOLLO_OPTIONS, APOLLO_NAMED_OPTIONS, APOLLO_FLAGS } from './tokens';
 export type { Flags, NamedOptions, ResultOf, VariablesOf } from './types';
 export { gql } from './gql';
+export { onlyComplete } from './only-complete';

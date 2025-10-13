@@ -1,0 +1,36 @@
+import { filter, type OperatorFunction } from 'rxjs';
+import type { ObservableQuery } from '@apollo/client/core';
+
+/**
+ * Filter emitted results to only receive results that are complete (`result.dataState === 'complete'`).
+ *
+ * This is a small wrapper around rxjs `filter()` for convenience only.
+ *
+ * If you use this, you should probably combine it with [`notifyOnNetworkStatusChange`](https://www.apollographql.com/docs/react/data/queries#queryhookoptions-interface-notifyonnetworkstatuschange).
+ * This tells `@apollo/client` to not emit the first `partial` result, so `apollo-angular` does
+ * not need to filter it out. The overall behavior is identical, but it saves some CPU cycles.
+ *
+ * So something like this:
+ *
+ * ```ts
+ * apollo
+ *   .watchQuery({
+ *     query: myQuery,
+ *     notifyOnNetworkStatusChange: false, // Adding this will save CPU cycles
+ *   })
+ *   .valueChanges
+ *   .pipe(onlyComplete())
+ *   .subscribe(result => {
+ *     // Do something with complete result
+ *   });
+ * ```
+ */
+export function onlyComplete<TData>(): OperatorFunction<
+  ObservableQuery.Result<TData>,
+  ObservableQuery.Result<TData, 'complete'>
+> {
+  return filter(
+    (result): result is ObservableQuery.Result<TData, 'complete'> =>
+      result.dataState === 'complete',
+  );
+}
