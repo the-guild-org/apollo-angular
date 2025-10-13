@@ -1,8 +1,5 @@
-import { Apollo, gql, onlyComplete } from 'apollo-angular';
-import { Subject } from 'rxjs';
 import { Component } from '@angular/core';
 import { RouterLink, RouterOutlet } from '@angular/router';
-import type { ObservableQuery } from '@apollo/client/core';
 
 @Component({
   selector: 'app-root',
