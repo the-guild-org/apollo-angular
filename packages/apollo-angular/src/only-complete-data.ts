@@ -19,13 +19,13 @@ import type { ObservableQuery } from '@apollo/client/core';
  *     notifyOnNetworkStatusChange: false, // Adding this will save CPU cycles
  *   })
  *   .valueChanges
- *   .pipe(onlyComplete())
+ *   .pipe(onlyCompleteData())
  *   .subscribe(result => {
  *     // Do something with complete result
  *   });
  * ```
  */
-export function onlyComplete<TData>(): OperatorFunction<
+export function onlyCompleteData<TData>(): OperatorFunction<
   ObservableQuery.Result<TData>,
   ObservableQuery.Result<TData, 'complete'>
 > {
@@ -34,3 +34,8 @@ export function onlyComplete<TData>(): OperatorFunction<
       result.dataState === 'complete',
   );
 }
+
+/**
+ * @deprecated Use `onlyCompleteData()` instead.
+ */
+export const onlyComplete = onlyCompleteData;

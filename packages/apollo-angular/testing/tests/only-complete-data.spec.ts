@@ -1,4 +1,4 @@
-import { onlyComplete } from 'apollo-angular';
+import { onlyCompleteData } from 'apollo-angular';
 import { Subject } from 'rxjs';
 import { describe, expect, test } from 'vitest';
 import { NetworkStatus, ObservableQuery } from '@apollo/client/core';
@@ -9,14 +9,14 @@ interface Result {
   };
 }
 
-describe('onlyComplete', () => {
+describe('onlyCompleteData', () => {
   let theUser: Result['user'] | null = null;
   let count = 0;
 
   test('should receive only complete results', () =>
     new Promise<void>(done => {
       const b = new Subject<ObservableQuery.Result<Result>>();
-      b.pipe(onlyComplete()).subscribe({
+      b.pipe(onlyCompleteData()).subscribe({
         next: result => {
           count++;
           theUser = result.data.user;
