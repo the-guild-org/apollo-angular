@@ -1,4 +1,4 @@
-import { Apollo, gql, onlyComplete } from 'apollo-angular';
+import { Apollo, gql, onlyCompleteData } from 'apollo-angular';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { AsyncPipe } from '@angular/common';
@@ -72,7 +72,7 @@ export class MoviePageComponent implements OnInit {
         notifyOnNetworkStatusChange: false,
       })
       .valueChanges.pipe(
-        onlyComplete(),
+        onlyCompleteData(),
         map(result => result.data.film),
       );
   }
