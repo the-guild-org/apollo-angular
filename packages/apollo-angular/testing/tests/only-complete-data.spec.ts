@@ -1,13 +1,31 @@
-import { onlyCompleteData } from 'apollo-angular';
-import { Subject } from 'rxjs';
+import { Apollo, gql, onlyCompleteData, onlyCompleteFragment, provideApollo } from 'apollo-angular';
+import { map, Subject } from 'rxjs';
 import { describe, expect, test } from 'vitest';
-import { NetworkStatus, ObservableQuery } from '@apollo/client/core';
+import { TestBed } from '@angular/core/testing';
+import { InMemoryCache, NetworkStatus, type ObservableQuery } from '@apollo/client/core';
+import { MockLink } from '@apollo/client/testing';
 
 interface Result {
   user: {
     name: string;
   };
 }
+
+const query = gql<Result, Record<string, never>>`
+  query User {
+    user {
+      name
+    }
+  }
+`;
+
+const fragment = gql<Result, Record<string, never>>`
+  fragment UserFragment on User {
+    user {
+      name
+    }
+  }
+`;
 
 describe('onlyCompleteData', () => {
   let theUser: Result['user'] | null = null;
@@ -54,4 +72,41 @@ describe('onlyCompleteData', () => {
 
       b.complete();
     }));
+
+  test('should compile', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideApollo(() => {
+          return {
+            link: new MockLink([]),
+            cache: new InMemoryCache(),
+          };
+        }),
+      ],
+    });
+
+    const apollo = TestBed.inject(Apollo);
+
+    apollo
+      .watchQuery({
+        query: query,
+      })
+      .valueChanges.pipe(
+        onlyCompleteData(),
+        map(result => result.data.user.name),
+      );
+
+    apollo
+      .watchFragment({
+        fragment: fragment,
+        from: {
+          __typename: 'User',
+          id: 1,
+        },
+      })
+      .pipe(
+        onlyCompleteFragment(),
+        map(result => result.data.user.name),
+      );
+  });
 });
