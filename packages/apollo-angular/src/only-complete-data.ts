@@ -1,5 +1,15 @@
 import { filter, type OperatorFunction } from 'rxjs';
-import type { ObservableQuery } from '@apollo/client/core';
+import type { ApolloClient, GetDataState, ObservableQuery } from '@apollo/client/core';
+
+type CompleteFragment<TData> = {
+  complete: true;
+  missing?: never;
+} & GetDataState<TData, 'complete'>;
+
+type ForWatchFragment<TData> = OperatorFunction<
+  ApolloClient.WatchFragmentResult<TData>,
+  CompleteFragment<TData>
+>;
 
 /**
  * Filter emitted results to only receive results that are complete (`result.dataState === 'complete'`).
@@ -39,3 +49,10 @@ export function onlyCompleteData<TData>(): OperatorFunction<
  * @deprecated Use `onlyCompleteData()` instead.
  */
 export const onlyComplete = onlyCompleteData;
+
+/**
+ * Same as `onlyCompleteData()` but for `Apollo.watchFragment()`.
+ */
+export function onlyCompleteFragment<TData>(): ForWatchFragment<TData> {
+  return filter((result): result is CompleteFragment<TData> => result.dataState === 'complete');
+}
