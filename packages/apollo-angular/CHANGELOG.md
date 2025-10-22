@@ -1,5 +1,26 @@
 # Change log
 
+## 12.1.0
+
+### Minor Changes
+
+- [#2382](https://github.com/the-guild-org/apollo-angular/pull/2382)
+  [`d21e7f9`](https://github.com/the-guild-org/apollo-angular/commit/d21e7f90de50d0b7b2afc3692b8b569803209ea5)
+  Thanks [@PowerKiKi](https://github.com/PowerKiKi)! - New `onlyCompleteFragment()`
+
+  Same as `onlyCompleteData()` but for `Apollo.watchFragment()`.
+
+### Patch Changes
+
+- [#2381](https://github.com/the-guild-org/apollo-angular/pull/2381)
+  [`679dba2`](https://github.com/the-guild-org/apollo-angular/commit/679dba2ca47d859ed2be5441f12eca3ca72ceea1)
+  Thanks [@PowerKiKi](https://github.com/PowerKiKi)! - Rename `onlyComplete()` into
+  `onlyCompleteData()`
+
+  Because it communicates better that it is about the data, and not the stream being completed.
+
+  `onlyComplete()` will be dropped in the next major version.
+
 ## 12.0.0
 
 ### Major Changes
