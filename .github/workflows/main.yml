@@ -112,7 +112,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        angular_version: [18, 19, 20]
+        angular_version: [18, 19, 20, 21]
         graphql_version: [16]
         node_version: [20, 22, 24]
         exclude:
