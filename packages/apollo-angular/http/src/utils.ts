@@ -1,5 +1,5 @@
 import { Observable } from 'rxjs';
-import { HttpClient, HttpHeaders, HttpResponse } from '@angular/common/http';
+import { HttpClient, HttpContext, HttpHeaders, HttpResponse } from '@angular/common/http';
 import { Body, ExtractedFiles, ExtractFiles, Request } from './types';
 
 export const fetch = (
@@ -116,6 +116,20 @@ export const mergeHeaders = (
       .reduce((headers, name) => headers.set(name, destination.getAll(name)!), source);
 
     return merged;
+  }
+
+  return destination || source;
+};
+
+export const mergeHttpContext = (
+  source: HttpContext | undefined,
+  destination: HttpContext,
+): HttpContext => {
+  if (source && destination) {
+    return [...source.keys()].reduce(
+      (context, name) => context.set(name, source.get(name)),
+      destination,
+    );
   }
 
   return destination || source;

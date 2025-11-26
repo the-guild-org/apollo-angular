@@ -1,5 +1,11 @@
-import { afterEach, beforeEach, describe, expect, test } from 'vitest';
-import { HttpHeaders, provideHttpClient } from '@angular/common/http';
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
+import {
+  HttpClient,
+  HttpContext,
+  HttpContextToken,
+  HttpHeaders,
+  provideHttpClient,
+} from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { ApolloLink, gql } from '@apollo/client';
@@ -757,6 +763,59 @@ describe('HttpBatchLink', () => {
       setTimeout(() => {
         expect(httpBackend.expectOne('graphql').cancelled).toBe(true);
         done();
+      }, 50);
+    }));
+
+  test('should merge httpContext from options and batch context and pass it on to HttpClient', () =>
+    new Promise<void>(done => {
+      const requestSpy = vi.spyOn(TestBed.inject(HttpClient), 'request');
+      const contextToken1 = new HttpContextToken(() => '');
+      const contextToken2 = new HttpContextToken(() => '');
+      const contextToken3 = new HttpContextToken(() => '');
+      const link = httpLink.create({
+        uri: 'graphql',
+        httpContext: new HttpContext().set(contextToken1, 'options'),
+        batchKey: () => 'batchKey',
+      });
+
+      const op1 = {
+        query: gql`
+          query heroes {
+            heroes {
+              name
+            }
+          }
+        `,
+        context: {
+          httpContext: new HttpContext().set(contextToken2, 'foo'),
+        },
+      };
+
+      const op2 = {
+        query: gql`
+          query heroes {
+            heroes {
+              name
+            }
+          }
+        `,
+        context: {
+          httpContext: new HttpContext().set(contextToken3, 'bar'),
+        },
+      };
+
+      execute(link, op1).subscribe(noop);
+      execute(link, op2).subscribe(noop);
+
+      setTimeout(() => {
+        httpBackend.match(() => {
+          const callOptions = requestSpy.mock.calls[0][2];
+          expect(callOptions?.context?.get(contextToken1)).toBe('options');
+          expect(callOptions?.context?.get(contextToken2)).toBe('foo');
+          expect(callOptions?.context?.get(contextToken3)).toBe('bar');
+          done();
+          return true;
+        });
       }, 50);
     }));
 });
