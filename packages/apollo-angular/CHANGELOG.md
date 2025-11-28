@@ -1,5 +1,24 @@
 # Change log
 
+## 13.0.0
+
+### Major Changes
+
+- [#2389](https://github.com/the-guild-org/apollo-angular/pull/2389)
+  [`b43359c`](https://github.com/the-guild-org/apollo-angular/commit/b43359cad7dceb09d3a3421b2af138277476a71a)
+  Thanks [@matictrebusak](https://github.com/matictrebusak)! - Drop support for Angular 18
+
+- [#2389](https://github.com/the-guild-org/apollo-angular/pull/2389)
+  [`b43359c`](https://github.com/the-guild-org/apollo-angular/commit/b43359cad7dceb09d3a3421b2af138277476a71a)
+  Thanks [@matictrebusak](https://github.com/matictrebusak)! - Support for Angular 21
+
+### Minor Changes
+
+- [#2390](https://github.com/the-guild-org/apollo-angular/pull/2390)
+  [`7ae276c`](https://github.com/the-guild-org/apollo-angular/commit/7ae276c2ec1bfa15e34f9b2e020ba384124483e6)
+  Thanks [@vz-tl](https://github.com/vz-tl)! - Support HttpContext in HttpLink option and operation
+  context
+
 ## 12.1.0
 
 ### Minor Changes
@@ -145,7 +164,6 @@
 - [#2355](https://github.com/the-guild-org/apollo-angular/pull/2355)
   [`226a963`](https://github.com/the-guild-org/apollo-angular/commit/226a96337f73be26496a9cfd6682230fd61e7304)
   Thanks [@PowerKiKi](https://github.com/PowerKiKi)! - dependencies updates:
-
   - Updated dependency
     [`@apollo/client@^4.0.1` ↗︎](https://www.npmjs.com/package/@apollo/client/v/4.0.1) (from
     `^3.13.1`, in `peerDependencies`)
@@ -231,7 +249,6 @@
 - [#2342](https://github.com/the-guild-org/apollo-angular/pull/2342)
   [`baf538a`](https://github.com/the-guild-org/apollo-angular/commit/baf538aeb1f76f0835c84f6979589cbf2dfd0f0b)
   Thanks [@PowerKiKi](https://github.com/PowerKiKi)! - Drop deprecated things:
-
   - Instead of `ApolloModule`, use either `provideApollo()` or `provideNamedApollo()`.
   - Instead of `import {graphql} from 'apollo-angular';` use
     `import {gql as graphql} from 'apollo-angular';`
@@ -277,7 +294,6 @@
 - [#2333](https://github.com/the-guild-org/apollo-angular/pull/2333)
   [`9866ec6`](https://github.com/the-guild-org/apollo-angular/commit/9866ec675a0f38602aabe4ca3fd591e4d9f3248f)
   Thanks [@PowerKiKi](https://github.com/PowerKiKi)! - dependencies updates:
-
   - Updated dependency
     [`@apollo/client@^3.10.0` ↗︎](https://www.npmjs.com/package/@apollo/client/v/3.10.0) (from
     `^3.0.0`, in `peerDependencies`)
@@ -303,7 +319,6 @@
 - [#2323](https://github.com/the-guild-org/apollo-angular/pull/2323)
   [`095457d`](https://github.com/the-guild-org/apollo-angular/commit/095457d609239ee2de636376b62159e420e1df54)
   Thanks [@PowerKiKi](https://github.com/PowerKiKi)! - dependencies updates:
-
   - Updated dependency
     [`@angular/core@^17.0.0 || ^18.0.0 || ^19.0.0` ↗︎](https://www.npmjs.com/package/@angular/core/v/17.0.0)
     (from `^17.0.0 || ^18.0.0`, in `peerDependencies`)
@@ -389,7 +404,6 @@
 - [#2259](https://github.com/the-guild-org/apollo-angular/pull/2259)
   [`78f319a`](https://github.com/the-guild-org/apollo-angular/commit/78f319a6a93268144bbb9dc42c84bd45f50ff606)
   Thanks [@PowerKiKi](https://github.com/PowerKiKi)! - dependencies updates:
-
   - Updated dependency
     [`@angular/core@^17.0.0 || ^18.0.0` ↗︎](https://www.npmjs.com/package/@angular/core/v/17.0.0)
     (from `^17.0.0`, in `peerDependencies`)
@@ -397,7 +411,6 @@
 - [#2259](https://github.com/the-guild-org/apollo-angular/pull/2259)
   [`97fba6a`](https://github.com/the-guild-org/apollo-angular/commit/97fba6ab7909c2d65bd58f7e376a94c0b4394249)
   Thanks [@PowerKiKi](https://github.com/PowerKiKi)! - dependencies updates:
-
   - Updated dependency
     [`@angular/core@^17.0.0 || ^18.0.0` ↗︎](https://www.npmjs.com/package/@angular/core/v/17.0.0)
     (from `^17.0.0`, in `peerDependencies`)
@@ -424,7 +437,6 @@
   Thanks [@PowerKiKi](https://github.com/PowerKiKi)! - BREAKING use Typescript strict mode
 
   This is breaking because:
-
   - `ApolloBase.client` throws an error if no client has been created beforehand. The behavior now
     matches the typing that always declared a client existed. In most cases, you should pass either
     `apolloOptions` or `apolloNamedOptions` to `Apollo.constructor` to create the client immediately
