@@ -306,108 +306,117 @@ describe('HttpLink', () => {
     });
   });
 
-  test('should support headers from constructor options', () => {
-    const link = httpLink.create({
-      uri: 'graphql',
-      headers: new HttpHeaders().set('X-Custom-Header', 'foo'),
-    });
-    const op = {
-      query: gql`
-        query heroes {
-          heroes {
-            name
-          }
-        }
-      `,
+  describe.each([
+    ['Record', true],
+    ['HttpHeaders', false],
+  ])('Headers as %s', (_, useRecord) => {
+    const createHeaders = (name: string, value: string): HttpHeaders | Record<string, string> => {
+      return useRecord ? { [name]: value } : new HttpHeaders().set(name, value);
     };
 
-    execute(link, op).subscribe(noop);
-
-    httpBackend.match(req => {
-      expect(req.headers.get('X-Custom-Header')).toBe('foo');
-      return true;
-    });
-  });
-
-  test('should support headers from context', () => {
-    const link = httpLink.create({
-      uri: 'graphql',
-    });
-    const op = {
-      query: gql`
-        query heroes {
-          heroes {
-            name
-          }
-        }
-      `,
-      context: {
+    test('should support headers from constructor options', () => {
+      const link = httpLink.create({
+        uri: 'graphql',
         headers: new HttpHeaders().set('X-Custom-Header', 'foo'),
-      },
-    };
-
-    execute(link, op).subscribe(noop);
-
-    httpBackend.match(req => {
-      expect(req.headers.get('X-Custom-Header')).toBe('foo');
-      return true;
-    });
-  });
-
-  test('should use clientAwareness from context in headers', () => {
-    const link = httpLink.create({
-      uri: 'graphql',
-    });
-    const clientAwareness = {
-      name: 'iOS',
-      version: '1.0.0',
-    };
-    const op = {
-      query: gql`
-        query heroes {
-          heroes {
-            name
+      });
+      const op = {
+        query: gql`
+          query heroes {
+            heroes {
+              name
+            }
           }
-        }
-      `,
-      context: {
-        clientAwareness,
-      },
-    };
+        `,
+      };
 
-    execute(link, op).subscribe(noop);
+      execute(link, op).subscribe(noop);
 
-    httpBackend.match(req => {
-      expect(req.headers.get('apollographql-client-name')).toBe(clientAwareness.name);
-      expect(req.headers.get('apollographql-client-version')).toBe(clientAwareness.version);
-      return true;
+      httpBackend.match(req => {
+        expect(req.headers.get('X-Custom-Header')).toBe('foo');
+        return true;
+      });
     });
-  });
 
-  test('should merge headers from context and constructor options', () => {
-    const link = httpLink.create({
-      uri: 'graphql',
-      headers: new HttpHeaders().set('X-Custom-Foo', 'foo'),
-    });
-    const op = {
-      query: gql`
-        query heroes {
-          heroes {
-            name
+    test('should support headers from context', () => {
+      const link = httpLink.create({
+        uri: 'graphql',
+      });
+      const op = {
+        query: gql`
+          query heroes {
+            heroes {
+              name
+            }
           }
-        }
-      `,
-      context: {
-        headers: new HttpHeaders().set('X-Custom-Bar', 'bar'),
-      },
-    };
+        `,
+        context: {
+          headers: createHeaders('X-Custom-Header', 'foo'),
+        },
+      };
 
-    execute(link, op).subscribe(noop);
+      execute(link, op).subscribe(noop);
 
-    httpBackend.match(req => {
-      expect(req.headers.get('X-Custom-Foo')).toBe('foo');
-      expect(req.headers.get('X-Custom-Bar')).toBe('bar');
-      return true;
+      httpBackend.match(req => {
+        expect(req.headers.get('X-Custom-Header')).toBe('foo');
+        return true;
+      });
+    });
+
+    test('should use clientAwareness from context in headers', () => {
+      const link = httpLink.create({
+        uri: 'graphql',
+      });
+      const clientAwareness = {
+        name: 'iOS',
+        version: '1.0.0',
+      };
+      const op = {
+        query: gql`
+          query heroes {
+            heroes {
+              name
+            }
+          }
+        `,
+        context: {
+          clientAwareness,
+        },
+      };
+
+      execute(link, op).subscribe(noop);
+
+      httpBackend.match(req => {
+        expect(req.headers.get('apollographql-client-name')).toBe(clientAwareness.name);
+        expect(req.headers.get('apollographql-client-version')).toBe(clientAwareness.version);
+        return true;
+      });
+    });
+
+    test('should merge headers from context and constructor options', () => {
+      const link = httpLink.create({
+        uri: 'graphql',
+        headers: new HttpHeaders().set('X-Custom-Foo', 'foo'),
+      });
+      const op = {
+        query: gql`
+          query heroes {
+            heroes {
+              name
+            }
+          }
+        `,
+        context: {
+          headers: createHeaders('X-Custom-Bar', 'bar'),
+        },
+      };
+
+      execute(link, op).subscribe(noop);
+
+      httpBackend.match(req => {
+        expect(req.headers.get('X-Custom-Foo')).toBe('foo');
+        expect(req.headers.get('X-Custom-Bar')).toBe('bar');
+        return true;
+      });
     });
   });
 
