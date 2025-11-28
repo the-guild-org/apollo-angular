@@ -24,7 +24,8 @@
     "test:e2e": "./scripts/run-e2e-locally.sh"
   },
   "devDependencies": {
-    "@angular-devkit/build-angular": "^19.2.0",    "@angular-devkit/core": "^19.2.0",
+    "@angular-devkit/build-angular": "^19.2.0",
+    "@angular-devkit/core": "^19.2.0",
     "@angular-devkit/schematics": "^19.2.0",
     "@angular/animations": "^19.2.0",
     "@angular/cli": "^19.2.0",
@@ -49,7 +50,7 @@
     "husky": "^9.0.0",
     "lint-staged": "^15.2.5",
     "ng-packagr": "^19.2.0",
-    "prettier": "^3.5.3",
+    "prettier": "^3.7.1",
     "react": "^18.3.1",
     "rimraf": "^5.0.7",
     "rxjs": "~7.8.0",
