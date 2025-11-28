@@ -7,14 +7,14 @@ declare module '@apollo/client' {
 }
 
 export type HttpRequestOptions = {
-  headers?: HttpHeaders;
+  headers?: HttpHeaders | Record<string, string>;
   withCredentials?: boolean;
   useMultipart?: boolean;
   httpContext?: HttpContext;
 };
 
-export type RequestOptions = Omit<HttpRequestOptions, 'httpContext'> & {
-  context?: HttpContext;
+export type RequestOptions = Omit<HttpRequestOptions, 'headers'> & {
+  headers?: HttpHeaders;
 };
 
 export type URIFunction = (operation: ApolloLink.Operation) => string;
@@ -37,11 +37,13 @@ export type Body = {
 
 export interface Context extends FetchOptions, HttpRequestOptions {}
 
+type HttpClientRequestOptions = Omit<RequestOptions, 'httpContext'> & { context: HttpContext };
+
 export type Request = {
   method: string;
   url: string;
   body: Body | Body[];
-  options: RequestOptions;
+  options: HttpClientRequestOptions;
 };
 
 export type ExtractedFiles = {

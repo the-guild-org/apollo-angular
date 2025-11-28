@@ -285,141 +285,150 @@ describe('HttpBatchLink', () => {
       }, 50);
     }));
 
-  test('should support headers from constructor options', () =>
-    new Promise<void>(done => {
-      const link = httpLink.create({
-        uri: 'graphql',
-        headers: new HttpHeaders().set('X-Custom-Header', 'foo'),
-      });
-      const op = {
-        query: gql`
-          query heroes {
-            heroes {
-              name
-            }
-          }
-        `,
-      };
+  describe.each([
+    ['Record', true],
+    ['HttpHeaders', false],
+  ])('Headers as %s', (_, useRecord) => {
+    const createHeaders = (name: string, value: string): HttpHeaders | Record<string, string> => {
+      return useRecord ? { [name]: value } : new HttpHeaders().set(name, value);
+    };
 
-      execute(link, op).subscribe(noop);
-
-      setTimeout(() => {
-        httpBackend.match(req => {
-          expect(req.headers.get('X-Custom-Header')).toEqual('foo');
-          done();
-          return true;
-        });
-      }, 50);
-    }));
-
-  test('should support headers from context', () =>
-    new Promise<void>(done => {
-      const link = httpLink.create({
-        uri: 'graphql',
-      });
-      const op = {
-        query: gql`
-          query heroes {
-            heroes {
-              name
-            }
-          }
-        `,
-        context: {
+    test('should support headers from constructor options', () =>
+      new Promise<void>(done => {
+        const link = httpLink.create({
+          uri: 'graphql',
           headers: new HttpHeaders().set('X-Custom-Header', 'foo'),
-        },
-      };
-
-      execute(link, op).subscribe(noop);
-
-      setTimeout(() => {
-        httpBackend.match(req => {
-          expect(req.headers.get('X-Custom-Header')).toEqual('foo');
-          done();
-          return true;
         });
-      }, 50);
-    }));
-
-  test('should support headers from context', () =>
-    new Promise<void>(done => {
-      const link = httpLink.create({
-        uri: 'graphql',
-      });
-      const clientAwareness = {
-        name: 'iOS',
-        version: '1.0.0',
-      };
-      const op = {
-        query: gql`
-          query heroes {
-            heroes {
-              name
+        const op = {
+          query: gql`
+            query heroes {
+              heroes {
+                name
+              }
             }
-          }
-        `,
-        context: {
-          clientAwareness,
-        },
-      };
+          `,
+        };
 
-      execute(link, op).subscribe(noop);
+        execute(link, op).subscribe(noop);
 
-      setTimeout(() => {
-        httpBackend.match(req => {
-          expect(req.headers.get('apollographql-client-name')).toBe(clientAwareness.name);
-          expect(req.headers.get('apollographql-client-version')).toBe(clientAwareness.version);
-          done();
-          return true;
+        setTimeout(() => {
+          httpBackend.match(req => {
+            expect(req.headers.get('X-Custom-Header')).toEqual('foo');
+            done();
+            return true;
+          });
+        }, 50);
+      }));
+
+    test('should support headers from context', () =>
+      new Promise<void>(done => {
+        const link = httpLink.create({
+          uri: 'graphql',
         });
-      }, 50);
-    }));
-
-  test('should merge headers from context and constructor options', () =>
-    new Promise<void>(done => {
-      const link = httpLink.create({
-        uri: 'graphql',
-        headers: new HttpHeaders().set('X-Custom-Foo', 'foo'),
-        batchKey: () => 'bachKey',
-      });
-      const op1 = {
-        query: gql`
-          query heroes {
-            heroes {
-              name
+        const op = {
+          query: gql`
+            query heroes {
+              heroes {
+                name
+              }
             }
-          }
-        `,
-        context: {
-          headers: new HttpHeaders().set('X-Custom-Bar', 'bar'),
-        },
-      };
-      const op2 = {
-        query: gql`
-          query heroes {
-            heroes {
-              name
-            }
-          }
-        `,
-        context: {
-          headers: new HttpHeaders().set('X-Custom-Baz', 'baz'),
-        },
-      };
+          `,
+          context: {
+            headers: createHeaders('X-Custom-Header', 'foo'),
+          },
+        };
 
-      execute(link, op1).subscribe(noop);
-      execute(link, op2).subscribe(noop);
+        execute(link, op).subscribe(noop);
 
-      setTimeout(() => {
-        httpBackend.match(req => {
-          expect(req.headers.get('X-Custom-Foo')).toEqual('foo');
-          expect(req.headers.get('X-Custom-Bar')).toEqual('bar');
-          expect(req.headers.get('X-Custom-Baz')).toEqual('baz');
-          done();
-          return true;
+        setTimeout(() => {
+          httpBackend.match(req => {
+            expect(req.headers.get('X-Custom-Header')).toEqual('foo');
+            done();
+            return true;
+          });
+        }, 50);
+      }));
+
+    test('should support headers from context', () =>
+      new Promise<void>(done => {
+        const link = httpLink.create({
+          uri: 'graphql',
         });
-      }, 50);
-    }));
+        const clientAwareness = {
+          name: 'iOS',
+          version: '1.0.0',
+        };
+        const op = {
+          query: gql`
+            query heroes {
+              heroes {
+                name
+              }
+            }
+          `,
+          context: {
+            clientAwareness,
+          },
+        };
+
+        execute(link, op).subscribe(noop);
+
+        setTimeout(() => {
+          httpBackend.match(req => {
+            expect(req.headers.get('apollographql-client-name')).toBe(clientAwareness.name);
+            expect(req.headers.get('apollographql-client-version')).toBe(clientAwareness.version);
+            done();
+            return true;
+          });
+        }, 50);
+      }));
+
+    test('should merge headers from context and constructor options', () =>
+      new Promise<void>(done => {
+        const link = httpLink.create({
+          uri: 'graphql',
+          headers: new HttpHeaders().set('X-Custom-Foo', 'foo'),
+          batchKey: () => 'bachKey',
+        });
+        const op1 = {
+          query: gql`
+            query heroes {
+              heroes {
+                name
+              }
+            }
+          `,
+          context: {
+            headers: createHeaders('X-Custom-Bar', 'bar'),
+          },
+        };
+        const op2 = {
+          query: gql`
+            query heroes {
+              heroes {
+                name
+              }
+            }
+          `,
+          context: {
+            headers: createHeaders('X-Custom-Baz', 'baz'),
+          },
+        };
+
+        execute(link, op1).subscribe(noop);
+        execute(link, op2).subscribe(noop);
+
+        setTimeout(() => {
+          httpBackend.match(req => {
+            expect(req.headers.get('X-Custom-Foo')).toEqual('foo');
+            expect(req.headers.get('X-Custom-Bar')).toEqual('bar');
+            expect(req.headers.get('X-Custom-Baz')).toEqual('baz');
+            done();
+            return true;
+          });
+        }, 50);
+      }));
+  });
 
   test('should support dynamic uri based on context.uri', () =>
     new Promise<void>(done => {
