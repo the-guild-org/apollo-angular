@@ -1,6 +1,6 @@
 import { print } from 'graphql';
 import { Observable } from 'rxjs';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpContext } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { ApolloLink } from '@apollo/client';
 import { pick } from './http-batch-link';
@@ -13,7 +13,7 @@ import {
   OperationPrinter,
   Request,
 } from './types';
-import { createHeadersWithClientAwareness, fetch, mergeHeaders } from './utils';
+import { createHeadersWithClientAwareness, fetch, mergeHeaders, mergeHttpContext } from './utils';
 
 export declare namespace HttpLink {
   export interface Options extends FetchOptions, HttpRequestOptions {
@@ -49,6 +49,10 @@ export class HttpLinkHandler extends ApolloLink {
         const withCredentials = pick(context, this.options, 'withCredentials');
         const useMultipart = pick(context, this.options, 'useMultipart');
         const useGETForQueries = this.options.useGETForQueries === true;
+        const httpContext = mergeHttpContext(
+          context.httpContext,
+          mergeHttpContext(this.options.httpContext, new HttpContext()),
+        );
 
         const isQuery = operation.query.definitions.some(
           def => def.kind === 'OperationDefinition' && def.operation === 'query',
@@ -69,6 +73,7 @@ export class HttpLinkHandler extends ApolloLink {
             withCredentials,
             useMultipart,
             headers: this.options.headers,
+            context: httpContext,
           },
         };
 

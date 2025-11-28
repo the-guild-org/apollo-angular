@@ -1,5 +1,5 @@
 import { DocumentNode } from 'graphql';
-import { HttpHeaders } from '@angular/common/http';
+import { HttpContext, HttpHeaders } from '@angular/common/http';
 import { ApolloLink } from '@apollo/client';
 
 declare module '@apollo/client' {
@@ -10,6 +10,11 @@ export type HttpRequestOptions = {
   headers?: HttpHeaders;
   withCredentials?: boolean;
   useMultipart?: boolean;
+  httpContext?: HttpContext;
+};
+
+export type RequestOptions = Omit<HttpRequestOptions, 'httpContext'> & {
+  context?: HttpContext;
 };
 
 export type URIFunction = (operation: ApolloLink.Operation) => string;
@@ -36,7 +41,7 @@ export type Request = {
   method: string;
   url: string;
   body: Body | Body[];
-  options: HttpRequestOptions;
+  options: RequestOptions;
 };
 
 export type ExtractedFiles = {

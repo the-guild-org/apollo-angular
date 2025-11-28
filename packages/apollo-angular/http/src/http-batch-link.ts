@@ -1,12 +1,18 @@
 import { print } from 'graphql';
 import { Observable } from 'rxjs';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpContext, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { ApolloLink } from '@apollo/client';
 import { BatchLink } from '@apollo/client/link/batch';
 import type { HttpLink } from './http-link';
 import { Body, Context, OperationPrinter, Request } from './types';
-import { createHeadersWithClientAwareness, fetch, mergeHeaders, prioritize } from './utils';
+import {
+  createHeadersWithClientAwareness,
+  fetch,
+  mergeHeaders,
+  mergeHttpContext,
+  prioritize,
+} from './utils';
 
 export declare namespace HttpBatchLink {
   export type Options = {
@@ -61,6 +67,7 @@ export class HttpBatchLinkHandler extends ApolloLink {
       return new Observable((observer: any) => {
         const body = this.createBody(operations);
         const headers = this.createHeaders(operations);
+        const context = this.createHttpContext(operations);
         const { method, uri, withCredentials } = this.createOptions(operations);
 
         if (typeof uri === 'function') {
@@ -74,6 +81,7 @@ export class HttpBatchLinkHandler extends ApolloLink {
           options: {
             withCredentials,
             headers,
+            context,
           },
         };
 
@@ -159,6 +167,16 @@ export class HttpBatchLinkHandler extends ApolloLink {
         headers: this.options.headers,
         clientAwareness: operations[0]?.getContext()?.clientAwareness,
       }),
+    );
+  }
+
+  private createHttpContext(operations: ApolloLink.Operation[]): HttpContext {
+    return operations.reduce(
+      (context: HttpContext, operation: ApolloLink.Operation) => {
+        const { httpContext } = operation.getContext();
+        return httpContext ? mergeHttpContext(httpContext, context) : context;
+      },
+      mergeHttpContext(this.options.httpContext, new HttpContext()),
     );
   }
 

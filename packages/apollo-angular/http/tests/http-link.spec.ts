@@ -1,7 +1,13 @@
 import { print, stripIgnoredCharacters } from 'graphql';
 import { map, mergeMap } from 'rxjs/operators';
-import { afterEach, beforeEach, describe, expect, test } from 'vitest';
-import { HttpHeaders, provideHttpClient } from '@angular/common/http';
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
+import {
+  HttpClient,
+  HttpContext,
+  HttpContextToken,
+  HttpHeaders,
+  provideHttpClient,
+} from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { ApolloLink, gql, InMemoryCache } from '@apollo/client';
@@ -750,4 +756,39 @@ describe('HttpLink', () => {
 
     expect(httpBackend.expectOne('graphql').cancelled).toBe(true);
   });
+
+  test('should merge httpContext from options and query context and pass it on to HttpClient', () =>
+    new Promise<void>(done => {
+      const requestSpy = vi.spyOn(TestBed.inject(HttpClient), 'request');
+      const optionsToken = new HttpContextToken(() => '');
+      const queryToken = new HttpContextToken(() => '');
+
+      const optionsContext = new HttpContext().set(optionsToken, 'foo');
+      const queryContext = new HttpContext().set(queryToken, 'bar');
+
+      const link = httpLink.create({ uri: 'graphql', httpContext: optionsContext });
+      const op = {
+        query: gql`
+          query heroes {
+            heroes {
+              name
+            }
+          }
+        `,
+        context: {
+          httpContext: queryContext,
+        },
+      };
+
+      execute(link, op).subscribe(() => {
+        const callOptions = requestSpy.mock.calls[0][2];
+        expect(callOptions?.context?.get(optionsToken)).toBe('foo');
+        expect(callOptions?.context?.get(queryToken)).toBe('bar');
+        expect(optionsContext.get(queryToken)).toBe('');
+        expect(queryContext.get(optionsToken)).toBe('');
+        done();
+      });
+
+      httpBackend.expectOne('graphql').flush({ data: {} });
+    }));
 });
