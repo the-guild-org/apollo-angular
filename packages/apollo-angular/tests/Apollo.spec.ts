@@ -460,6 +460,8 @@ describe('Apollo', () => {
         loading: false,
       });
 
+      await expect(stream.takeComplete()).resolves.toBeUndefined();
+
       await expect(stream).not.toEmitAnything();
     });
 
@@ -501,6 +503,8 @@ describe('Apollo', () => {
         data,
         loading: false,
       });
+
+      await expect(stream.takeComplete()).resolves.toBeUndefined();
 
       await expect(stream).not.toEmitAnything();
     });

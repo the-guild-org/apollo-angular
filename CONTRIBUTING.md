@@ -165,7 +165,6 @@ We are using `Changeset` to manage and publish our releasing flow.
 1. Make your changes to the code and test them thoroughly.
 2. Run the command `yarn changeset` in your terminal. This will prompt you to select the type of
    change you made. The available options are patch, minor, and major.
-
    1. `Patch` for backward-compatible bug fixes.
    2. `Minor` for new features and backward-compatible changes.
    3. `Major` for breaking changes.
