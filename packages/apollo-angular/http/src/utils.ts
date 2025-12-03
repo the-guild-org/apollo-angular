@@ -106,16 +106,25 @@ export const fetch = (
   });
 };
 
+export const convertToHttpHeaders = (
+  headers: HttpHeaders | Record<string, string> | undefined,
+): HttpHeaders => (headers instanceof HttpHeaders ? headers : new HttpHeaders(headers));
+
+export const convertHeadersToArray = (
+  headers: HttpHeaders | Record<string, string> | undefined,
+): string[] =>
+  headers instanceof HttpHeaders
+    ? headers.keys().map((k: string) => headers.get(k)!)
+    : Object.values(headers ?? {});
+
 export const mergeHeaders = (
   source: HttpHeaders | undefined,
   destination: HttpHeaders,
 ): HttpHeaders => {
   if (source && destination) {
-    const merged = destination
+    return destination
       .keys()
       .reduce((headers, name) => headers.set(name, destination.getAll(name)!), source);
-
-    return merged;
   }
 
   return destination || source;
@@ -146,10 +155,7 @@ export function createHeadersWithClientAwareness(context: Record<string, any>) {
   // `clientAwareness` object is found in the context. These headers are
   // set first, followed by the rest of the headers pulled from
   // `context.headers`.
-  let headers =
-    context.headers && context.headers instanceof HttpHeaders
-      ? context.headers
-      : new HttpHeaders(context.headers);
+  let headers = convertToHttpHeaders(context.headers);
 
   if (context.clientAwareness) {
     const { name, version } = context.clientAwareness;
