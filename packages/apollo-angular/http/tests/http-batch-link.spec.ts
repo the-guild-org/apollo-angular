@@ -9,6 +9,7 @@ import {
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { ApolloLink, gql } from '@apollo/client';
+import { ServerError } from '@apollo/client/errors';
 import { getOperationName } from '@apollo/client/utilities/internal';
 import { HttpBatchLink } from '../src/http-batch-link';
 import { executeWithDefaultContext as execute } from './utils';
@@ -818,4 +819,382 @@ describe('HttpBatchLink', () => {
         });
       }, 50);
     }));
+
+  describe('HTTP Error Handling', () => {
+    test('should convert HTTP 400 to ServerError', () =>
+      new Promise<void>(done => {
+        const link = httpLink.create({ uri: 'graphql' });
+        const op = {
+          query: gql`
+            query test {
+              field
+            }
+          `,
+          operationName: 'test',
+          variables: {},
+        };
+        const errorBody = {
+          errors: [{ message: 'Validation error', extensions: { code: 'GRAPHQL_VALIDATION_FAILED' } }],
+        };
+
+        execute(link, op).subscribe({
+          next: () => {
+            throw new Error('Should not succeed');
+          },
+          error: err => {
+            expect(err instanceof ServerError).toBe(true);
+            expect(ServerError.is(err)).toBe(true);
+            expect(err.statusCode).toBe(400);
+            expect(err.message).toBe('Response not successful: Received status code 400');
+            expect(err.bodyText).toBe(JSON.stringify([errorBody]));
+            expect(err.response.ok).toBe(false);
+            done();
+          },
+        });
+
+        setTimeout(() => {
+          httpBackend.expectOne('graphql').flush([errorBody], { status: 400, statusText: 'Bad Request' });
+        }, 50);
+      }));
+
+    test('should convert HTTP 500 to ServerError', () =>
+      new Promise<void>(done => {
+        const link = httpLink.create({ uri: 'graphql' });
+        const op = {
+          query: gql`
+            query test {
+              field
+            }
+          `,
+          operationName: 'test',
+          variables: {},
+        };
+        const errorBody = 'Internal server error';
+
+        execute(link, op).subscribe({
+          next: () => {
+            throw new Error('Should not succeed');
+          },
+          error: err => {
+            expect(err instanceof ServerError).toBe(true);
+            expect(ServerError.is(err)).toBe(true);
+            expect(err.statusCode).toBe(500);
+            expect(err.message).toBe('Response not successful: Received status code 500');
+            expect(err.bodyText).toBe(errorBody);
+            expect(err.response.ok).toBe(false);
+            done();
+          },
+        });
+
+        setTimeout(() => {
+          httpBackend.expectOne('graphql').flush(errorBody, { status: 500, statusText: 'Internal Server Error' });
+        }, 50);
+      }));
+
+    test('should include all response properties in ServerError', () =>
+      new Promise<void>(done => {
+        const link = httpLink.create({ uri: 'graphql' });
+        const op = {
+          query: gql`
+            query test {
+              field
+            }
+          `,
+          operationName: 'test',
+          variables: {},
+        };
+        const errorBody = [{ errors: [{ message: 'Not found' }] }];
+        const customHeaders = new HttpHeaders({ 'X-Custom-Header': 'test-value', 'X-Request-ID': '12345' });
+
+        execute(link, op).subscribe({
+          next: () => {
+            throw new Error('Should not succeed');
+          },
+          error: err => {
+            expect(err instanceof ServerError).toBe(true);
+            expect(err.response).toBeDefined();
+            expect(err.response.status).toBe(404);
+            expect(err.response.statusText).toBe('Not Found');
+            expect(err.response.ok).toBe(false);
+            expect(err.response.url).toBe('graphql');
+            expect(err.response.type).toBe('error');
+            expect(err.response.redirected).toBe(false);
+
+            // Verify headers were converted from Angular HttpHeaders to native Headers
+            expect(err.response.headers).toBeDefined();
+            expect(err.response.headers.get('x-custom-header')).toBe('test-value');
+            expect(err.response.headers.get('x-request-id')).toBe('12345');
+            done();
+          },
+        });
+
+        setTimeout(() => {
+          httpBackend.expectOne('graphql').flush(errorBody, {
+            status: 404,
+            statusText: 'Not Found',
+            headers: customHeaders
+          });
+        }, 50);
+      }));
+
+    test('should work in link chain for error handling', () =>
+      new Promise<void>(done => {
+        // Verify ServerError propagates through link chain
+        const passThroughLink = new ApolloLink((operation, forward) => {
+          return forward(operation);
+        });
+
+        const link = httpLink.create({ uri: 'graphql' });
+        const combinedLink = ApolloLink.from([passThroughLink, link]);
+
+        const op = {
+          query: gql`
+            query test {
+              field
+            }
+          `,
+          operationName: 'test',
+          variables: {},
+        };
+
+        execute(combinedLink, op).subscribe({
+          next: () => {
+            throw new Error('Should not succeed');
+          },
+          error: err => {
+            // Verify ServerError works through link chain
+            expect(err instanceof ServerError).toBe(true);
+            expect(ServerError.is(err)).toBe(true);
+            expect(err.statusCode).toBe(400);
+            expect(err.bodyText).toBeDefined();
+            done();
+          },
+        });
+
+        setTimeout(() => {
+          httpBackend.expectOne('graphql').flush(
+            [{ errors: [{ message: 'Bad request' }] }],
+            { status: 400, statusText: 'Bad Request' }
+          );
+        }, 50);
+      }));
+
+
+    test('should extract body text from string error', () =>
+      new Promise<void>(done => {
+        const link = httpLink.create({ uri: 'graphql' });
+        const op = {
+          query: gql`
+            query test {
+              field
+            }
+          `,
+          operationName: 'test',
+          variables: {},
+        };
+        const errorBody = 'Plain string error message';
+
+        execute(link, op).subscribe({
+          next: () => {
+            throw new Error('Should not succeed');
+          },
+          error: err => {
+            expect(err instanceof ServerError).toBe(true);
+            expect(err.bodyText).toBe(errorBody);
+            done();
+          },
+        });
+
+        setTimeout(() => {
+          httpBackend.expectOne('graphql').flush(errorBody, { status: 500, statusText: 'Server Error' });
+        }, 50);
+      }));
+
+    test('should extract body text from object error', () =>
+      new Promise<void>(done => {
+        const link = httpLink.create({ uri: 'graphql' });
+        const op = {
+          query: gql`
+            query test {
+              field
+            }
+          `,
+          operationName: 'test',
+          variables: {},
+        };
+        const errorBody = [{ errors: [{ message: 'GraphQL error', path: ['field'] }] }];
+
+        execute(link, op).subscribe({
+          next: () => {
+            throw new Error('Should not succeed');
+          },
+          error: err => {
+            expect(err instanceof ServerError).toBe(true);
+            expect(err.bodyText).toBe(JSON.stringify(errorBody));
+            done();
+          },
+        });
+
+        setTimeout(() => {
+          httpBackend.expectOne('graphql').flush(errorBody, { status: 400, statusText: 'Bad Request' });
+        }, 50);
+      }));
+
+    test('should extract body text from null error', () =>
+      new Promise<void>(done => {
+        const link = httpLink.create({ uri: 'graphql' });
+        const op = {
+          query: gql`
+            query test {
+              field
+            }
+          `,
+          operationName: 'test',
+          variables: {},
+        };
+
+        execute(link, op).subscribe({
+          next: () => {
+            throw new Error('Should not succeed');
+          },
+          error: err => {
+            expect(err instanceof ServerError).toBe(true);
+            expect(err.bodyText).toBe('{}');
+            done();
+          },
+        });
+
+        setTimeout(() => {
+          httpBackend.expectOne('graphql').flush(null, { status: 500, statusText: 'Server Error' });
+        }, 50);
+      }));
+
+    test('should not create ServerError for status 299', () =>
+      new Promise<void>(done => {
+        const link = httpLink.create({ uri: 'graphql' });
+        const op = {
+          query: gql`
+            query test {
+              field
+            }
+          `,
+          operationName: 'test',
+          variables: {},
+        };
+        const data = { field: 'value' };
+
+        execute(link, op).subscribe({
+          next: result => {
+            expect(result).toEqual({ data });
+            done();
+          },
+          error: () => {
+            throw new Error('Should not error');
+          },
+        });
+
+        setTimeout(() => {
+          httpBackend.expectOne('graphql').flush([{ data }], { status: 299, statusText: 'Custom Success' });
+        }, 50);
+      }));
+
+    test('should create ServerError for status 300', () =>
+      new Promise<void>(done => {
+        const link = httpLink.create({ uri: 'graphql' });
+        const op = {
+          query: gql`
+            query test {
+              field
+            }
+          `,
+          operationName: 'test',
+          variables: {},
+        };
+
+        execute(link, op).subscribe({
+          next: () => {
+            throw new Error('Should not succeed for status 300');
+          },
+          error: err => {
+            expect(err instanceof ServerError).toBe(true);
+            expect(err.statusCode).toBe(300);
+            expect(err.message).toBe('Response not successful: Received status code 300');
+            done();
+          },
+        });
+
+        setTimeout(() => {
+          httpBackend.expectOne('graphql').flush(
+            [{ errors: [{ message: 'Error' }] }],
+            { status: 300, statusText: 'Error' }
+          );
+        }, 50);
+      }));
+
+    test('should create ServerError for status 404', () =>
+      new Promise<void>(done => {
+        const link = httpLink.create({ uri: 'graphql' });
+        const op = {
+          query: gql`
+            query test {
+              field
+            }
+          `,
+          operationName: 'test',
+          variables: {},
+        };
+
+        execute(link, op).subscribe({
+          next: () => {
+            throw new Error('Should not succeed for status 404');
+          },
+          error: err => {
+            expect(err instanceof ServerError).toBe(true);
+            expect(err.statusCode).toBe(404);
+            expect(err.message).toBe('Response not successful: Received status code 404');
+            done();
+          },
+        });
+
+        setTimeout(() => {
+          httpBackend.expectOne('graphql').flush(
+            [{ errors: [{ message: 'Error' }] }],
+            { status: 404, statusText: 'Not Found' }
+          );
+        }, 50);
+      }));
+
+    test('should create ServerError for status 503', () =>
+      new Promise<void>(done => {
+        const link = httpLink.create({ uri: 'graphql' });
+        const op = {
+          query: gql`
+            query test {
+              field
+            }
+          `,
+          operationName: 'test',
+          variables: {},
+        };
+
+        execute(link, op).subscribe({
+          next: () => {
+            throw new Error('Should not succeed for status 503');
+          },
+          error: err => {
+            expect(err instanceof ServerError).toBe(true);
+            expect(err.statusCode).toBe(503);
+            expect(err.message).toBe('Response not successful: Received status code 503');
+            done();
+          },
+        });
+
+        setTimeout(() => {
+          httpBackend.expectOne('graphql').flush(
+            [{ errors: [{ message: 'Error' }] }],
+            { status: 503, statusText: 'Service Unavailable' }
+          );
+        }, 50);
+      }));
+  });
 });
