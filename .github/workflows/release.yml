@@ -14,6 +14,7 @@ jobs:
       pull-requests: write
     uses: the-guild-org/shared-config/.github/workflows/release-stable.yml@main
     with:
+      packageManager: pnpm
       createGithubReleases: true
       releaseScript: release
       nodeVersion: 22

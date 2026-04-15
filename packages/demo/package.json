@@ -6,9 +6,18 @@
   "scripts": {
     "build": "ng run demo:build:production",
     "start": "ng run demo:serve",
-    "test": "exit 0"
+    "test": "echo 'nothing to do here'"
   },
-  "peerDependencies": {
-    "apollo-angular": "*"
+  "dependencies": {
+    "@angular-devkit/build-angular": "^19.2.0",
+    "@angular/common": "^19.2.0",
+    "@angular/compiler": "^19.2.0",
+    "@angular/compiler-cli": "^19.2.20",
+    "@angular/core": "^19.2.0",
+    "@angular/platform-browser": "^19.2.0",
+    "@angular/router": "^19.2.0",
+    "@apollo/client": "4.0.1",
+    "apollo-angular": "workspace:*",
+    "typescript": "~5.8.0"
   }
 }

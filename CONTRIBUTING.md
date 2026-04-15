@@ -153,9 +153,9 @@ contributor familiar with that codebase. Here are some things we look for:
 
 Run `npx lerna bootstrap` to download dependencies and link packages.
 
-After this run `yarn build` to generate `apollo-angular-*` packages.
+After this run `pnpm build` to generate `apollo-angular-*` packages.
 
-You can check your setup by running `yarn test`, it should test all packages and don't produce any
+You can check your setup by running `pnpm test`, it should test all packages and don't produce any
 errors.
 
 ## Releasing
@@ -163,7 +163,7 @@ errors.
 We are using `Changeset` to manage and publish our releasing flow.
 
 1. Make your changes to the code and test them thoroughly.
-2. Run the command `yarn changeset` in your terminal. This will prompt you to select the type of
+2. Run the command `pnpm changeset` in your terminal. This will prompt you to select the type of
    change you made. The available options are patch, minor, and major.
    1. `Patch` for backward-compatible bug fixes.
    2. `Minor` for new features and backward-compatible changes.
