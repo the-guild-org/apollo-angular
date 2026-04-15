@@ -7,7 +7,7 @@
     "build": "pnpm run --recursive build",
     "ci-only:integration": "./scripts/integration tests",
     "deploy": "pnpm run --recursive deploy",
-    "format": "prettier --write \"{packages,website}/**/*.{ts,tsx,json}\"",
+    "format": "prettier --write .",
     "now-build": "(cd website && pnpm install && pnpm build && mv build ../public)",
     "prebuild": "rimraf packages/*/build/",
     "prerelease": "pnpm build",
