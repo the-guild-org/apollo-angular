@@ -8,6 +8,8 @@ import { BatchLink } from '@apollo/client/link/batch';
 import type { HttpLink } from './http-link';
 import { Body, Context, OperationPrinter, Request } from './types';
 import {
+  convertHeadersToArray,
+  convertToHttpHeaders,
   createHeadersWithClientAwareness,
   fetch,
   mergeHeaders,
@@ -74,7 +76,7 @@ export const defaults = {
  */
 export function pick<K extends keyof Omit<typeof defaults, 'batchInterval' | 'batchMax'>>(
   context: Context,
-  options: HttpBatchLink.Options,
+  options: Omit<HttpBatchLink.Options, 'headers'>,
   key: K,
 ): ReturnType<typeof prioritize<Context[K] | HttpBatchLink.Options[K] | (typeof defaults)[K]>> {
   return prioritize(context[key], options[key], defaults[key]);
@@ -201,7 +203,9 @@ export class HttpBatchLinkHandler extends ApolloLink {
     return operations.reduce(
       (headers: HttpHeaders, operation: ApolloLink.Operation) => {
         const { headers: contextHeaders } = operation.getContext();
-        return contextHeaders ? mergeHeaders(headers, contextHeaders) : headers;
+        return contextHeaders
+          ? mergeHeaders(headers, convertToHttpHeaders(contextHeaders))
+          : headers;
       },
       createHeadersWithClientAwareness({
         headers: this.options.headers,
@@ -227,8 +231,7 @@ export class HttpBatchLinkHandler extends ApolloLink {
       return Math.random().toString(36).substring(2, 11);
     }
 
-    const headers =
-      context.headers && context.headers.keys().map((k: string) => context.headers!.get(k));
+    const headers = convertHeadersToArray(context.headers);
 
     const opts = JSON.stringify({
       includeQuery: context.includeQuery,
@@ -239,7 +242,7 @@ export class HttpBatchLinkHandler extends ApolloLink {
     return prioritize(context.uri, this.options.uri, '') + opts;
   }
 
-  public request(
+  public override request(
     op: ApolloLink.Operation,
     forward: ApolloLink.ForwardFunction,
   ): Observable<ApolloLink.Result> {

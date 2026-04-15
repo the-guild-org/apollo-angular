@@ -10,9 +10,9 @@ import {
   Context,
   ExtractFiles,
   FetchOptions,
-  HttpRequestOptions,
   OperationPrinter,
   Request,
+  RequestOptions,
 } from './types';
 import { createHeadersWithClientAwareness, fetch, mergeHeaders, mergeHttpContext } from './utils';
 
@@ -52,7 +52,7 @@ function convertHttpErrorToApolloError(err: HttpErrorResponse): Error {
 }
 
 export declare namespace HttpLink {
-  export interface Options extends FetchOptions, HttpRequestOptions {
+  export interface Options extends FetchOptions, RequestOptions {
     operationPrinter?: OperationPrinter;
     useGETForQueries?: boolean;
     extractFiles?: ExtractFiles;
@@ -98,6 +98,11 @@ export class HttpLinkHandler extends ApolloLink {
           method = 'GET';
         }
 
+        const headers = mergeHeaders(
+          this.options.headers,
+          createHeadersWithClientAwareness(context),
+        );
+
         const req: Request = {
           method,
           url: typeof url === 'function' ? url(operation) : url,
@@ -108,7 +113,7 @@ export class HttpLinkHandler extends ApolloLink {
           options: {
             withCredentials,
             useMultipart,
-            headers: this.options.headers,
+            headers,
             context: httpContext,
           },
         };
@@ -120,10 +125,6 @@ export class HttpLinkHandler extends ApolloLink {
         if (includeQuery) {
           (req.body as Body).query = this.print(operation.query);
         }
-
-        const headers = createHeadersWithClientAwareness(context);
-
-        req.options.headers = mergeHeaders(req.options.headers, headers);
 
         const sub = fetch(req, this.httpClient, this.options.extractFiles).subscribe({
           next: response => {
@@ -146,7 +147,7 @@ export class HttpLinkHandler extends ApolloLink {
       });
   }
 
-  public request(op: ApolloLink.Operation): Observable<ApolloLink.Result> {
+  public override request(op: ApolloLink.Operation): Observable<ApolloLink.Result> {
     return this.requester(op);
   }
 }
