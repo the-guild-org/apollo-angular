@@ -21,26 +21,23 @@ jobs:
       - name: Build
         run: pnpm build
 
-      - uses: actions/cache@v4
-        name: Share build
-        with:
-          path: 'packages/apollo-angular/build'
-          key: ${{ github.sha }}
-
       - name: Pack
         run: pnpm pack --filter apollo-angular --out apollo-angular.tgz
 
-      - uses: actions/cache@v4
-        name: Share tarball
+      - uses: actions/upload-artifact@v7
         with:
-          path: 'apollo-angular.tgz'
-          key: ${{ github.sha }}
+          name: build
+          path: 'packages/apollo-angular/build'
 
-      - uses: actions/cache@v4
-        name: Share script
+      - uses: actions/upload-artifact@v7
         with:
+          name: tarball
+          path: 'apollo-angular.tgz'
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: script
           path: 'scripts/prepare-e2e.js'
-          key: ${{ github.sha }}
 
   tests:
     name: Tests
@@ -59,11 +56,10 @@ jobs:
       - name: Install
         run: pnpm install
 
-      - uses: actions/cache@v4
-        name: Share build
+      - uses: actions/download-artifact@v8
         with:
-          path: 'packages/apollo-angular/build'
-          key: ${{ github.sha }}
+          name: build
+          path: 'packages/apollo-angular/build/'
 
       - name: Test
         run: pnpm test
@@ -99,51 +95,47 @@ jobs:
           - angular_version: 19
             node_version: 24
     steps:
-      - uses: pnpm/action-setup@v5
-        with:
-          version: latest
       - name: Use Node.js ${{ matrix.node_version }}
         uses: actions/setup-node@master
         with:
           node-version: ${{ matrix.node_version }}
 
-      - uses: actions/cache@v4
-        name: Share tarball
+      - uses: actions/download-artifact@v8
         with:
-          path: 'apollo-angular.tgz'
-          key: ${{ github.sha }}
+          name: tarball
 
-      - uses: actions/cache@v4
-        name: Share script
+      - uses: actions/download-artifact@v8
         with:
-          path: 'scripts/prepare-e2e.js'
-          key: ${{ github.sha }}
+          name: script
 
       - name: Install Angular CLI
-        run: pnpm install @angular/cli@${{ matrix.angular_version }} --global
+        run: npm install @angular/cli@${{ matrix.angular_version }} --global
 
       - name: ng new
-        run: ng new testapp --package-manager pnpm --defaults --minimal --skip-git
+        run: ng new testapp --package-manager npm --defaults --minimal --skip-git
 
       - name: ng add apollo-angular
         run:
           (cd testapp && ng add ../apollo-angular.tgz --graphql '${{ matrix.graphql_version }}.0.0'
-          --defaults --verbose --skip-confirmation)
+          --defaults --verbose --skip-confirmation )
 
       - name: ng build
-        run: (cd testapp && pnpm ng run testapp:build:production)
+        run: (cd testapp && ng run testapp:build:production)
 
       - name: Setup E2E tests
         run: |
           sudo apt-get update
           sudo apt-get install libgtk2.0-0t64 libgtk-3-0t64 libgbm-dev libnotify-dev libnss3 libxss1 libasound2t64 libxtst6 xauth xvfb
-          (cd testapp && pnpm add -D cypress-fail-on-console-error)
+          (cd testapp && npm add -D cypress-fail-on-console-error)
 
       - name: ng add cypress
         run: (cd testapp && ng add @cypress/schematic --defaults --verbose --skip-confirmation)
 
+      - name: cypress install
+        run: (cd testapp && npm exec cypress install)
+
       - name: Update Angular code
-        run: ./scripts/prepare-e2e.js testapp ${{ matrix.graphql_version }}
+        run: node ./prepare-e2e.js testapp ${{ matrix.graphql_version }}
 
       - name: ng e2e
-        run: (cd testapp && pnpm ng run testapp:cypress-run:production)
+        run: (cd testapp && ng run testapp:cypress-run:production)
