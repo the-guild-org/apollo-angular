@@ -30,11 +30,11 @@
     "angular-schematics"
   ],
   "scripts": {
-    "build": "ng-packagr -p ng-package.json && yarn build:schematics",
+    "build": "ng-packagr -p ng-package.json && pnpm build:schematics",
     "build:schematics": "tsc -p schematics/tsconfig.json && node ./scripts/move-schematics.js",
     "prebuild": "rm -rf build/",
-    "release": "yarn build && changeset publish",
-    "test": "vitest --run && yarn test:schematics",
+    "release": "pnpm build && changeset publish",
+    "test": "vitest --run && pnpm test:schematics",
     "test:schematics": "tsc -p schematics/tsconfig.test.json && node scripts/move-schematics.js && jasmine --config=schematics/jasmine.json"
   },
   "peerDependencies": {
@@ -49,11 +49,20 @@
   "devDependencies": {
     "@analogjs/vite-plugin-angular": "^2.1.1",
     "@analogjs/vitest-angular": "^2.1.1",
-    "@angular/build": "^19.2.0",
+    "@angular-devkit/schematics": "^19.2.0",
+    "@angular/common": "^19.2.0",
+    "@angular/compiler": "^19.2.0",
+    "@angular/compiler-cli": "^19.2.0",
+    "@angular/core": "^19.2.0",
+    "@angular/platform-browser": "^19.2.0",
+    "@angular/platform-browser-dynamic": "^19.2.0",
+    "@angular/platform-server": "^19.2.0",
     "@types/jasmine": "^5.1.7",
-    "@types/node": "^20.12.12",
+    "@types/node": "^22.0.0",
     "jasmine": "^5.6.0",
     "jsdom": "^26.0.0",
+    "ng-packagr": "^19.2.2",
+    "typescript": "~5.8.0",
     "vite-tsconfig-paths": "^5.1.4",
     "vitest": "^4.0.14"
   },
