@@ -38,7 +38,7 @@ It is simple to install Apollo Angular and related libraries
 ng add apollo-angular
 
 # installing each piece independently
-yarn add @apollo/client apollo-angular graphql
+pnpm add @apollo/client apollo-angular graphql
 ```
 
 That’s it! You may now use Apollo Angular in any of your Angular environments.
@@ -117,19 +117,19 @@ This project uses Lerna.
 Bootstrapping:
 
 ```bash
-yarn install
+pnpm install
 ```
 
 Running tests locally:
 
 ```bash
-yarn test
+pnpm test
 ```
 
 Formatting code with prettier:
 
 ```bash
-yarn prettier
+pnpm prettier
 ```
 
 This project uses TypeScript for static typing. You can get it built into your editor with no

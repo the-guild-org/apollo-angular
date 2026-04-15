@@ -24,10 +24,10 @@ jobs:
         name: website
         with:
           nodeVersion: 22 # change if needed
-          packageManager: yarn # change if needed
+          packageManager: pnpm # change if needed
 
       - name: Pre-install wrangler
-        run: yarn add wrangler --ignore-workspace-root-check
+        run: pnpm add wrangler --ignore-workspace-root-check
 
       - uses: the-guild-org/shared-config/website-cf@main
         name: build and deploy website
@@ -44,5 +44,5 @@ jobs:
           projectName: apollo-angular
           prId: ${{ github.event.pull_request.number }}
           websiteDirectory: ./
-          buildScript: cd website && yarn && yarn build
+          buildScript: cd website && pnpm install && pnpm build
           artifactDir: website/out
