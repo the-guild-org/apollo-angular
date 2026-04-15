@@ -981,12 +981,10 @@ describe('HttpBatchLink', () => {
         });
 
         setTimeout(() => {
-          httpBackend
-            .expectOne('graphql')
-            .flush([{ errors: [{ message: 'Bad request' }] }], {
-              status: 400,
-              statusText: 'Bad Request',
-            });
+          httpBackend.expectOne('graphql').flush([{ errors: [{ message: 'Bad request' }] }], {
+            status: 400,
+            statusText: 'Bad Request',
+          });
         }, 50);
       }));
 
@@ -1204,12 +1202,10 @@ describe('HttpBatchLink', () => {
         });
 
         setTimeout(() => {
-          httpBackend
-            .expectOne('graphql')
-            .flush([{ errors: [{ message: 'Error' }] }], {
-              status: 503,
-              statusText: 'Service Unavailable',
-            });
+          httpBackend.expectOne('graphql').flush([{ errors: [{ message: 'Error' }] }], {
+            status: 503,
+            statusText: 'Service Unavailable',
+          });
         }, 50);
       }));
   });
