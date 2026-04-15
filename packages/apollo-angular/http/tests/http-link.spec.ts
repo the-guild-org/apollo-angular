@@ -806,7 +806,9 @@ describe('HttpLink', () => {
         variables: {},
       };
       const errorBody = {
-        errors: [{ message: 'Validation error', extensions: { code: 'GRAPHQL_VALIDATION_FAILED' } }],
+        errors: [
+          { message: 'Validation error', extensions: { code: 'GRAPHQL_VALIDATION_FAILED' } },
+        ],
       };
 
       execute(link, op).subscribe({
@@ -853,7 +855,9 @@ describe('HttpLink', () => {
         },
       });
 
-      httpBackend.expectOne('graphql').flush(errorBody, { status: 500, statusText: 'Internal Server Error' });
+      httpBackend
+        .expectOne('graphql')
+        .flush(errorBody, { status: 500, statusText: 'Internal Server Error' });
     });
 
     test('should include all response properties in ServerError', () => {
@@ -868,7 +872,10 @@ describe('HttpLink', () => {
         variables: {},
       };
       const errorBody = { errors: [{ message: 'Not found' }] };
-      const customHeaders = new HttpHeaders({ 'X-Custom-Header': 'test-value', 'X-Request-ID': '12345' });
+      const customHeaders = new HttpHeaders({
+        'X-Custom-Header': 'test-value',
+        'X-Request-ID': '12345',
+      });
 
       execute(link, op).subscribe({
         next: () => {
@@ -894,7 +901,7 @@ describe('HttpLink', () => {
       httpBackend.expectOne('graphql').flush(errorBody, {
         status: 404,
         statusText: 'Not Found',
-        headers: customHeaders
+        headers: customHeaders,
       });
     });
 
@@ -930,10 +937,12 @@ describe('HttpLink', () => {
         },
       });
 
-      httpBackend.expectOne('graphql').flush(
-        { errors: [{ message: 'Bad request' }] },
-        { status: 400, statusText: 'Bad Request' }
-      );
+      httpBackend
+        .expectOne('graphql')
+        .flush(
+          { errors: [{ message: 'Bad request' }] },
+          { status: 400, statusText: 'Bad Request' },
+        );
     });
 
     test('should extract body text from string error', () => {
@@ -959,7 +968,9 @@ describe('HttpLink', () => {
         },
       });
 
-      httpBackend.expectOne('graphql').flush(errorBody, { status: 500, statusText: 'Server Error' });
+      httpBackend
+        .expectOne('graphql')
+        .flush(errorBody, { status: 500, statusText: 'Server Error' });
     });
 
     test('should extract body text from object error', () => {
@@ -1035,7 +1046,9 @@ describe('HttpLink', () => {
         },
       });
 
-      httpBackend.expectOne('graphql').flush({ data }, { status: 299, statusText: 'Custom Success' });
+      httpBackend
+        .expectOne('graphql')
+        .flush({ data }, { status: 299, statusText: 'Custom Success' });
     });
 
     test('should create ServerError for status 300', () => {
@@ -1061,10 +1074,9 @@ describe('HttpLink', () => {
         },
       });
 
-      httpBackend.expectOne('graphql').flush(
-        { errors: [{ message: 'Error' }] },
-        { status: 300, statusText: 'Error' }
-      );
+      httpBackend
+        .expectOne('graphql')
+        .flush({ errors: [{ message: 'Error' }] }, { status: 300, statusText: 'Error' });
     });
 
     test('should create ServerError for status 404', () => {
@@ -1090,10 +1102,9 @@ describe('HttpLink', () => {
         },
       });
 
-      httpBackend.expectOne('graphql').flush(
-        { errors: [{ message: 'Error' }] },
-        { status: 404, statusText: 'Not Found' }
-      );
+      httpBackend
+        .expectOne('graphql')
+        .flush({ errors: [{ message: 'Error' }] }, { status: 404, statusText: 'Not Found' });
     });
 
     test('should create ServerError for status 503', () => {
@@ -1119,10 +1130,12 @@ describe('HttpLink', () => {
         },
       });
 
-      httpBackend.expectOne('graphql').flush(
-        { errors: [{ message: 'Error' }] },
-        { status: 503, statusText: 'Service Unavailable' }
-      );
+      httpBackend
+        .expectOne('graphql')
+        .flush(
+          { errors: [{ message: 'Error' }] },
+          { status: 503, statusText: 'Service Unavailable' },
+        );
     });
   });
 });

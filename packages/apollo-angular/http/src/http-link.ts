@@ -37,16 +37,14 @@ function convertHttpErrorToApolloError(err: HttpErrorResponse): Error {
   });
 
   // Get the body text
-  const bodyText = typeof err.error === 'string'
-    ? err.error
-    : JSON.stringify(err.error || {});
+  const bodyText = typeof err.error === 'string' ? err.error : JSON.stringify(err.error || {});
 
   // Return ServerError for non-2xx status codes (following Apollo Client's logic)
   if (err.status >= 300) {
-    return new ServerError(
-      `Response not successful: Received status code ${err.status}`,
-      { response: mockResponse, bodyText }
-    );
+    return new ServerError(`Response not successful: Received status code ${err.status}`, {
+      response: mockResponse,
+      bodyText,
+    });
   }
 
   // For other HttpErrorResponse cases, return a generic error
@@ -133,7 +131,8 @@ export class HttpLinkHandler extends ApolloLink {
             observer.next(response.body);
           },
           error: err => {
-            if (err instanceof HttpErrorResponse) observer.error(convertHttpErrorToApolloError(err));
+            if (err instanceof HttpErrorResponse)
+              observer.error(convertHttpErrorToApolloError(err));
             else observer.error(err);
           },
           complete: () => observer.complete(),

@@ -1,10 +1,10 @@
 import { print } from 'graphql';
 import { Observable } from 'rxjs';
-import { HttpClient, HttpContext, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient, HttpContext, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { ApolloLink } from '@apollo/client';
-import { BatchLink } from '@apollo/client/link/batch';
 import { ServerError } from '@apollo/client/errors';
+import { BatchLink } from '@apollo/client/link/batch';
 import type { HttpLink } from './http-link';
 import { Body, Context, OperationPrinter, Request } from './types';
 import {
@@ -36,16 +36,14 @@ function convertHttpErrorToApolloError(err: HttpErrorResponse): Error {
   });
 
   // Get the body text
-  const bodyText = typeof err.error === 'string'
-    ? err.error
-    : JSON.stringify(err.error || {});
+  const bodyText = typeof err.error === 'string' ? err.error : JSON.stringify(err.error || {});
 
   // Return ServerError for non-2xx status codes (following Apollo Client's logic)
   if (err.status >= 300) {
-    return new ServerError(
-      `Response not successful: Received status code ${err.status}`,
-      { response: mockResponse, bodyText }
-    );
+    return new ServerError(`Response not successful: Received status code ${err.status}`, {
+      response: mockResponse,
+      bodyText,
+    });
   }
 
   // For other HttpErrorResponse cases, return a generic error
@@ -128,7 +126,8 @@ export class HttpBatchLinkHandler extends ApolloLink {
         }).subscribe({
           next: result => observer.next(result.body),
           error: err => {
-            if (err instanceof HttpErrorResponse) observer.error(convertHttpErrorToApolloError(err));
+            if (err instanceof HttpErrorResponse)
+              observer.error(convertHttpErrorToApolloError(err));
             else observer.error(err);
           },
           complete: () => observer.complete(),
