@@ -1,5 +1,72 @@
 # Change log
 
+## 14.0.0
+
+### Major Changes
+
+- [#2395](https://github.com/the-guild-org/apollo-angular/pull/2395)
+  [`4e9f107`](https://github.com/the-guild-org/apollo-angular/commit/4e9f107aa556c10cbe6c552e876cc9e96aac0618)
+  Thanks [@JesseZomer](https://github.com/JesseZomer)! - **BREAKING CHANGE**: HTTP errors now return
+  Apollo Client's `ServerError` instead of Angular's `HttpErrorResponse`
+
+  When Apollo Server returns non-2xx HTTP status codes (status >= 300), apollo-angular's HTTP links
+  now return `ServerError` from `@apollo/client/errors` instead of Angular's `HttpErrorResponse`.
+  This enables proper error detection in errorLinks using `ServerError.is(error)` and provides
+  consistent error handling with Apollo Client's ecosystem.
+
+  **Migration Guide:**
+
+  Before:
+
+  ```typescript
+  import { HttpErrorResponse } from '@angular/common/http';
+
+  link.request(operation).subscribe({
+    error: err => {
+      if (err instanceof HttpErrorResponse) {
+        console.log(err.status);
+        console.log(err.error);
+      }
+    },
+  });
+  ```
+
+  After:
+
+  ```typescript
+  import { ServerError } from '@apollo/client/errors';
+
+  link.request(operation).subscribe({
+    error: err => {
+      if (ServerError.is(err)) {
+        console.log(err.statusCode);
+        console.log(err.bodyText);
+        console.log(err.response.headers);
+      }
+    },
+  });
+  ```
+
+  **Properties Changed:**
+  - `err.status` → `err.statusCode`
+  - `err.error` → `err.bodyText` (always string, JSON stringified for objects)
+  - `err.headers` (Angular HttpHeaders) → `err.response.headers` (native Headers)
+  - Access response via `err.response` which includes: `status`, `statusText`, `ok`, `url`, `type`,
+    `redirected`
+
+  **Note:** This only affects HTTP-level errors (status >= 300). Network errors and other error
+  types remain unchanged. GraphQL errors in the response body are still processed normally through
+  Apollo Client's error handling.
+
+  Fixes #2394
+
+### Patch Changes
+
+- [#2392](https://github.com/the-guild-org/apollo-angular/pull/2392)
+  [`8d2be64`](https://github.com/the-guild-org/apollo-angular/commit/8d2be646a73e74654f5e0ff1c3fdf71a64d1648a)
+  Thanks [@vz-tl](https://github.com/vz-tl)! - Allow headers type in DefaultContext to be Record or
+  HttpHeaders
+
 ## 13.0.0
 
 ### Major Changes
