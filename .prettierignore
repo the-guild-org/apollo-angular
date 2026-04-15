@@ -1,9 +1,9 @@
 /.changeset/
-/.devcontainer/
 /packages/apollo-angular/CHANGELOG.md
 /packages/apollo-angular/dist/
 /packages/demo/.angular/
 /packages/demo/dist/
+/pnpm-lock.yaml
 /scripts/
 
 # Needed because TextEncoder workaround must happen before importing @angular-devkit/schematics

@@ -8,24 +8,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
+      - uses: pnpm/action-setup@v5
 
       - uses: actions/setup-node@master
         with:
           node-version: 22
-
-      - uses: actions/cache@v4
-        name: Cache node_modules
-        with:
-          path: '**/node_modules'
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
+          cache: 'pnpm'
 
       - name: Install
-        run: yarn
+        run: pnpm install
 
       - name: Build
-        run: yarn build
+        run: pnpm build
 
       - uses: actions/cache@v4
         name: Share build
@@ -34,14 +28,12 @@ jobs:
           key: ${{ github.sha }}
 
       - name: Pack
-        run:
-          (cd packages/apollo-angular/build && yarn pack --filename apollo-angular.tgz && mv
-          apollo-angular.tgz ../apollo-angular.tgz)
+        run: pnpm pack --filter apollo-angular --out apollo-angular.tgz
 
       - uses: actions/cache@v4
         name: Share tarball
         with:
-          path: 'packages/apollo-angular/apollo-angular.tgz'
+          path: 'apollo-angular.tgz'
           key: ${{ github.sha }}
 
       - uses: actions/cache@v4
@@ -57,21 +49,15 @@ jobs:
 
     steps:
       - uses: actions/checkout@master
+      - uses: pnpm/action-setup@v5
 
       - uses: actions/setup-node@master
         with:
           node-version: 22
-
-      - uses: actions/cache@v4
-        name: Cache node_modules
-        with:
-          path: '**/node_modules'
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
+          cache: 'pnpm'
 
       - name: Install
-        run: yarn
+        run: pnpm install
 
       - uses: actions/cache@v4
         name: Share build
@@ -80,27 +66,21 @@ jobs:
           key: ${{ github.sha }}
 
       - name: Test
-        run: yarn test
+        run: pnpm test
 
   prettier:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
+      - uses: pnpm/action-setup@v5
 
       - uses: actions/setup-node@master
         with:
           node-version: 22
-
-      - uses: actions/cache@v4
-        name: Cache node_modules
-        with:
-          path: '**/node_modules'
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
+          cache: 'pnpm'
 
       - name: Install
-        run: yarn
+        run: pnpm install
 
       - run: ./node_modules/.bin/prettier --check .
 
@@ -119,6 +99,9 @@ jobs:
           - angular_version: 19
             node_version: 24
     steps:
+      - uses: pnpm/action-setup@v5
+        with:
+          version: latest
       - name: Use Node.js ${{ matrix.node_version }}
         uses: actions/setup-node@master
         with:
@@ -127,7 +110,7 @@ jobs:
       - uses: actions/cache@v4
         name: Share tarball
         with:
-          path: 'packages/apollo-angular/apollo-angular.tgz'
+          path: 'apollo-angular.tgz'
           key: ${{ github.sha }}
 
       - uses: actions/cache@v4
@@ -140,21 +123,21 @@ jobs:
         run: npm install @angular/cli@${{ matrix.angular_version }} --global
 
       - name: ng new
-        run: ng new testapp --package-manager yarn --defaults --minimal --skip-git
+        run: ng new testapp --package-manager pnpm --defaults --minimal --skip-git
 
       - name: ng add apollo-angular
         run:
-          (cd testapp && ng add ../packages/apollo-angular/apollo-angular.tgz --graphql '${{
-          matrix.graphql_version }}.0.0' --defaults --verbose --skip-confirmation)
+          (cd testapp && ng add ../apollo-angular.tgz --graphql '${{ matrix.graphql_version }}.0.0'
+          --defaults --verbose --skip-confirmation)
 
       - name: ng build
-        run: (cd testapp && yarn ng run testapp:build:production)
+        run: (cd testapp && pnpm ng run testapp:build:production)
 
       - name: Setup E2E tests
         run: |
           sudo apt-get update
           sudo apt-get install libgtk2.0-0t64 libgtk-3-0t64 libgbm-dev libnotify-dev libnss3 libxss1 libasound2t64 libxtst6 xauth xvfb
-          (cd testapp && yarn add -D cypress-fail-on-console-error)
+          (cd testapp && pnpm add -D cypress-fail-on-console-error)
 
       - name: ng add cypress
         run: (cd testapp && ng add @cypress/schematic --defaults --verbose --skip-confirmation)
@@ -163,4 +146,4 @@ jobs:
         run: ./scripts/prepare-e2e.js testapp ${{ matrix.graphql_version }}
 
       - name: ng e2e
-        run: (cd testapp && yarn ng run testapp:cypress-run:production)
+        run: (cd testapp && pnpm ng run testapp:cypress-run:production)

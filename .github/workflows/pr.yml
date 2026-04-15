@@ -18,6 +18,7 @@ jobs:
     uses: the-guild-org/shared-config/.github/workflows/release-snapshot.yml@main
     if: ${{ github.event.pull_request.title != 'Upcoming Release Changes' }}
     with:
+      packageManager: pnpm
       npmTag: alpha
       buildScript: build
       nodeVersion: 22
@@ -33,6 +34,7 @@ jobs:
     uses: the-guild-org/shared-config/.github/workflows/release-snapshot.yml@main
     if: ${{ github.event.pull_request.title == 'Upcoming Release Changes' }}
     with:
+      packageManager: pnpm
       npmTag: rc
       restoreDeletedChangesets: true
       buildScript: build

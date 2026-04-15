@@ -30,11 +30,11 @@
     "angular-schematics"
   ],
   "scripts": {
-    "build": "ng-packagr -p ng-package.json && yarn build:schematics",
+    "build": "ng-packagr -p ng-package.json && pnpm build:schematics",
     "build:schematics": "tsc -p schematics/tsconfig.json && node ./scripts/move-schematics.js",
     "prebuild": "rm -rf build/",
-    "release": "yarn build && changeset publish",
-    "test": "vitest --run && yarn test:schematics",
+    "release": "pnpm build && changeset publish",
+    "test": "vitest --run && pnpm test:schematics",
     "test:schematics": "tsc -p schematics/tsconfig.test.json && node scripts/move-schematics.js && jasmine --config=schematics/jasmine.json"
   },
   "peerDependencies": {

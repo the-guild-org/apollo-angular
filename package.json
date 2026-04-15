@@ -2,25 +2,17 @@
   "name": "apollo-angular-monorepo",
   "license": "MIT",
   "private": true,
-  "workspaces": {
-    "packages": [
-      "packages/*",
-      "website"
-    ]
-  },
-  "engines": {
-    "node": ">=16"
-  },
+  "packageManager": "pnpm@10.33.0",
   "scripts": {
-    "build": "yarn workspaces run build",
+    "build": "pnpm run --recursive build",
     "ci-only:integration": "./scripts/integration tests",
-    "deploy": "yarn workspaces run deploy",
+    "deploy": "pnpm run --recursive deploy",
     "format": "prettier --write \"{packages,website}/**/*.{ts,tsx,json}\"",
-    "now-build": "(cd website && yarn && yarn build && mv build ../public)",
+    "now-build": "(cd website && pnpm install && pnpm build && mv build ../public)",
     "prebuild": "rimraf packages/*/build/",
-    "prerelease": "yarn build",
+    "prerelease": "pnpm build",
     "release": "changeset publish",
-    "test": "yarn workspaces run test",
+    "test": "pnpm run --recursive test",
     "test:e2e": "./scripts/run-e2e-locally.sh"
   },
   "devDependencies": {
