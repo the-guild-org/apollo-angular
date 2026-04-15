@@ -120,7 +120,7 @@ jobs:
           key: ${{ github.sha }}
 
       - name: Install Angular CLI
-        run: npm install @angular/cli@${{ matrix.angular_version }} --global
+        run: pnpm install @angular/cli@${{ matrix.angular_version }} --global
 
       - name: ng new
         run: ng new testapp --package-manager pnpm --defaults --minimal --skip-git

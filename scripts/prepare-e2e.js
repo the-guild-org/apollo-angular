@@ -1,17 +1,15 @@
 #!/usr/bin/env node
 
-const path = require('path');
 const fs = require('fs');
 
-const cwd = process.cwd();
-const [, , name, version] = process.argv;
+const [, , folder, version] = process.argv;
 
 function updateComponent() {
-  let filepath = path.join(cwd, `./${name}/src/app/app.component.ts`);
+  let filepath = `${folder}/src/app/app.component.ts`;
   let suffix = 'Component';
 
   if (!fs.existsSync(filepath)) {
-    filepath = path.join(cwd, `./${name}/src/app/app.ts`);
+    filepath = `${folder}/src/app/app.ts`;
     suffix = '';
   }
 
@@ -27,7 +25,7 @@ function updateComponent() {
 }
 
 function updateCypress() {
-  let filepath = path.join(cwd, `./${name}/cypress/e2e/spec.cy.ts`);
+  let filepath = `${folder}/cypress/e2e/spec.cy.ts`;
   const code = fs
     .readFileSync(filepath, 'utf8')
     .replace(
@@ -38,7 +36,7 @@ function updateCypress() {
   fs.writeFileSync(filepath, code, 'utf8');
 
   fs.writeFileSync(
-    path.join(cwd, `./${name}/cypress/support/index.ts`),
+    `${folder}/cypress/support/index.ts`,
     `
     import failOnConsoleError from 'cypress-fail-on-console-error';
     failOnConsoleError();
