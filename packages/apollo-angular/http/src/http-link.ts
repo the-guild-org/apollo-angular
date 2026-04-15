@@ -1,8 +1,9 @@
 import { print } from 'graphql';
 import { Observable } from 'rxjs';
-import { HttpClient, HttpContext } from '@angular/common/http';
+import { HttpClient, HttpContext, HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { ApolloLink } from '@apollo/client';
+import { ServerError } from '@apollo/client/errors';
 import { pick } from './http-batch-link';
 import {
   Body,
@@ -14,6 +15,41 @@ import {
   Request,
 } from './types';
 import { createHeadersWithClientAwareness, fetch, mergeHeaders, mergeHttpContext } from './utils';
+
+function convertHttpErrorToApolloError(err: HttpErrorResponse): Error {
+  // Create a Response-like object that satisfies Apollo Client's expectations
+  const mockResponse = {
+    status: err.status,
+    statusText: err.statusText,
+    ok: err.ok,
+    url: err.url || '',
+    headers: new Headers(),
+    type: 'error' as ResponseType,
+    redirected: false,
+  } as Response;
+
+  // Convert Angular's HttpHeaders to native Headers
+  err.headers.keys().forEach(key => {
+    const values = err.headers.getAll(key);
+    if (values) {
+      values.forEach(value => mockResponse.headers.append(key, value));
+    }
+  });
+
+  // Get the body text
+  const bodyText = typeof err.error === 'string' ? err.error : JSON.stringify(err.error || {});
+
+  // Return ServerError for non-2xx status codes (following Apollo Client's logic)
+  if (err.status >= 300) {
+    return new ServerError(`Response not successful: Received status code ${err.status}`, {
+      response: mockResponse,
+      bodyText,
+    });
+  }
+
+  // For other HttpErrorResponse cases, return a generic error
+  return new Error(err.message);
+}
 
 export declare namespace HttpLink {
   export interface Options extends FetchOptions, HttpRequestOptions {
@@ -94,7 +130,11 @@ export class HttpLinkHandler extends ApolloLink {
             operation.setContext({ response });
             observer.next(response.body);
           },
-          error: err => observer.error(err),
+          error: err => {
+            if (err instanceof HttpErrorResponse)
+              observer.error(convertHttpErrorToApolloError(err));
+            else observer.error(err);
+          },
           complete: () => observer.complete(),
         });
 
