@@ -12,6 +12,7 @@
     "@angular-devkit/build-angular": "^19.2.0",
     "@angular/common": "^19.2.0",
     "@angular/compiler": "^19.2.0",
+    "@angular/compiler-cli": "^19.2.20",
     "@angular/core": "^19.2.0",
     "@angular/platform-browser": "^19.2.0",
     "@angular/router": "^19.2.0",
