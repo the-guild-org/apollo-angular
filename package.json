@@ -2,7 +2,7 @@
   "name": "apollo-angular-monorepo",
   "license": "MIT",
   "private": true,
-  "packageManager": "pnpm@11.1.1",
+  "packageManager": "pnpm@11.2.1",
   "scripts": {
     "build": "pnpm run --recursive build",
     "ci-only:integration": "./scripts/integration tests",
