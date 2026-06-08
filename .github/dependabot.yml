@@ -1,10 +1,19 @@
 version: 2
 updates:
-  - package-ecosystem: composer
+  - package-ecosystem: npm
     directory: '/'
     schedule:
       interval: monthly
+    cooldown:
+      default-days: 7
     open-pull-requests-limit: 10
     ignore:
       - dependency-name: '*'
         update-types: ['version-update:semver-patch', 'version-update:semver-minor']
+      - dependency-name: '@types/*'
+        update-types:
+          [
+            'version-update:semver-patch',
+            'version-update:semver-minor',
+            'version-update:semver-major',
+          ]
