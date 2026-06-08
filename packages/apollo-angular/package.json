@@ -63,7 +63,7 @@
     "jsdom": "^26.0.0",
     "ng-packagr": "^19.2.2",
     "typescript": "~5.8.0",
-    "vite-tsconfig-paths": "^5.1.4",
+    "vite-tsconfig-paths": "^6.1.1",
     "vitest": "^4.0.14"
   },
   "publishConfig": {
