@@ -7,12 +7,12 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v6
       - uses: pnpm/action-setup@v6
 
-      - uses: actions/setup-node@master
+      - uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: 24
           cache: 'pnpm'
 
       - name: Install
@@ -45,12 +45,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v6
       - uses: pnpm/action-setup@v6
 
-      - uses: actions/setup-node@master
+      - uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: 24
           cache: 'pnpm'
 
       - name: Install
@@ -67,12 +67,12 @@ jobs:
   prettier:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v6
       - uses: pnpm/action-setup@v6
 
-      - uses: actions/setup-node@master
+      - uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: 24
           cache: 'pnpm'
 
       - name: Install
@@ -88,15 +88,19 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        angular_version: [19, 20, 21]
+        angular_version: [20, 21, 22]
         graphql_version: [16]
-        node_version: [20, 22, 24]
-        exclude:
-          - angular_version: 19
-            node_version: 24
+        node_version: [22, 24]
+        include:
+          - angular_version: 20
+            node_version: 20
+          - angular_version: 21
+            node_version: 20
+          - angular_version: 22
+            node_version: 26
     steps:
       - name: Use Node.js ${{ matrix.node_version }}
-        uses: actions/setup-node@master
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node_version }}
 
