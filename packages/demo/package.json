@@ -9,13 +9,14 @@
     "test": "echo 'nothing to do here'"
   },
   "dependencies": {
-    "@angular-devkit/build-angular": "^19.2.0",
-    "@angular/common": "^19.2.0",
-    "@angular/compiler": "^19.2.0",
-    "@angular/compiler-cli": "^19.2.20",
-    "@angular/core": "^19.2.0",
-    "@angular/platform-browser": "^19.2.0",
-    "@angular/router": "^19.2.0",
+    "@angular-eslint/builder": "^20.3.0",
+    "@angular/build": "^20.3.0",
+    "@angular/common": "^20.3.0",
+    "@angular/compiler": "^20.3.0",
+    "@angular/compiler-cli": "^20.3.0",
+    "@angular/core": "^20.3.0",
+    "@angular/platform-browser": "^20.3.0",
+    "@angular/router": "^20.3.0",
     "@apollo/client": "4.0.1",
     "apollo-angular": "workspace:*",
     "typescript": "~5.8.0"
