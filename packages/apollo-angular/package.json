@@ -55,7 +55,7 @@
     "@angular/compiler-cli": "^19.2.0",
     "@angular/core": "^19.2.0",
     "@angular/platform-browser": "^19.2.0",
-    "@angular/platform-browser-dynamic": "^19.2.0",
+    "@angular/platform-browser-dynamic": "^21.2.15",
     "@angular/platform-server": "^19.2.0",
     "@types/jasmine": "^5.1.7",
     "@types/node": "^22.0.0",
