@@ -5,11 +5,6 @@ on:
       - master
 
 jobs:
-  dependencies:
-    uses: the-guild-org/shared-config/.github/workflows/changesets-dependencies.yaml@main
-    secrets:
-      githubToken: ${{ secrets.GITHUB_TOKEN }}
-
   release-candidate:
     permissions:
       contents: write
