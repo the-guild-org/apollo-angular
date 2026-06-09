@@ -1,8 +1,8 @@
 import { TextDecoder, TextEncoder } from 'util';
+import { parseJSON } from '../utils/index.cjs';
+
 global.TextEncoder = TextEncoder;
 global.TextDecoder = TextDecoder as any;
-
-import { parseJSON } from '../utils/index.cjs';
 
 it('support // comments', () => {
   expect(

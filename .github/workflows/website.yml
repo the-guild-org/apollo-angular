@@ -23,7 +23,7 @@ jobs:
       - uses: the-guild-org/shared-config/setup@main
         name: website
         with:
-          nodeVersion: 22 # change if needed
+          nodeVersion: 26 # change if needed
           packageManager: pnpm # change if needed
 
       - name: Pre-install wrangler

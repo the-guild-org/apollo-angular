@@ -12,8 +12,6 @@ Add Apollo Angular and its dependencies and configures the application.
   - apollo-angular
   - @apollo/client
   - graphql
-- Adds `GraphQLModule` with required setup to use the plugin.
-- Imports `GraphQLModule` in the root NgModule (`AppModule`).
-- Imports `HttpClientModule` in the root NgModule (`AppModule`).
+- Provides `Apollo` and `HttpClient` in the application
 
 Command: `ng add apollo-angular`

@@ -14,3 +14,5 @@ allowBuilds:
 minimumReleaseAge: 1440
 
 nodeLinker: hoisted
+publicHoistPattern:
+  - '*@angular*'

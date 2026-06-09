@@ -1,29 +1,17 @@
-import { dirname } from 'path';
-import {
-  apply,
-  chain,
-  mergeWith,
-  move,
-  Rule,
-  SchematicContext,
-  template,
-  Tree,
-  url,
-} from '@angular-devkit/schematics';
+import { chain, Rule, SchematicContext, Tree } from '@angular-devkit/schematics';
 import { NodePackageInstallTask } from '@angular-devkit/schematics/tasks';
 import { addRootProvider } from '@schematics/angular/utility';
-import { getAppModulePath, isStandaloneApp } from '@schematics/angular/utility/ng-ast-utils';
+import { isStandaloneApp } from '@schematics/angular/utility/ng-ast-utils';
 import { getMainFilePath } from '@schematics/angular/utility/standalone/util';
-import { addModuleImportToRootModule } from '../utils/ast.cjs';
 import { getJsonFile } from '../utils/index.cjs';
 import { Schema } from './schema.cjs';
 
 export function factory(options: Schema): Rule {
   return chain([
+    assertStandaloneApp(options),
     addDependencies(options),
-    addSetupFiles(options),
-    importHttpClient(options),
-    importSetup(options),
+    addProvideHttpClient(options),
+    addProvideApollo(options),
   ]);
 }
 
@@ -32,6 +20,17 @@ export function createDependenciesMap(options: Schema): Record<string, string> {
     'apollo-angular': '^9.0.0',
     '@apollo/client': '^4.0.1',
     graphql: `^${options.graphql ?? '16.0.0'}`,
+  };
+}
+
+function assertStandaloneApp(options: Schema): Rule {
+  return async (host: Tree) => {
+    const mainPath = await getMainFilePath(host, options.project);
+    if (!isStandaloneApp(host, mainPath)) {
+      throw new Error('Only standalone application are supported');
+    }
+
+    return host;
   };
 }
 
@@ -67,40 +66,10 @@ function addDependencies(options: Schema): Rule {
   };
 }
 
-function addSetupFiles(options: Schema): Rule {
-  return async (host: Tree) => {
-    const mainPath = await getMainFilePath(host, options.project);
-    const appModuleDirectory = dirname(mainPath) + '/app';
-    if (isStandaloneApp(host, mainPath)) {
-      const templateSource = apply(url('./files/standalone'), [
-        template({
-          endpoint: options.endpoint,
-        }),
-        move(appModuleDirectory),
-      ]);
-
-      return mergeWith(templateSource);
-    } else {
-      const appModulePath = getAppModulePath(host, mainPath);
-      const appModuleDirectory = dirname(appModulePath);
-      const templateSource = apply(url('./files/module'), [
-        template({
-          endpoint: options.endpoint,
-        }),
-        move(appModuleDirectory),
-      ]);
-
-      return mergeWith(templateSource);
-    }
-  };
-}
-
-function importSetup(options: Schema): Rule {
-  return async (host: Tree) => {
-    const mainPath = await getMainFilePath(host, options.project);
-    if (isStandaloneApp(host, mainPath)) {
-      return addRootProvider(options.project, ({ code, external }) => {
-        return code`${external('provideApollo', 'apollo-angular')}(() => {
+function addProvideApollo(options: Schema): Rule {
+  return async () => {
+    return addRootProvider(options.project, ({ code, external }) => {
+      return code`${external('provideApollo', 'apollo-angular')}(() => {
       const httpLink = ${external('inject', '@angular/core')}(${external('HttpLink', 'apollo-angular/http')});
 
       return {
@@ -110,32 +79,14 @@ function importSetup(options: Schema): Rule {
         cache: new ${external('InMemoryCache', '@apollo/client')}(),
       };
     })`;
-      });
-    } else {
-      return addModuleImportToRootModule(
-        host,
-        'GraphQLModule',
-        './graphql.module',
-        options.project,
-      );
-    }
+    });
   };
 }
 
-function importHttpClient(options: Schema): Rule {
-  return async (host: Tree) => {
-    const mainPath = await getMainFilePath(host, options.project);
-    if (isStandaloneApp(host, mainPath)) {
-      return addRootProvider(options.project, ({ code, external }) => {
-        return code`${external('provideHttpClient', '@angular/common/http')}()`;
-      });
-    } else {
-      return addModuleImportToRootModule(
-        host,
-        'HttpClientModule',
-        '@angular/common/http',
-        options.project,
-      );
-    }
+function addProvideHttpClient(options: Schema): Rule {
+  return async () => {
+    return addRootProvider(options.project, ({ code, external }) => {
+      return code`${external('provideHttpClient', '@angular/common/http')}()`;
+    });
   };
 }
