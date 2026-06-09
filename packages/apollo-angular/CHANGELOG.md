@@ -1,5 +1,27 @@
 # Change log
 
+## 14.1.0
+
+### Minor Changes
+
+- [#2405](https://github.com/the-guild-org/apollo-angular/pull/2405)
+  [`299be98`](https://github.com/the-guild-org/apollo-angular/commit/299be985d40f6d03f08540aa05d6b760554674a8)
+  Thanks [@PowerKiKi](https://github.com/PowerKiKi)! - Support Angular 22
+
+### Patch Changes
+
+- [#2405](https://github.com/the-guild-org/apollo-angular/pull/2405)
+  [`6cbf6b7`](https://github.com/the-guild-org/apollo-angular/commit/6cbf6b72a810c000d23d57b10c81b7d22c4ee97a)
+  Thanks [@PowerKiKi](https://github.com/PowerKiKi)! - dependencies updates:
+  - Updated dependency
+    [`@angular/core@^20.0.0 || ^21.0.0 || ^22.0.0` ↗︎](https://www.npmjs.com/package/@angular/core/v/20.0.0)
+    (from `^19.0.0 || ^20.0.0 || ^21.0.0`, in `peerDependencies`)
+
+- [#2405](https://github.com/the-guild-org/apollo-angular/pull/2405)
+  [`299be98`](https://github.com/the-guild-org/apollo-angular/commit/299be985d40f6d03f08540aa05d6b760554674a8)
+  Thanks [@PowerKiKi](https://github.com/PowerKiKi)! - ng-add schematics drop support for NgModule
+  applications
+
 ## 14.0.0
 
 ### Major Changes
