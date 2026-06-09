@@ -21,7 +21,7 @@ jobs:
       packageManager: pnpm
       npmTag: alpha
       buildScript: build
-      nodeVersion: 22
+      nodeVersion: 26
     secrets:
       githubToken: ${{ secrets.GITHUB_TOKEN }}
       npmToken: ${{ secrets.NPM_TOKEN }}
@@ -38,7 +38,7 @@ jobs:
       npmTag: rc
       restoreDeletedChangesets: true
       buildScript: build
-      nodeVersion: 22
+      nodeVersion: 26
     secrets:
       githubToken: ${{ secrets.GITHUB_TOKEN }}
       npmToken: ${{ secrets.NPM_TOKEN }}
