@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@angular-eslint/builder": "^20.3.0",
-    "@angular/build": "^20.3.0",
+    "@angular/build": "^22.0.7",
     "@angular/common": "^20.3.0",
     "@angular/compiler": "^20.3.0",
     "@angular/compiler-cli": "^20.3.0",
