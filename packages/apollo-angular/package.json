@@ -52,7 +52,7 @@
     "@angular-devkit/schematics": "^20.3.0",
     "@angular/common": "^20.3.0",
     "@angular/compiler": "^20.3.0",
-    "@angular/compiler-cli": "^20.3.0",
+    "@angular/compiler-cli": "^22.0.6",
     "@angular/core": "^20.3.0",
     "@angular/platform-browser": "^20.3.0",
     "@angular/platform-browser-dynamic": "^20.3.0",
