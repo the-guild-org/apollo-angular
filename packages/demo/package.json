@@ -14,7 +14,7 @@
     "@angular/common": "^20.3.0",
     "@angular/compiler": "^20.3.0",
     "@angular/compiler-cli": "^20.3.0",
-    "@angular/core": "^20.3.0",
+    "@angular/core": "^22.0.6",
     "@angular/platform-browser": "^20.3.0",
     "@angular/router": "^20.3.0",
     "@apollo/client": "^4.0.1",
