@@ -102,14 +102,10 @@ export class AppComponent {
 
   constructor(apollo: Apollo) {
     // use default
-    this.feedQuery = apollo.watchQuery({
-      /* ... */
-    });
+    this.feedQuery = apollo.watchQuery({/* ... */});
 
     // use extra client
-    this.feedQuery = apollo.use('myAlternativeGraphQl').watchQuery({
-      /* ... */
-    });
+    this.feedQuery = apollo.use('myAlternativeGraphQl').watchQuery({/* ... */});
   }
 }
 ```

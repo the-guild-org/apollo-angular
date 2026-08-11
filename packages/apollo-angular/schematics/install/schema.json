@@ -19,8 +19,8 @@
     },
     "graphql": {
       "type": "string",
-      "minLength": 0,
-      "default": "16",
+      "minLength": 2,
+      "default": "17",
       "x-prompt": "Version of GraphQL"
     }
   },

@@ -54,5 +54,6 @@ export const onlyComplete = onlyCompleteData;
  * Same as `onlyCompleteData()` but for `Apollo.watchFragment()`.
  */
 export function onlyCompleteFragment<TData>(): ForWatchFragment<TData> {
+  // @ts-expect-error
   return filter((result): result is CompleteFragment<TData> => result.dataState === 'complete');
 }

@@ -18,7 +18,7 @@ describe('ng-add with standalone', () => {
 
     const dependenciesMap = createDependenciesMap({
       project: 'my-project',
-      graphql: '16',
+      graphql: '17',
     });
 
     for (const dependency in dependenciesMap) {
