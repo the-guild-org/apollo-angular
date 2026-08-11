@@ -1,5 +1,13 @@
 # Change log
 
+## 14.2.0
+
+### Minor Changes
+
+- [#2432](https://github.com/the-guild-org/apollo-angular/pull/2432)
+  [`5710418`](https://github.com/the-guild-org/apollo-angular/commit/5710418cd8d025f05be0280f5049fed13c928e55)
+  Thanks [@PowerKiKi](https://github.com/PowerKiKi)! - Compatibility with GraphQL 17
+
 ## 14.1.0
 
 ### Minor Changes
