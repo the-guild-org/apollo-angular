@@ -18,8 +18,8 @@ export function factory(options: Schema): Rule {
 export function createDependenciesMap(options: Schema): Record<string, string> {
   return {
     'apollo-angular': '^9.0.0',
-    '@apollo/client': '^4.0.1',
-    graphql: `^${options.graphql ?? '16.0.0'}`,
+    '@apollo/client': '^4.2.3',
+    graphql: `^${options.graphql ?? '17.0.0'}`,
   };
 }
 

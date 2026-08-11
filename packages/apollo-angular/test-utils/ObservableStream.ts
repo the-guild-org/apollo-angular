@@ -34,9 +34,7 @@ export interface TakeOptions {
   timeout?: number;
 }
 type ObservableEvent<T> =
-  | { type: 'next'; value: T }
-  | { type: 'error'; error: any }
-  | { type: 'complete' };
+  { type: 'next'; value: T } | { type: 'error'; error: any } | { type: 'complete' };
 
 function formatMessage(expected: ObservableEvent<any>, actual: ObservableEvent<any>) {
   return printDiffOrStringify(expected, actual, { expand: true });

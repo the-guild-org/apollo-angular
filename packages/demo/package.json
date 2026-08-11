@@ -17,7 +17,7 @@
     "@angular/core": "^20.3.0",
     "@angular/platform-browser": "^20.3.0",
     "@angular/router": "^20.3.0",
-    "@apollo/client": "^4.0.1",
+    "@apollo/client": "^4.2.10",
     "apollo-angular": "workspace:*",
     "typescript": "~5.8.0"
   }
