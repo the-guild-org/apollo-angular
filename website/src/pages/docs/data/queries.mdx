@@ -68,6 +68,20 @@ class PostsComponent implements OnInit, OnDestroy {
 }
 ```
 
+<Callout>
+  The constructor parameter asks Angular's dependency injector for `Apollo`; it does not start the
+  query. This example starts `watchQuery` in `ngOnInit`, which runs once after Angular assigns the
+  component's initial inputs. `inject(Apollo)` in a field initializer is an equivalent way to
+  obtain the service.
+
+  If query variables come from an `@Input()` that can change later, initialize the `QueryRef` with
+  that first value in `ngOnInit`, then update it with `setVariables()` on later calls to
+  `ngOnChanges`. You can also drive those updates from an input signal or Observable pipeline;
+  `ngOnInit` itself does not run again. This [worked lifecycle
+  comparison](https://frontendatlas.com/angular/trivia/angular-ngoninit-vs-constructor) explains the
+  timing trade-offs.
+</Callout>
+
 The `watchQuery` method returns a `QueryRef` object which has the `valueChanges` property that is an
 `Observable`.
 
