@@ -1,0 +1,279 @@
+---
+description:
+  Learn how to use Apollo Angular's HttpLink and HttpClient to create a network layer in Angular.
+  Get free SSR and easier testing with HttpLink. Use the HttpClient to support the HttpLink.
+title: Network Layer
+---
+
+Apollo Angular comes with two kinds of network layer based on Angular's `HttpClient`.
+
+## `HttpLink`
+
+An Apollo Link to allow sending a single http request per operation. It's based on Angular's
+`HttpClient`.
+
+Why not `@apollo/client/link/http`? You get SSR for free, ability to use Http Interceptors and
+easier testing.
+
+## Usage
+
+```ts title="app.config.ts"
+import { provideApollo } from 'apollo-angular';
+import { HttpLink } from 'apollo-angular/http';
+import { inject } from '@angular/core';
+import { InMemoryCache } from '@apollo/client';
+
+provideApollo(() => {
+  const httpLink = inject(HttpLink);
+
+  return {
+    link: httpLink.create({ uri: '/graphql' }),
+    cache: new InMemoryCache(),
+    // other options ...
+  };
+});
+```
+
+## `HttpClient`
+
+The HTTP Link relies on having `HttpClient` (from `@angular/common/http`) present in your
+application.
+
+## Options
+
+HTTP Link takes an object with some options on it to customize the behavior of the link. If your
+server supports it, the HTTP link can also send over metadata about the request in the extensions
+field. To enable this, pass `includeExtensions` as true. If you would like to use persisted queries
+or just not to send a query, disable `includeQuery`.
+
+| name              | value             | default  | required |
+| ----------------- | ----------------- | -------- | -------- |
+| uri               | string / function | /graphql | false    |
+| includeExtensions | boolean           | false    | false    |
+| includeQuery      | boolean           | true     | false    |
+| headers           | HttpHeaders       | none     | false    |
+| withCredentials   | boolean           | none     | false    |
+| method            | string            | POST     | false    |
+| useGETForQueries  | boolean           | false    | false    |
+| extractFiles      | function          | none     | false    |
+
+## Context
+
+The HTTP Link uses the `headers` field on the context to allow passing headers to the HTTP request.
+It also supports the `withCredentials` field for defining credential policy for request. These
+options will override the same key if passed when creating the link. If some setting is different
+from the one in Options, this one will be used.
+
+| name              | value       | default       | required |
+| ----------------- | ----------- | ------------- | -------- |
+| uri               | string      | as in options | false    |
+| includeExtensions | boolean     | as in options | false    |
+| includeQuery      | boolean     | as in options | false    |
+| headers           | HttpHeaders | none          | false    |
+| withCredentials   | boolean     | as in options | false    |
+| method            | string      | as in options | false    |
+| useMultipart      | boolean     | as in options | false    |
+
+```ts
+import { HttpHeaders } from '@angular/common/http';
+
+// a query with apollo-angular somewhere in a component
+apollo.query({
+  query: MY_QUERY,
+  context: {
+    // example of setting the headers with context per operation
+    headers: new HttpHeaders().set('X-Custom-Header', 'custom-value'),
+  },
+});
+```
+
+### Uri as Function
+
+```ts title="app.config.ts"
+import { provideApollo } from 'apollo-angular';
+import { HttpLink } from 'apollo-angular/http';
+import { inject } from '@angular/core';
+import { InMemoryCache } from '@apollo/client';
+
+provideApollo(() => {
+  const httpLink = inject(HttpLink);
+
+  return {
+    link: httpLink.create({
+      uri(operation) {
+        return operation.operationName === 'login' ? '/auth' : '/graphq';
+      },
+    }),
+    cache: new InMemoryCache(),
+    // other options...
+  };
+});
+```
+
+### File Upload
+
+To upload a file, you need to add a dependency:
+
+```sh npm2yarn
+npm i extract-files
+```
+
+Then configure the `extractFiles` function:
+
+```ts title="app.config.ts"
+import { HttpLink } from 'apollo-angular/http';
+import extractFiles from 'extract-files/extractFiles.mjs';
+import isExtractableFile from 'extract-files/isExtractableFile.mjs';
+import { inject } from '@angular/core';
+import { InMemoryCache } from '@apollo/client';
+
+provideApollo(() => {
+  const httpLink = inject(HttpLink);
+
+  return {
+    link: httpLink.create({
+      uri: '/graphql',
+      extractFiles: body => extractFiles(body, isExtractableFile),
+    }),
+    cache: new InMemoryCache(),
+    // other options...
+  };
+});
+```
+
+And finally turn on the `useMultipart` flag:
+
+```ts
+apollo.query({
+  query: MY_QUERY,
+  context: {
+    useMultipart: true,
+  },
+});
+```
+
+### Middleware
+
+```ts title="app.config.ts"
+import { provideApollo } from 'apollo-angular';
+import { HttpLink } from 'apollo-angular/http';
+import { HttpHeaders } from '@angular/common/http';
+import { inject } from '@angular/core';
+import { ApolloLink, InMemoryCache } from '@apollo/client';
+
+provideApollo(() => {
+  const httpLink = inject(HttpLink);
+  const http = httpLink.create({ uri: '/graphql' });
+
+  const middleware = new ApolloLink((operation, forward) => {
+    operation.setContext({
+      headers: new HttpHeaders().set(
+        'Authorization',
+        `Bearer ${localStorage.getItem('token') || null}`,
+      ),
+    });
+    return forward(operation);
+  });
+
+  const link = middleware.concat(http);
+
+  return {
+    link,
+    cache: new InMemoryCache(),
+    // other options...
+  };
+});
+```
+
+### Afterware (error)
+
+```ts title="app.config.ts"
+import { provideApollo } from 'apollo-angular';
+import { HttpLink } from 'apollo-angular/http';
+import { inject } from '@angular/core';
+import { InMemoryCache } from '@apollo/client';
+import { onError } from '@apollo/client/link/error';
+
+provideApollo(() => {
+  const httpLink = inject(HttpLink);
+  const myAuthService = inject(MyAuthService);
+  const http = httpLink.create({ uri: '/graphql' });
+  const error = onError(({ networkError }) => {
+    if (networkError && 'statusCode' in networkError && networkError.statusCode === 401) {
+      myAuthService.logout();
+    }
+  });
+  const link = error.concat(http);
+
+  return {
+    link,
+    cache: new InMemoryCache(),
+    // other options...
+  };
+});
+```
+
+## `HttpBatchLink`
+
+An Apollo Link to combine multiple GraphQL operations into single HTTP request.
+
+### Usage
+
+```ts title="app.config.ts"
+import { provideApollo } from 'apollo-angular';
+import { HttpBatchLink } from 'apollo-angular/http';
+import { inject } from '@angular/core';
+import { InMemoryCache } from '@apollo/client';
+
+provideApollo(() => {
+  const httpBatchLink = inject(HttpBatchLink);
+
+  return {
+    link: httpBatchLink.create({ uri: '/graphql' }),
+    cache: new InMemoryCache(),
+    // other options...
+  };
+});
+```
+
+### `HttpClient`
+
+The HTTP Link relies on having `HttpClient` (from `@angular/common/http`) present in your
+application.
+
+### Options
+
+Accepts the same options as `HttpLink`.
+
+### BatchOptions
+
+The batching options indicate how operations are batched together.
+
+| name          | value    | default | required |
+| ------------- | -------- | ------- | -------- |
+| batchInterval | number   | 10      | false    |
+| batchMax      | number   | 10      | false    |
+| batchKey      | Function | -       | false    |
+
+- `batchInterval` - the maximum time a batch will wait before automatically being sent over the
+  network
+- `batchMax` - the size of batches
+- `batchKey` a function that accepts an operation and returns a string key, which uniquely names the
+  batch the operation belongs to, defaults to returning the same string
+
+<Callout type="warning">
+  **Note**: `batchKey` by default batches together requests with the same uri and the same options.
+  Since options from an operation's context overwrites those from a link you could end up with few
+  different keys and what it means, few separate requests.
+</Callout>
+
+### Context
+
+Works in the same way as in `HttpLink`.
+
+To skip batching you can set `skipBatching: true` in operation's context.
+
+<Callout type="warning">
+  **Note**: `skipBatching` works only with the default `batchKey`. To create custom one you should
+  check if `skipBatching` is set in context and generate a random `batchKey` for that operation.
+</Callout>

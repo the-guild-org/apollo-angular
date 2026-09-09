@@ -1,0 +1,181 @@
+---
+description:
+  Set up Apollo in your Angular app. Learn how to use Apollo Client to fetch, cache, and modify
+  application data.
+title: Get Started
+---
+
+## Installation
+
+### Installation with Angular Schematics
+
+The simplest way to get started with Apollo Angular is by executing the schematic like this:
+
+```sh
+ng add apollo-angular
+```
+
+**Done!** You can now create your first query, [let's go through it together here](#request-data).
+
+### Installation without Angular Schematics
+
+If you want to setup Apollo without the help of Angular Schematics, first, let's install some
+packages:
+
+```sh npm2yarn
+npm i apollo-angular @apollo/client graphql
+```
+
+- `@apollo/client`: Where the magic happens
+- `apollo-angular`: Bridge between Angular and Apollo Client
+- `graphql`: Second most important package
+
+Great, now that you have all the dependencies you need, let's create your first Apollo Client.
+
+In `app.config.ts` file, provide Apollo with some options:
+
+```ts title="app.config.ts"
+import { provideApollo } from 'apollo-angular';
+import { HttpLink } from 'apollo-angular/http';
+import { provideHttpClient } from '@angular/common/http';
+import { ApplicationConfig, inject } from '@angular/core';
+import { InMemoryCache } from '@apollo/client';
+
+export const appConfig: ApplicationConfig = {
+  providers: [
+    provideHttpClient(),
+    provideApollo(() => {
+      const httpLink = inject(HttpLink);
+
+      return {
+        link: httpLink.create({ uri: '/graphql' }),
+        cache: new InMemoryCache(),
+        // other options...
+      };
+    }),
+  ],
+};
+```
+
+Take a closer look what we did there:
+
+1. With `apollo-angular/http` and `HttpLink` service we connect our client to an external GraphQL
+   Server
+1. Thanks to `@apollo/client` and `InMemoryCache` we have a place to store data in
+
+## Links and Cache
+
+Apollo Angular has a pluggable network interface layer, which can let you configure how queries are
+sent over HTTP, or replace the whole network part with something completely custom, like a websocket
+transport, mocked server data, or anything else you can imagine.
+
+One Link that you already have in your application is called `HttpLink` which uses HTTP to send your
+queries.
+
+The `InMemoryCache` is the default cache implementation for Apollo Client 3.0.
+
+- [Explore more the Network Layer of Apollo](./data/network)
+- [Read more about caching](./caching/configuration)
+
+## Request Data
+
+Once all is hooked up, you're ready to start requesting data with `Apollo` service!
+
+The `Apollo` is an Angular service exported from `apollo-angular` to share GraphQL data with your
+UI.
+
+First, pass your GraphQL query wrapped in the `gql` function (from `apollo-angular`) to the `query`
+property in the `Apollo.watchQuery` method, in your component. The `Apollo` service is a regular
+angular service available to you, and your data is streamed through Observables.
+
+The `watchQuery` method returns a `QueryRef` object which has the `valueChanges` property that is an
+`Observable`.
+
+An object passed through an Observable contains `loading`, `error`, and `data` properties. Apollo
+Client tracks error and loading state for you, which will be reflected in the `loading` and `error`
+properties. Once the result of your query comes back, it will be attached to the `data` property.
+
+<Callout>
+  It's also possible to fetch data only once. The `query` method of `Apollo` service returns an
+  `Observable` that also resolves with the same result as above.
+</Callout>
+
+Let's create an `ExchangeRates` component to see the `Apollo` service in action!
+
+### Basic Operations
+
+If you want to see how easy it is to fetch data from a GraphQL server with Apollo, you can use the
+`query` method. It is as easy as this:
+
+```ts
+import { Apollo, gql } from 'apollo-angular';
+import { Component, OnInit } from '@angular/core';
+
+@Component({
+  selector: 'exchange-rates',
+  template: `
+    @if (loading) {
+      <div>Loading...</div>
+    }
+    @if (error) {
+      <div>Error :(</div>
+    }
+    @if (rates) {
+      @for (rate of rates; track $index) {
+        <p>{{ rate.currency }}: {{ rate.rate }}</p>
+      }
+    }
+  `,
+})
+export class ExchangeRates implements OnInit {
+  rates: any[];
+  loading = true;
+  error: any;
+
+  constructor(private readonly apollo: Apollo) {}
+
+  ngOnInit() {
+    this.apollo
+      .watchQuery({
+        query: gql`
+          {
+            rates(currency: "USD") {
+              currency
+              rate
+            }
+          }
+        `,
+      })
+      .valueChanges.subscribe((result: any) => {
+        this.rates = result.data?.rates;
+        this.loading = result.loading;
+        this.error = result.error;
+      });
+  }
+}
+```
+
+Congrats, you just made your first query! 🎉 If you render your `ExchangeRates` component within
+your `App` component from the previous example, you'll first see a loading indicator and then data
+on the page once it's ready. Apollo Client automatically caches this data when it comes back from
+the server, so you won't see a loading indicator if you run the same query twice.
+
+## Named Clients
+
+It is possible to have several apollo clients in the application, for example, pointing to different
+endpoints.
+
+See [how to use multiple clients](./recipes/multiple-clients).
+
+## Next Steps
+
+Now that you've learned how to fetch data with Apollo Angular, you're ready to dive deeper into
+creating more complex queries and mutations. After this section, we recommend moving onto:
+
+- [Queries](./data/queries): Learn how to fetch queries with arguments and dive deeper into
+  configuration options
+- [Mutations](./data/mutations): Learn how to update data with mutations and when you'll need to
+  update the Apollo cache
+- [Apollo Client API](https://apollographql.com/docs/react/api/core/ApolloClient): Sometimes, you'll
+  need to access the client directly like we did in our plain JavaScript example above. Visit the
+  API reference for a full list of options

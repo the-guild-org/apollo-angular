@@ -1,0 +1,173 @@
+---
+description:
+  Learn how to use Apollo for faster web page rendering! Apollo provides techniques to load your
+  application quickly, including store rehydration and server-side rendering. This tutorial provides
+  code examples and best practices.
+title: Server Side Rendering
+---
+
+Apollo provides two techniques to allow your applications to load quickly, avoiding unnecessary
+delays to users:
+
+- Store rehydration, which allows your initial set of queries to return data immediately without a
+  server roundtrip.
+- Server side rendering, which renders the initial HTML view on the server before sending it to the
+  client.
+
+You can use one or both of these techniques to provide a better user experience.
+
+## Creating a Client
+
+Before we dive more into SSR, let's create an example to work on.
+
+```ts title="app.config.ts"
+import { provideApollo } from 'apollo-angular';
+import { HttpLink } from 'apollo-angular/http';
+import { provideHttpClient } from '@angular/common/http';
+import { ApplicationConfig, inject, InjectionToken } from '@angular/core';
+import { InMemoryCache } from '@apollo/client';
+
+const MY_APOLLO_CACHE = new InjectionToken<InMemoryCache>('apollo-cache');
+
+export const appConfig: ApplicationConfig = {
+  providers: [
+    provideHttpClient(),
+    { provide: MY_APOLLO_CACHE, useValue: new InMemoryCache() },
+    provideApollo(() => {
+      const httpLink = inject(HttpLink);
+      const cache = inject(MY_APOLLO_CACHE);
+      return {
+        link: httpLink.create({ uri: '/graphql' }),
+        cache: cache,
+      };
+    }),
+  ],
+};
+```
+
+## Server-Side Rendering
+
+You can render your entire Angular-based Apollo application on a Node server the same way as you
+would normally do with an Angular app.
+
+No changes are required to client queries to support this, so your Apollo-based Angular UI should
+support SSR out of the box.
+
+<Callout>
+SSR works out of the box when using `HttpLink` from `apollo-angular/http` because it uses Angular's `HttpClient` internally.
+
+This wouldn't be that easy with `apollo-link-http`. That non-angular Link uses Fetch API which would
+have to schedule a macroTask (Zone.js) so Angular could wait for the request to finish.
+
+</Callout>
+
+## Store Rehydration
+
+For applications that can perform some queries on the server prior to rendering the UI on the
+client, Apollo allows for setting the initial state of data. This is sometimes called rehydration,
+since the data is "dehydrated" when it is serialized and included in the initial HTML payload.
+
+For example, a typical approach is to use `TransferState` and `BrowserTransferStateModule` so you
+can then rehydrate the client using the initial state passed from the server:
+
+```ts title="app.config.ts"
+import { provideApollo } from 'apollo-angular';
+import { HttpLink } from 'apollo-angular/http';
+import { provideHttpClient } from '@angular/common/http';
+import {
+  ApplicationConfig,
+  inject,
+  InjectionToken,
+  makeStateKey,
+  TransferState,
+} from '@angular/core';
+import { InMemoryCache, NormalizedCacheObject } from '@apollo/client';
+
+const MY_APOLLO_CACHE = new InjectionToken<InMemoryCache>('apollo-cache');
+const STATE_KEY = makeStateKey<NormalizedCacheObject>('apollo.state');
+
+export const appConfig: ApplicationConfig = {
+  providers: [
+    provideHttpClient(),
+    { provide: MY_APOLLO_CACHE, useValue: new InMemoryCache() },
+    provideApollo(() => {
+      const httpLink = inject(HttpLink);
+      const cache = inject(MY_APOLLO_CACHE);
+
+      const transferState = inject(TransferState);
+      const isBrowser = transferState.hasKey(STATE_KEY);
+      if (isBrowser) {
+        const state = transferState.get(STATE_KEY, {});
+        cache.restore(state);
+      } else {
+        transferState.onSerialize(STATE_KEY, () => {
+          const result = cache.extract();
+          // Reset cache after extraction to avoid sharing between requests
+          cache.reset();
+          return result;
+        });
+      }
+
+      return {
+        link: httpLink.create({ uri: '/graphql' }),
+        cache: cache,
+      };
+    }),
+  ],
+};
+```
+
+Adding store rehydration to your app is straightforward since Angular itself has a mechanism to
+transfer data from server to client.
+
+On `server` we extract data from cache when TransferState says it is ready to save and serialize
+data. On `browser` we do opposite thing, we receive transferred data to restore cache.
+
+Super easy and clean!
+
+With all this when the client runs the first set of queries, the data will be returned instantly
+because it is already in the store!
+
+If you are using `forceFetch` on some initial queries, you can pass the `ssrForceFetchDelay` option
+to skip force fetching during initialization, so that even those queries run using the cache:
+
+```ts
+// to use it create two Apollo Clients
+const cache = new InMemoryCache();
+
+// one for client side
+apollo.create({
+  cache: cache.restore(window.__APOLLO_STATE__),
+  link,
+  ssrForceFetchDelay: 100,
+});
+
+// and second one for server
+apollo.create({
+  cache,
+  link,
+});
+```
+
+## Best Practices
+
+You saw how to use Server-Side Rendering and Store Rehydration in your application, but you will
+need to be a little careful in how you create Apollo on the server to ensure everything works there
+as well:
+
+1. When [creating Apollo](../get-started) (`Apollo.create`) on the server, you'll need to set up
+   your HttpLink to connect to the API server correctly. This might look different to how you do it
+   on the client, since you'll probably have to use an absolute URL to the server if you were using
+   a relative URL on the client.
+
+1. Since you only want to fetch each query result once, pass the `ssrMode: true` option to the
+   `Apollo.create` to avoid repeated force-fetching.
+
+1. You need to ensure that you create a new client or store instance for each request, rather than
+   re-using the same client for multiple requests. Otherwise, the UI will be getting stale data, and
+   you'll have problems with [authentication](../recipes/authentication).
+
+## Example
+
+You can [take a look](https://github.com/kamilkisiela/apollo-angular-ssr) on a simple example with
+the implementation we talked about.

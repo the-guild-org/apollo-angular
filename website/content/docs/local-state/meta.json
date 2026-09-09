@@ -1,0 +1,4 @@
+{
+  "pages": ["management", "managing-state-with-field-policies", "reactive-variables"],
+  "title": "Local State"
+}

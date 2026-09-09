@@ -1,0 +1,234 @@
+---
+description:
+  Learn how to use GraphQL Fragments with Apollo client in this tutorial. GraphQL fragments let you
+  share query logic between multiple queries, mutations, or subscriptions, allowing you to co-locate
+  field access with the places they are used. You can also define fragments on unions and
+  interfaces, and use patterns in Apollo client to take full advantage of it.
+title: Using Fragments
+---
+
+A [GraphQL fragment](http://graphql.org/learn/queries/#fragments) is a shared piece of query logic.
+
+```graphql
+fragment NameParts on Person {
+  firstName
+  lastName
+}
+
+query getPerson {
+  people(id: "7") {
+    ...NameParts
+    avatar(size: LARGE)
+  }
+}
+```
+
+There are two principal uses for fragments in Apollo:
+
+- Sharing fields between multiple queries, mutations or subscriptions.
+- Breaking your queries up to allow you to co-locate field access with the places they are used.
+
+## Reusing Fragments
+
+The most straightforward use of fragments is to reuse parts of queries (or mutations or
+subscriptions) in various parts of your application. For instance, in GitHunt on the comments page,
+we want to fetch the same fields after posting a comment as we originally query. This way we can be
+sure that we render consistent comment objects as the data changes.
+
+To do so, we can simply share a fragment describing the fields we need for a comment:
+
+```typescript
+import { gql } from 'apollo-angular';
+
+CommentsPage.fragments = {
+  comment: gql`
+    fragment CommentsPageComment on Comment {
+      id
+      postedBy {
+        login
+        html_url
+      }
+      createdAt
+      content
+    }
+  `,
+};
+```
+
+We put the fragment on `CommentsPage.fragments.comment` by convention, and use the familiar `gql`
+helper to create it.
+
+When it's time to embed the fragment in a query, we simply use the `...Name` syntax in our GraphQL,
+and embed the fragment inside our query GraphQL document:
+
+```ts
+const SUBMIT_COMMENT_MUTATION = gql`
+  mutation submitComment($repoFullName: String!, $commentContent: String!) {
+    submitComment(repoFullName: $repoFullName, commentContent: $commentContent) {
+      ...CommentsPageComment
+    }
+  }
+  ${CommentsPage.fragments.comment}
+`;
+
+export const COMMENT_QUERY = gql`
+  query Comment($repoName: String!) {
+    # ...
+    entry(repoFullName: $repoName) {
+      # ...
+      comments {
+        ...CommentsPageComment
+      }
+      # ...
+    }
+  }
+  ${CommentsPage.fragments.comment}
+`;
+```
+
+## Collocating Fragments
+
+A key advantage of GraphQL is the tree-like nature of the response data, which in many cases mirrors
+your rendered component hierarchy. This, combined with GraphQL's support for fragments, allows you
+to split your queries up in such a way that the various fields fetched by the queries are located
+right alongside the code that uses the field.
+
+Although this technique doesn't always make sense (for instance it's not always the case that the
+GraphQL schema is driven by the UI requirements), when it does, it's possible to use some patterns
+in Apollo client to take full advantage of it.
+
+Imagine this view hierarchy:
+
+```text
+FeedPage
+└── Feed
+    └── FeedEntry
+        ├── RepoInfo
+        └── VoteButtons
+```
+
+The `FeedPage` conducts a query to fetch a list of `Entry`s, and each of the subcomponents requires
+different subfields of each `Entry`.
+
+### Creating Fragments
+
+To create the fragments, we again use the `gql` helper and attach to subfields of
+`ComponentClass.fragments`, for example:
+
+```typescript
+VoteButtons.fragments = {
+  entry: gql`
+    fragment VoteButtons on Entry {
+      score
+      vote {
+        vote_value
+      }
+    }
+  `,
+};
+```
+
+If our fragments include sub-fragments then we can pass them into the `gql` helper:
+
+```typescript
+FeedEntry.fragments = {
+  entry: gql`
+    fragment FeedEntry on Entry {
+      commentCount
+      repository {
+        full_name
+        html_url
+        owner {
+          avatar_url
+        }
+      }
+      ...VoteButtons
+      ...RepoInfo
+    }
+    ${VoteButtons.fragments.entry}
+    ${RepoInfo.fragments.entry}
+  `,
+};
+```
+
+### Importing Fragments When Using webpack
+
+When loading `.graphql` files with
+[@graphql-tools/webpack-loader](https://www.npmjs.com/package/@graphql-tools/webpack-loader), we can
+include fragments using `import` statements. For example:
+
+```graphql
+#import "./someFragment.graphql"
+```
+
+Will make the contents of `someFragment.graphql` available to the current file. See the
+[Webpack Fragments](../recipes/webpack#fragments) section for additional details.
+
+### Using Fragments with Unions and Interfaces
+
+You can define fragments on unions and interfaces.
+
+Here's an example of a query that includes three in-line fragments:
+
+```graphql
+query AllCharacters {
+  all_characters {
+    ... on Character {
+      name
+    }
+
+    ... on Jedi {
+      side
+    }
+
+    ... on Droid {
+      model
+    }
+  }
+}
+```
+
+The `all_characters` query above returns a list of `Character` objects. The `Character` type is an
+interface that both the `Jedi` and `Droid` types implement. Each item in the list includes a `side`
+field if it's an object of type `Jedi`, and it includes a `model` field if it's of type `Droid`.
+
+**However**, for this query to work, your client needs to understand the polymorphic relationship
+between the `Character` interface and the types that implement it. To inform the client about these
+relationships, you can pass a `possibleTypes` option when creating the `InMemoryCache`.
+
+### Defining `possibleTypes` Manually
+
+You can pass a `possibleTypes` option to the `InMemoryCache` constructor to specify
+supertype-subtype relationships in your schema. This object maps the name of an interface or union
+type (the supertype) to the types that implement or belong to it (the subtypes).
+
+Here's an example `possibleTypes` declaration:
+
+```ts
+const cache = new InMemoryCache({
+  possibleTypes: {
+    Character: ['Jedi', 'Droid'],
+    Test: ['PassingTest', 'FailingTest', 'SkippedTest'],
+    Snake: ['Viper', 'Python'],
+  },
+});
+```
+
+This example lists three interfaces (`Character`, `Test`, and `Snake`) and the object types that
+implement them.
+
+### Auto-Generating `possibleTypes`
+
+If your schema includes only a few unions and interfaces, you can probably specify your
+`possibleTypes` manually without issue. However, as your schema grows in size and complexity, you
+should consider
+[generating `possibleTypes` automatically from your schema](https://www.graphql-code-generator.com/docs/plugins/fragment-matcher#usage-with-apollo-client-3).
+
+Here's an example of using `possibleTypes` declaration generated by GraphQL Codegen:
+
+```ts
+// generated by Fragment Matcher plugin
+import { possibleTypes } from '../possible-types';
+
+const cache = new InMemoryCache({ possibleTypes });
+```

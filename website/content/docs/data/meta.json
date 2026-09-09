@@ -1,0 +1,13 @@
+{
+  "pages": [
+    "queries",
+    "mutations",
+    "subscriptions",
+    "services",
+    "network",
+    "pagination",
+    "fragments",
+    "error-handling"
+  ],
+  "title": "Fetching"
+}
