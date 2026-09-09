@@ -1,0 +1,108 @@
+---
+description:
+  Learn to use multiple Apollo clients in your Angular application with @apollo_angular. Create
+  named clients and configure using `provideNamedApollo()` token.
+title: Multiple Clients
+---
+
+With `apollo-angular` it is possible to use multiple Apollo Clients in your application.
+
+## Creating Clients
+
+You are already familiar with how to create a single client so it should be easy to understand it.
+
+There are few ways of creating named clients.
+
+One way is to use `Apollo.create`. Normally, you would use it like this:
+
+```ts
+apollo.create(options);
+```
+
+This will define a default client but there is one optional argument.
+
+```ts
+apollo.create(options, name /* optional */);
+```
+
+An example:
+
+```ts
+apollo.create(defaultOptions);
+apollo.create(extraOptions, 'extra');
+```
+
+Now you have the default client and one called `extra`.
+
+<Callout type="warning">
+  If you want to define a default client, simply do not use any `name` argument or set it to
+  `default`.
+</Callout>
+
+The other way is to use helper methods.
+
+```ts
+apollo.createDefault(options);
+// and
+apollo.createNamed(name, options);
+```
+
+## Creating Clients Using `provideNamedApollo()`
+
+In our `app.config.ts` file use `provideNamedApollo()` token to configure Apollo Client:
+
+```ts title="app.config.ts"
+import { provideNamedApollo } from 'apollo-angular';
+import { HttpLink } from 'apollo-angular/http';
+import { inject } from '@angular/core';
+import { InMemoryCache } from '@apollo/client';
+
+provideNamedApollo(() => {
+  const httpLink = inject(HttpLink);
+
+  return {
+    //  These settings will be saved as default client
+    default: {
+      link: httpLink.create({
+        uri: '/graphql',
+      }),
+      cache: new InMemoryCache(),
+    },
+    // These settings will be saved by name: myAlternativeGraphQl
+    myAlternativeGraphQl: {
+      link: httpLink.create({
+        uri: '/alternative-graphql',
+      }),
+      cache: new InMemoryCache(),
+    },
+  };
+});
+```
+
+## Using Apollo
+
+Since we have our clients available in an app, now is the time to see how to use them.
+
+If a client is defined as the default, you can directly use all methods of the `Apollo` service.
+
+About named clients, use the method called `use(name: string)`.
+
+```typescript
+import { Apollo, QueryRef } from 'apollo-angular';
+import { Component } from '@angular/core';
+
+@Component({
+  // ...
+})
+export class AppComponent {
+  feedQuery: QueryRef<any>;
+
+  constructor(apollo: Apollo) {
+    // use default
+    this.feedQuery = apollo.watchQuery({/* ... */});
+
+    // use extra client
+    this.feedQuery = apollo.use('myAlternativeGraphQl').watchQuery({/* ... */});
+  }
+}
+```

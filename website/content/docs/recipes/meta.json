@@ -1,0 +1,11 @@
+{
+  "pages": [
+    "automatic-persisted-queries",
+    "angular-cli",
+    "webpack",
+    "authentication",
+    "multiple-clients",
+    "nativescript"
+  ],
+  "title": "Recipes"
+}

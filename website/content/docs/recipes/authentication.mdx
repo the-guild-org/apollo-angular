@@ -1,0 +1,198 @@
+---
+description:
+  Learn how to secure your Apollo Client using authentication headers or cookies. See examples of
+  authenticating with JWT tokens and resetting the store on login/logout.
+title: Authentication
+---
+
+Unless all the data you are loading is completely public, your app has some sort of users, accounts
+and permissions systems. If different users have different permissions in your application, then you
+need a way to tell the server which user is associated with each request.
+
+Apollo Client uses the ultra flexible [Apollo Link](https://apollographql.com/docs/link) that
+includes several options for authentication.
+
+## Cookie
+
+If your app is browser based, and you are using cookies for login and session management with a
+backend, it is very easy to tell your network interface to send the cookie along with every request.
+
+```ts title="app.config.ts"
+import { provideApollo } from 'apollo-angular';
+import { HttpLink } from 'apollo-angular/http';
+import { inject } from '@angular/core';
+import { InMemoryCache } from '@apollo/client';
+
+provideApollo(() => {
+  const httpLink = inject(HttpLink);
+
+  return {
+    link: httpLink.create({
+      uri: '/graphql',
+      withCredentials: true,
+    }),
+    cache: new InMemoryCache(),
+    // other options ...
+  };
+});
+```
+
+`withCredentials` is simply passed to the
+[`HttpClient`](https://angular.io/api/common/http/HttpClient) used by the `HttpLink` when sending
+the query.
+
+<Callout type="warning">
+  **Note**: the backend must also allow credentials from the requested origin. e.g. if using the
+  popular `cors` package from NPM in Node.js.
+</Callout>
+
+## Header
+
+Another common way to identify yourself when using HTTP is to send along an authorization header.
+Apollo Links make creating middlewares that lets you modify requests before they are sent to the
+server. It's easy to add an `Authorization` header to every HTTP request. In this example, we'll
+pull the login token from `localStorage` every time a request is sent.
+
+```ts title="app.config.ts"
+import { provideApollo } from 'apollo-angular';
+import { HttpLink } from 'apollo-angular/http';
+import { inject } from '@angular/core';
+import { ApolloLink, InMemoryCache } from '@apollo/client';
+import { setContext } from '@apollo/client/link/context';
+
+provideApollo(() => {
+  const httpLink = inject(HttpLink);
+
+  const basic = setContext((operation, context) => ({
+    headers: {
+      Accept: 'charset=utf-8',
+    },
+  }));
+
+  const auth = setContext((operation, context) => {
+    const token = localStorage.getItem('token');
+
+    if (token === null) {
+      return {};
+    } else {
+      return {
+        headers: {
+          Authorization: `JWT ${token}`,
+        },
+      };
+    }
+  });
+
+  return {
+    link: ApolloLink.from([basic, auth, httpLink.create({ uri: '/graphql' })]),
+    cache: new InMemoryCache(),
+    // other options ...
+  };
+});
+```
+
+The server can use that header to authenticate the user and attach it to the GraphQL execution
+context, so resolvers can modify their behavior based on a user's role and permissions.
+
+### Waiting for a Refreshed Token
+
+In the case that you need to a refresh a token, for example when using the
+[adal.js](https://github.com/AzureAD/azure-activedirectory-library-for-js) library, you can use an
+observable wrapped in a promise to wait for a new token:
+
+```ts
+import { setContext } from '@apollo/client/link/context';
+
+const auth = setContext(async (_, { headers }) => {
+  // Grab token if there is one in storage or hasn't expired
+  let token = this.auth.getCachedAccessToken();
+
+  if (!token) {
+    // An observable to fetch a new token
+    // Converted .toPromise()
+    await this.auth.acquireToken().toPromise();
+
+    // Set new token to the response (adal puts the new token in storage when fetched)
+    token = this.auth.getCachedAccessToken();
+  }
+  // Return the headers as usual
+  return {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
+});
+```
+
+## Reset Store on Logout
+
+Since Apollo caches all of your query results, it's important to get rid of them when the login
+state changes.
+
+The easiest way to ensure that the UI and store state reflects the current user's permissions is to
+call `Apollo.client.resetStore()` after your login or logout process has completed. This will cause
+the store to be cleared and all active queries to be refetched.
+
+Another option is to reload the page, which will have a similar effect.
+
+```ts
+import { Apollo, gql } from 'apollo-angular';
+import { Component, Injectable } from '@angular/core';
+
+const PROFILE_QUERY = gql`
+  query CurrentUserForLayout {
+    currentUser {
+      login
+      avatar_url
+    }
+  }
+`;
+
+@Injectable()
+class AuthService {
+  constructor(private readonly apollo: Apollo) {}
+
+  logout() {
+    // some app logic
+
+    // reset the store after that
+    this.apollo.client.resetStore();
+  }
+}
+
+@Component({
+  template: `
+    @if (loggedIn) {
+      <user-card [user]="user" />
+      <button (click)="logout()">Logout</button>
+    } @else {
+      <button (click)="goToLoginPage()">Go SignIn</button>
+    }
+  `,
+})
+class ProfileComponent {
+  user: any;
+  loggedIn: boolean;
+
+  constructor(
+    private readonly apollo: Apollo,
+    private readonly auth: AuthService,
+  ) {}
+
+  ngOnInit() {
+    this.apollo
+      .query({
+        query: PROFILE_QUERY,
+        fetchPolicy: 'network-only',
+      })
+      .subscribe(({ data }) => {
+        this.user = data.currentUser;
+      });
+  }
+
+  logout() {
+    this.loggedIn = false;
+    this.auth.logout();
+  }
+}
+```

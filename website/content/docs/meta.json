@@ -1,0 +1,13 @@
+{
+  "pages": [
+    "index",
+    "get-started",
+    "data",
+    "caching",
+    "local-state",
+    "development-and-testing",
+    "performance",
+    "recipes",
+    "migration"
+  ]
+}

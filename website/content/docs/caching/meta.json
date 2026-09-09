@@ -1,0 +1,10 @@
+{
+  "pages": [
+    "configuration",
+    "interaction",
+    "garbage-collection",
+    "field-behavior",
+    "advanced-topics"
+  ],
+  "title": "Caching"
+}
